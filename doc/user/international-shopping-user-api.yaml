@@ -1,0 +1,4711 @@
+openapi: 3.1.0
+info:
+  title: 默认模块
+  description: >
+    - 统一鉴权：Cookie 会话（HttpOnly `access_token`）<br/> - 统一返回包裹结构（所有 HTTP
+    状态码均使用相同结构）<br/> - CSRF 防护：双提交（Header: `X-CSRF-Token` 与 Cookie: `csrf_token`
+    必须相等）<br/> - 匿名接口：显式 `security: []`<br/>
+  version: 1.3.0
+tags:
+  - name: user
+  - name: user/Auth
+  - name: user/OAuth2
+  - name: user/Users
+  - name: user/Profile
+  - name: user/Bindings
+  - name: user/Addresses
+  - name: Auth
+  - name: OAuth2
+  - name: Users
+  - name: Profile
+  - name: Bindings
+  - name: Addresses
+paths:
+  /auth/register:
+    post:
+      summary: 本地注册（创建 DISABLED 并发送邮箱验证码）
+      deprecated: false
+      description: ''
+      tags:
+        - user/Auth
+        - Auth
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              username: leila-user_01
+              password: Passw0rd!
+              nickname: Leila
+              email: leila9468555@gmail.com
+              phone_country_code: '86'
+              phone_national_number: '13800135767'
+        required: true
+      responses:
+        '202':
+          description: 已发送激活邮件
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              examples:
+                '1':
+                  summary: 发送成功
+                  value:
+                    success: true
+                    code: ACCEPTED
+                    message: 激活邮件已发送
+                    timestamp: '2025-11-06 11:38:36'
+                '2':
+                  summary: 冲突
+                  value:
+                    success: false
+                    code: CONFLICT
+                    message: 邮箱已存在
+                    timestamp: '2025-11-06 11:38:40'
+          headers: {}
+          x-apifox-name: 已接受
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '409':
+          description: 用户名/邮箱/手机号已存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+          headers: {}
+          x-apifox-name: 冲突
+          x-apifox-ordering: 2
+        '429':
+          $ref: '#/components/responses/请求过多'
+          description: ''
+          x-apifox-ordering: 3
+      security: []
+      x-apifox-folder: user/Auth
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958704-run
+  /auth/email-status:
+    get:
+      summary: 轮询邮件发送状态
+      deprecated: false
+      description: |
+        传入邮箱地址，后端从 Redis 查找 {email → messageId} 映射，
+        再调用 Resend 查询该邮件的当前状态并返回。
+      tags:
+        - user/Auth
+        - Auth
+      parameters:
+        - name: email
+          in: query
+          description: 目标邮箱地址
+          required: true
+          example: leila9468555@gmail.com
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: OK
+                message: 查询成功
+                timestamp: '2025-11-06 12:39:11'
+                data:
+                  email: leila9468555@gmail.com
+                  message_id: af4cae0f-b38d-4be8-891c-0807c5e28d3a
+                  status: DELIVERED
+          headers: {}
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+      security: []
+      x-apifox-folder: user/Auth
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-371599921-run
+  /auth/verify-email:
+    post:
+      summary: 验证邮箱验证码并激活账户（status=ACTIVE）
+      deprecated: false
+      description: ''
+      tags:
+        - user/Auth
+        - Auth
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+            example:
+              email: leila9468555@gmail.com
+              code: '024797'
+        required: true
+      responses:
+        '201':
+          description: 注册激活成功（下发会话与 CSRF 令牌）
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN350B858MXR13XPW07CSF6:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        description: 业务数据（随具体接口定义）
+                        $ref: '#/components/schemas/UserAccountRespond'
+                    required: []
+                x-apifox-orders:
+                  - 01KAN350B858MXR13XPW07CSF6
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    description: 业务数据（随具体接口定义）
+                    $ref: '#/components/schemas/UserAccountRespond'
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+              example:
+                success: true
+                code: CREATED
+                message: Created
+                timestamp: '2025-11-06 14:43:51'
+                data:
+                  id: 95
+                  username: leila-user_01
+                  nickname: Leila
+                  email: leila9468555@gmail.com
+                  phone: +86-13800135767
+                  status: ACTIVE
+                  created_at: '2025-11-06 06:36:53'
+                  updated_at: '2025-11-06 06:36:53'
+          headers:
+            Set-Cookie:
+              required: false
+              description: >
+                Set-Cookie: access_token=...; HttpOnly; Secure;   Set-Cookie:
+                csrf_token=...; Secure; SameSite=Lax
+              schema:
+                type: string
+          x-apifox-name: 已创建
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '422':
+          $ref: '#/components/responses/无法处理的实体'
+          description: ''
+          x-apifox-ordering: 2
+      security: []
+      x-apifox-folder: user/Auth
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958705-run
+  /auth/resend-activation:
+    post:
+      summary: 重新发送激活邮件
+      deprecated: false
+      description: ''
+      tags:
+        - user/Auth
+        - Auth
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendActivationRequest'
+            example:
+              email: abc@example.com
+        required: true
+      responses:
+        '202':
+          description: 已重新发送
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: ACCEPTED
+                message: 激活邮件已重新发送
+                timestamp: '2025-11-06 15:13:58'
+          headers: {}
+          x-apifox-name: 已接受
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '429':
+          $ref: '#/components/responses/请求过多'
+          description: ''
+          x-apifox-ordering: 2
+      security: []
+      x-apifox-folder: user/Auth
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958706-run
+  /auth/login:
+    post:
+      summary: 本地登录（用户名/邮箱/手机号 + 密码）
+      deprecated: false
+      description: ''
+      tags:
+        - user/Auth
+        - Auth
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              account: leila9468555@gmail.com
+              password: Passw0rd!
+        required: true
+      responses:
+        '200':
+          description: 登录成功（Set-Cookie 会话 + CSRF）
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN3629GSG269XD6PW7CF9SD:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        description: 业务数据（随具体接口定义）
+                        $ref: '#/components/schemas/UserAccountRespond'
+                    required: []
+                x-apifox-orders:
+                  - 01KAN3629GSG269XD6PW7CF9SD
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    description: 业务数据（随具体接口定义）
+                    $ref: '#/components/schemas/UserAccountRespond'
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+              examples:
+                '1':
+                  summary: 成功示例
+                  value:
+                    success: true
+                    code: OK
+                    message: 登陆成功
+                    timestamp: '2025-11-06 17:23:16'
+                    data:
+                      id: 96
+                      username: leila-user_01
+                      nickname: Leila
+                      email: leila9468555@gmail.com
+                      phone: +86-13800135767
+                      status: ACTIVE
+                      last_login_at: '2025-11-06 17:23:13'
+                      created_at: '2025-11-06 06:51:00'
+                      updated_at: '2025-11-06 09:23:01'
+                '2':
+                  summary: 账户未激活或已被禁用
+                  value:
+                    success: false
+                    code: UNAUTHORIZED
+                    message: 账户未激活或已禁用
+                    timestamp: '2025-11-06 17:23:16'
+          headers:
+            Set-Cookie:
+              required: false
+              description: >
+                Set-Cookie: access_token=...; HttpOnly; Secure;   Set-Cookie:
+                csrf_token=...; Secure; SameSite=Lax
+              schema:
+                type: string
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '401':
+          description: 认证失败（密码错误或账户未激活）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+          headers: {}
+          x-apifox-name: 未认证
+          x-apifox-ordering: 2
+      security: []
+      x-apifox-folder: user/Auth
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958707-run
+  /auth/password/forgot:
+    post:
+      summary: 发起重置密码（发送验证码至绑定邮箱）
+      deprecated: false
+      description: |
+        输入用户名/邮箱/手机号触发一次密码重置验证码邮件。即使账号不存在也返回 202，避免暴露用户存在性。
+      tags:
+        - user/Auth
+        - Auth
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+            example:
+              account: leila-user_01
+        required: true
+      responses:
+        '202':
+          x-apifox-name: 已接受
+          x-apifox-ordering: 0
+          description: 验证码已发送（或已受理）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: ACCEPTED
+                message: 若账号存在，重置验证码已发送
+                timestamp: '2025-11-06 15:20:00'
+          headers: {}
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '429':
+          $ref: '#/components/responses/请求过多'
+          description: ''
+          x-apifox-ordering: 2
+      security: []
+      x-apifox-folder: user/Auth
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-380546353-run
+  /auth/password/reset:
+    post:
+      summary: 验证验证码并重置密码（找回密码）
+      deprecated: false
+      description: ''
+      tags:
+        - user/Auth
+        - Auth
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+            example:
+              account: leila-user_01
+              code: '893642'
+              new_password: NewPassw0rd!
+        required: true
+      responses:
+        '200':
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+          description: 密码已重置（Set-Cookie 会话 + CSRF）
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN376RA2AJ1K6ZD4HNYK6YD:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        description: 业务数据（随具体接口定义）
+                        $ref: '#/components/schemas/UserAccountRespond'
+                    required: []
+                x-apifox-orders:
+                  - 01KAN376RA2AJ1K6ZD4HNYK6YD
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    description: 业务数据（随具体接口定义）
+                    $ref: '#/components/schemas/UserAccountRespond'
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+              example:
+                success: true
+                code: OK
+                message: 密码已重置
+                timestamp: '2025-11-06 15:28:11'
+                data:
+                  id: 95
+                  username: leila-user_01
+                  nickname: Leila
+                  email: leila9468555@gmail.com
+                  phone: +86-13800135767
+                  status: ACTIVE
+                  created_at: '2025-11-06 06:36:53'
+                  updated_at: '2025-11-06 06:36:53'
+          headers:
+            Set-Cookie:
+              required: false
+              description: >
+                成功时 Set-Cookie: access_token=...; HttpOnly; Secure;
+                refresh_token=...; HttpOnly; Secure; csrf_token=...; Secure;
+                SameSite=Lax
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '422':
+          $ref: '#/components/responses/无法处理的实体'
+          description: ''
+          x-apifox-ordering: 2
+      security: []
+      x-apifox-folder: user/Auth
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-380546354-run
+  /auth/logout:
+    post:
+      summary: 退出登录（清除 Cookie 或使其失效）
+      deprecated: false
+      description: ''
+      tags:
+        - user/Auth
+        - Auth
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: 双提交 CSRF Cookie。必须与 Header `X-CSRF-Token` 等值
+          required: true
+          example: ''
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: X-CSRF-Token
+          in: header
+          description: 双提交 CSRF 头。必须与 Cookie `csrf_token` 等值
+          required: true
+          example: ''
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      responses:
+        '200':
+          description: 已退出
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: OK
+                message: Logged out
+                timestamp: '2025-10-26T06:31:20.000Z'
+                data: null
+          headers:
+            Set-Cookie:
+              required: false
+              description: 清除 access_token/csrf_token
+              schema:
+                type: string
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+        '403':
+          $ref: '#/components/responses/权限不足'
+          description: ''
+          x-apifox-ordering: 1
+      security: []
+      x-apifox-folder: user/Auth
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958708-run
+  /auth/refresh-token:
+    post:
+      summary: 刷新访问令牌（依赖 refresh_token Cookie + CSRF）
+      deprecated: false
+      description: ''
+      tags:
+        - user/Auth
+        - Auth
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: 双提交 CSRF Cookie。必须与 Header `X-CSRF-Token` 等值
+          required: true
+          example: ''
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: X-CSRF-Token
+          in: header
+          description: 双提交 CSRF 头。必须与 Cookie `csrf_token` 等值
+          required: true
+          example: ''
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      responses:
+        '200':
+          description: 已刷新
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: OK
+                message: Token 刷新成功
+                timestamp: '2025-11-06 22:15:39'
+          headers:
+            Set-Cookie:
+              required: false
+              description: 更新 access_token（以及可选轮换 csrf_token）
+              schema:
+                type: string
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-ordering: 2
+      security: []
+      x-apifox-folder: user/Auth
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958709-run
+  /auth/csrf:
+    get:
+      summary: 获取/轮换 CSRF 令牌（返回并 Set-Cookie）
+      deprecated: false
+      description: >
+        已登录后调用。服务端生成随机 `csrf_token`，与会话绑定并下发： - Set-Cookie: csrf_token=...（非
+        HttpOnly） - Body 回显 { csrfToken }
+      tags:
+        - user/Auth
+        - Auth
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: OK
+                message: CSRF token issued
+                timestamp: '2025-10-26T06:32:00.000Z'
+                data:
+                  csrfToken: 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+          headers:
+            Set-Cookie:
+              required: false
+              description: 'Set-Cookie: csrf_token=...; Secure; SameSite=Strict|Lax'
+              schema:
+                type: string
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+      security: []
+      x-apifox-folder: user/Auth
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958710-run
+  /oauth2/{provider}/authorize:
+    get:
+      summary: 跳转至第三方授权页（生成并缓存 state/nonce/code_verifier）
+      deprecated: false
+      description: ''
+      tags:
+        - user/OAuth2
+        - OAuth2
+      parameters:
+        - name: provider
+          in: path
+          description: 第三方登录提供方
+          required: true
+          example: GOOGLE
+          schema:
+            type: string
+            enum:
+              - GOOGLE
+              - TIKTOK
+              - X
+            x-apifox-enum:
+              - value: GOOGLE
+                name: 谷歌
+                description: ''
+              - value: TIKTOK
+                name: TT
+                description: ''
+              - value: X
+                name: X
+                description: ''
+        - name: redirectUrl
+          in: query
+          description: 登录完成后跳回的站内地址
+          required: false
+          example: http://shopping.mynatapp.cc/api/v1/users/me/bindings
+          schema:
+            type: string
+            examples:
+              - /dashboard
+      responses:
+        '302':
+          description: 重定向到第三方授权页面
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: FOUND
+                message: Redirecting to provider
+                timestamp: '2025-10-26T06:33:00.000Z'
+                data:
+                  url: https://accounts.google.com/o/oauth2/v2/auth?...
+          headers: {}
+          x-apifox-name: 临时重定向
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+      security: []
+      x-apifox-folder: user/OAuth2
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958711-run
+  /oauth2/{provider}/callback:
+    get:
+      summary: 第三方回调（处理 code/state 或 error）
+      deprecated: false
+      description: ''
+      tags:
+        - user/OAuth2
+        - OAuth2
+      parameters:
+        - name: provider
+          in: path
+          description: 第三方登录提供方
+          required: true
+          example: GOOGLE
+          schema:
+            type: string
+            enum:
+              - GOOGLE
+              - TIKTOK
+              - X
+            x-apifox-enum:
+              - value: GOOGLE
+                name: 谷歌
+                description: ''
+              - value: TIKTOK
+                name: TT
+                description: ''
+              - value: X
+                name: X
+                description: ''
+        - name: code
+          in: query
+          description: 授权码
+          required: false
+          example: 4/0AfJohXn...abc
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: 回传的 state
+          required: false
+          example: d9e2b7b4f9c84b109a2a7c2f8f0c2c2d
+          schema:
+            type: string
+        - name: error
+          in: query
+          description: 第三方回调错误码
+          required: false
+          example: access_denied
+          schema:
+            type: string
+        - name: error_description
+          in: query
+          description: 第三方回调错误描述
+          required: false
+          example: The user denied the request
+          schema:
+            type: string
+      responses:
+        '302':
+          description: 登录成功或失败后重定向至前端页面
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: FOUND
+                message: Redirect to app
+                timestamp: '2025-10-26T06:33:20.000Z'
+                data:
+                  url: /dashboard
+          headers:
+            Set-Cookie:
+              required: false
+              description: 成功时 Set-Cookie `access_token` 与 `csrf_token`
+              schema:
+                type: string
+          x-apifox-name: 临时重定向
+          x-apifox-ordering: 0
+      security: []
+      x-apifox-folder: user/OAuth2
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958712-run
+  /users/me:
+    get:
+      summary: 获取当前用户账户信息
+      deprecated: false
+      description: ''
+      tags:
+        - user/Users
+        - Users
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: ''
+          required: true
+          example: 7e8bcdee-6881-401a-9971-7ca708c98ad
+          schema:
+            type: string
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzEwNjQ3Niwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzM2NTY3NiwiaWF0IjoxNzYzMTA2NDc2LCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.6BFtB4yqxifPEHnXpGmOyivAeIwI-jYioQcSwG46q-Y
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          description: ''
+          required: true
+          example: 7e8bcdee-6881-401a-9971-7ca708c98ad
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN38Y324V34AQZCQ6V2P9SH:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        description: 业务数据（随具体接口定义）
+                        $ref: '#/components/schemas/UserAccountRespond'
+                    required: []
+                x-apifox-orders:
+                  - 01KAN38Y324V34AQZCQ6V2P9SH
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    description: 业务数据（随具体接口定义）
+                    $ref: '#/components/schemas/UserAccountRespond'
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+              examples:
+                '1':
+                  summary: 成功示例
+                  value:
+                    success: true
+                    code: OK
+                    message: OK
+                    timestamp: '2025-11-14 16:13:05'
+                    data:
+                      id: 96
+                      username: leila-user_01
+                      nickname: Leila
+                      email: leila9468555@gmail.com
+                      phone: +86-13800135767
+                      status: ACTIVE
+                      last_login_at: '2025-11-14 15:47:55'
+                      created_at: '2025-11-06 06:51:00'
+                      updated_at: '2025-11-14 07:47:55'
+                '2':
+                  summary: 未登录
+                  value:
+                    success: false
+                    code: UNAUTHORIZED
+                    message: Unauthorized
+                    timestamp: '2025-11-14 16:36:15'
+          headers: {}
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+        '401':
+          description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+          headers: {}
+          x-apifox-name: 未认证
+          x-apifox-ordering: 1
+      security: []
+      x-apifox-folder: user/Users
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958713-run
+    patch:
+      summary: 修改当前用户账户信息（昵称、手机号等）
+      deprecated: false
+      description: ''
+      tags:
+        - user/Users
+        - Users
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: 双提交 CSRF Cookie。必须与 Header `X-CSRF-Token` 等值
+          required: true
+          example: 7e8bcdee-6881-401a-9971-7ca708c98ad5
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzEwNjQ3Niwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzM2NTY3NiwiaWF0IjoxNzYzMTA2NDc2LCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.6BFtB4yqxifPEHnXpGmOyivAeIwI-jYioQcSwG46q-Y
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          description: 双提交 CSRF 头。必须与 Cookie `csrf_token` 等值
+          required: true
+          example: 7e8bcdee-6881-401a-9971-7ca708c98ad5
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountRequest'
+            example:
+              nickname: Eason Chen
+              phone_country_code: '81'
+              phone_national_number: '8000000000'
+        required: true
+      responses:
+        '200':
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN53MXJX31Z8X1DM5DF0MY4:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        description: 业务数据（随具体接口定义）
+                        $ref: '#/components/schemas/UserAccountRespond'
+                    required: []
+                x-apifox-orders:
+                  - 01KAN53MXJX31Z8X1DM5DF0MY4
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    description: 业务数据（随具体接口定义）
+                    $ref: '#/components/schemas/UserAccountRespond'
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+              example:
+                success: true
+                code: OK
+                message: Profile updated
+                timestamp: '2025-10-26T06:34:30.000Z'
+                data:
+                  id: 1001
+                  username: eason
+                  nickname: Eason Chen
+                  email: eason@example.com
+                  status: ACTIVE
+          headers: {}
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-ordering: 2
+        '403':
+          $ref: '#/components/responses/权限不足'
+          description: ''
+          x-apifox-ordering: 3
+      security: []
+      x-apifox-folder: user/Users
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958714-run
+  /users/me/email/change:
+    post:
+      summary: 申请变更邮箱（向新邮箱发送验证码）
+      deprecated: false
+      description: ''
+      tags:
+        - user/Users
+        - Users
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: 双提交 CSRF Cookie。必须与 Header `X-CSRF-Token` 等值
+          required: true
+          example: b5db5f58-11c7-48e5-92cc-3a37d0322b66
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzEzMDgyMSwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzM5MDAyMSwiaWF0IjoxNzYzMTMwODIxLCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.6XhbpzXUd8ab51yqL-v08SiOZbQXNj_SvLcfoudyYfg
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          description: 双提交 CSRF 头。必须与 Cookie `csrf_token` 等值
+          required: true
+          example: b5db5f58-11c7-48e5-92cc-3a37d0322b66
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeEmailRequest'
+            example:
+              new_email: eason888111@gmail.com
+        required: true
+      responses:
+        '202':
+          description: 已发送验证码
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: ACCEPTED
+                message: 验证码邮件已发送
+                timestamp: '2025-11-15 14:01:57'
+          headers: {}
+          x-apifox-name: 已接受
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-ordering: 2
+        '403':
+          $ref: '#/components/responses/权限不足'
+          description: ''
+          x-apifox-ordering: 3
+        '409':
+          $ref: '#/components/responses/冲突'
+          description: ''
+          x-apifox-ordering: 4
+        '429':
+          $ref: '#/components/responses/请求过多'
+          description: ''
+          x-apifox-ordering: 5
+      security: []
+      x-apifox-folder: user/Users
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958715-run
+  /users/me/verify-email:
+    post:
+      summary: 验证新邮箱验证码并生效
+      deprecated: false
+      description: ''
+      tags:
+        - user/Users
+        - Users
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: 双提交 CSRF Cookie。必须与 Header `X-CSRF-Token` 等值
+          required: true
+          example: f3e4918d-2804-4dfa-9501-54fbf0852747
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzE4ODE5OCwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzQ0NzM5OCwiaWF0IjoxNzYzMTg4MTk4LCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.KlnJlxWr87a8JBlqxxQn5O50jdvrsmNt92mZ0O-8auw
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          description: 双提交 CSRF 头。必须与 Cookie `csrf_token` 等值
+          required: true
+          example: f3e4918d-2804-4dfa-9501-54fbf0852747
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+            example:
+              email: eason888111@gmail.com
+              code: '153403'
+        required: true
+      responses:
+        '200':
+          description: 已更新邮箱
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN546EZ81VQ81QNW26E3ZRR:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        description: 业务数据（随具体接口定义）
+                        $ref: '#/components/schemas/UserAccountRespond'
+                    required: []
+                x-apifox-orders:
+                  - 01KAN546EZ81VQ81QNW26E3ZRR
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    description: 业务数据（随具体接口定义）
+                    $ref: '#/components/schemas/UserAccountRespond'
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+              examples:
+                '1':
+                  summary: 成功示例
+                  value:
+                    success: true
+                    code: OK
+                    message: 邮箱地址已更新
+                    timestamp: '2025-11-15 14:42:19'
+                    data:
+                      id: 96
+                      username: leila-user_01
+                      nickname: Eason He
+                      email: eason888111@gmail.com
+                      phone: '+8110086881'
+                      status: ACTIVE
+                      last_login_at: '2025-11-15 14:29:57'
+                      created_at: '2025-11-06 06:51:00'
+                      updated_at: '2025-11-15 06:42:18'
+                '2':
+                  summary: 成功示例
+                  value:
+                    success: false
+                    code: UNPROCESSABLE_ENTITY
+                    message: Invalid or expired code
+                    timestamp: '2025-10-26T06:35:20.000Z'
+                    data: null
+          headers: {}
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-ordering: 2
+        '403':
+          $ref: '#/components/responses/权限不足'
+          description: ''
+          x-apifox-ordering: 3
+      security: []
+      x-apifox-folder: user/Users
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958716-run
+  /users/me/profile:
+    get:
+      summary: 获取当前用户资料
+      deprecated: false
+      description: ''
+      tags:
+        - user/Profile
+        - Profile
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: ''
+          required: true
+          example: f3e4918d-2804-4dfa-9501-54fbf0852747
+          schema:
+            type: string
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzE4ODE5OCwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzQ0NzM5OCwiaWF0IjoxNzYzMTg4MTk4LCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.KlnJlxWr87a8JBlqxxQn5O50jdvrsmNt92mZ0O-8auw
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          description: ''
+          required: true
+          example: f3e4918d-2804-4dfa-9501-54fbf0852747
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN3C469KZBJ2S72XJ4C1ZBR:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        description: 业务数据（随具体接口定义）
+                        $ref: '#/components/schemas/UserProfileRespond'
+                    required: []
+                x-apifox-orders:
+                  - 01KAN3C469KZBJ2S72XJ4C1ZBR
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    description: 业务数据（随具体接口定义）
+                    $ref: '#/components/schemas/UserProfileRespond'
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+              example:
+                success: true
+                code: OK
+                message: OK
+                timestamp: '2025-11-15 17:12:20'
+                data:
+                  display_name: Eason C.
+                  avatar_url: https://cdn.example.com/avatar/1001.png
+                  gender: FEMALE
+                  birthday: '1992-10-01'
+                  country: JP
+                  province: Tokyo
+                  city: Shinjuku
+                  address_line: 1-1-1 Nishi-Shinjuku
+                  zipcode: 160-0023
+          headers: {}
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-ordering: 1
+      security: []
+      x-apifox-folder: user/Profile
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958717-run
+    patch:
+      summary: 更新当前用户资料
+      deprecated: false
+      description: ''
+      tags:
+        - user/Profile
+        - Profile
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: 双提交 CSRF Cookie。必须与 Header `X-CSRF-Token` 等值
+          required: true
+          example: f3e4918d-2804-4dfa-9501-54fbf0852747
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzE4ODE5OCwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzQ0NzM5OCwiaWF0IjoxNzYzMTg4MTk4LCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.KlnJlxWr87a8JBlqxxQn5O50jdvrsmNt92mZ0O-8auw
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          description: 双提交 CSRF 头。必须与 Cookie `csrf_token` 等值
+          required: true
+          example: f3e4918d-2804-4dfa-9501-54fbf0852747
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+            example:
+              display_name: Eason C.
+              avatar_url: https://cdn.example.com/avatar/1001.png
+              gender: FEMALE
+              birthday: '1992-10-01'
+              country: JP
+              province: Tokyo
+              city: Shinjuku
+              address_line: 1-1-1 Nishi-Shinjuku
+              zipcode: 160-0023
+              extra:
+                language: ja-JP
+        required: true
+      responses:
+        '200':
+          description: 已更新
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN54R12B4N1JSPNMQ72WZD3:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        description: 业务数据（随具体接口定义）
+                        $ref: '#/components/schemas/UserProfileRespond'
+                    required: []
+                x-apifox-orders:
+                  - 01KAN54R12B4N1JSPNMQ72WZD3
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    description: 业务数据（随具体接口定义）
+                    $ref: '#/components/schemas/UserProfileRespond'
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+              example:
+                success: true
+                code: OK
+                message: 个人资料更新成功
+                timestamp: '2025-11-15 21:37:04'
+                data:
+                  display_name: Eason C.
+                  avatar_url: https://cdn.example.com/avatar/1001.png
+                  gender: FEMALE
+                  birthday: '1992-10-01'
+                  country: JP
+                  province: Tokyo
+                  city: Shinjuku
+                  address_line: 1-1-1 Nishi-Shinjuku
+                  zipcode: 160-0023
+          headers: {}
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-ordering: 2
+        '403':
+          $ref: '#/components/responses/权限不足'
+          description: ''
+          x-apifox-ordering: 3
+      security: []
+      x-apifox-folder: user/Profile
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958718-run
+  /users/me/bindings:
+    get:
+      summary: 查看当前用户的认证绑定列表
+      deprecated: false
+      description: ''
+      tags:
+        - user/Bindings
+        - Bindings
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: ''
+          required: true
+          example: f3e4918d-2804-4dfa-9501-54fbf0852747
+          schema:
+            type: string
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzE4ODE5OCwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzQ0NzM5OCwiaWF0IjoxNzYzMTg4MTk4LCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.KlnJlxWr87a8JBlqxxQn5O50jdvrsmNt92mZ0O-8auw
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          description: ''
+          required: true
+          example: f3e4918d-2804-4dfa-9501-54fbf0852747
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN3DFSSNPPY0BBFQ71FM6T6:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserAuthBindingRespond'
+                        description: 业务数据（随具体接口定义）
+                    required: []
+                x-apifox-orders:
+                  - 01KAN3DFSSNPPY0BBFQ71FM6T6
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserAuthBindingRespond'
+                    description: 业务数据（随具体接口定义）
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+              example:
+                success: true
+                code: OK
+                message: OK
+                timestamp: '2025-10-26T06:37:00.000Z'
+                data:
+                  - id: 11
+                    provider: GOOGLE
+                    issuer: https://accounts.google.com
+                    providerUid: 1132...
+                    scope: openid email profile
+          headers: {}
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-ordering: 1
+      security: []
+      x-apifox-folder: user/Bindings
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958719-run
+  /users/me/bindings/{provider}/authorize:
+    get:
+      summary: 绑定第三方账号
+      deprecated: false
+      description: ''
+      tags:
+        - user/Bindings
+        - Bindings
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: 双提交 CSRF Cookie。必须与 Header `X-CSRF-Token` 等值
+          required: true
+          example: f3e4918d-2804-4dfa-9501-54fbf0852747
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzE4ODE5OCwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzQ0NzM5OCwiaWF0IjoxNzYzMTg4MTk4LCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.KlnJlxWr87a8JBlqxxQn5O50jdvrsmNt92mZ0O-8auw
+          schema:
+            type: string
+        - name: provider
+          in: path
+          description: 第三方登录提供方
+          required: true
+          example: GOOGLE
+          schema:
+            type: string
+            enum:
+              - GOOGLE
+              - TIKTOK
+              - X
+            x-apifox-enum:
+              - value: GOOGLE
+                name: 谷歌
+                description: ''
+              - value: TIKTOK
+                name: TT
+                description: ''
+              - value: X
+                name: X
+                description: ''
+        - name: redirectUrl
+          in: query
+          description: ''
+          required: true
+          example: https://shopping.mynatapp.cc/api/v1/users/me
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          description: 双提交 CSRF 头。必须与 Cookie `csrf_token` 等值
+          required: true
+          example: f3e4918d-2804-4dfa-9501-54fbf0852747
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      responses:
+        '302':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: FOUND
+                message: Redirecting to provider
+                timestamp: '2025-10-26T06:33:00.000Z'
+                data:
+                  url: https://accounts.google.com/o/oauth2/v2/auth?...
+          headers: {}
+          x-apifox-name: 重定向
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-ordering: 2
+      security: []
+      x-apifox-folder: user/Bindings
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958720-run
+  /users/me/bindings/oauth2/{provider}/callback:
+    get:
+      summary: 第三方绑定回调（处理 code/state 或 error）
+      deprecated: false
+      description: >
+        第三方完成绑定后回跳，成功时轮换 CSRF Cookie 并 302 重定向到前端 redirectUrl；失败也会附带 redirectUrl
+        与错误信息。
+      tags:
+        - user/Bindings
+        - Bindings
+      parameters:
+        - name: provider
+          in: path
+          description: 第三方登录提供方
+          required: true
+          example: GOOGLE
+          schema:
+            type: string
+            enum:
+              - GOOGLE
+              - TIKTOK
+              - X
+            x-apifox-enum:
+              - value: GOOGLE
+                name: 谷歌
+                description: ''
+              - value: TIKTOK
+                name: TT
+                description: ''
+              - value: X
+                name: X
+                description: ''
+        - name: code
+          in: query
+          description: 授权码
+          required: false
+          example: 4/0AfJohXn...abc
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: 回传的 state
+          required: false
+          example: d9e2b7b4f9c84b109a2a7c2f8f0c2c2d
+          schema:
+            type: string
+        - name: error
+          in: query
+          description: 第三方回调错误码
+          required: false
+          example: access_denied
+          schema:
+            type: string
+        - name: error_description
+          in: query
+          description: 第三方回调错误描述
+          required: false
+          example: The user denied the request
+          schema:
+            type: string
+      responses:
+        '302':
+          x-apifox-name: 临时重定向
+          x-apifox-ordering: 0
+          description: 绑定成功后重定向至前端页面
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: FOUND
+                message: Redirect to app
+                timestamp: '2025-10-26T06:33:20.000Z'
+                data:
+                  url: /dashboard
+          headers:
+            Set-Cookie:
+              required: false
+              description: 成功时 Set-Cookie/轮换 `csrf_token`
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+      security: []
+      x-apifox-folder: user/Bindings
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-380546355-run
+  /users/me/bindings/{provider}:
+    delete:
+      summary: 解绑第三方账号
+      deprecated: false
+      description: ''
+      tags:
+        - user/Bindings
+        - Bindings
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: 双提交 CSRF Cookie。必须与 Header `X-CSRF-Token` 等值
+          required: true
+          example: 0a6f708d-30d9-4acf-bfda-d2f5adcbb3c3
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NyIsInVpZCI6OTcsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzQ4MDE3Mywicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzczOTM3MywiaWF0IjoxNzYzNDgwMTczLCJlbWFpbCI6ImVhc29uODg4MTFAZ21haWwuY29tIiwidXNlcm5hbWUiOiJnb29nbGVfMTE4MTQ4NTU2MDk0MTE1NTk0ODI4In0.cwVNYBgiCjsD0jPIXFI7FImy2cGgo0lDWzsclaEs3c0
+          schema:
+            type: string
+        - name: provider
+          in: path
+          description: 第三方登录提供方
+          required: true
+          example: GOOGLE
+          schema:
+            type: string
+            enum:
+              - GOOGLE
+              - TIKTOK
+              - X
+            x-apifox-enum:
+              - value: GOOGLE
+                name: 谷歌
+                description: ''
+              - value: TIKTOK
+                name: TT
+                description: ''
+              - value: X
+                name: X
+                description: ''
+        - name: X-CSRF-Token
+          in: header
+          description: 双提交 CSRF 头。必须与 Cookie `csrf_token` 等值
+          required: true
+          example: 0a6f708d-30d9-4acf-bfda-d2f5adcbb3c3
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      responses:
+        '200':
+          description: 已解绑
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              examples:
+                '1':
+                  summary: 成功示例
+                  value:
+                    success: true
+                    code: OK
+                    message: Binding removed
+                    timestamp: '2025-10-26T06:38:00.000Z'
+                    data: null
+                '2':
+                  summary: 成功示例
+                  value:
+                    success: false
+                    code: BAD_REQUEST
+                    message: Cannot remove the only login method
+                    timestamp: '2025-10-26T06:38:00.000Z'
+                    data: null
+          headers: {}
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-ordering: 1
+      security: []
+      x-apifox-folder: user/Bindings
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958721-run
+  /users/me/addresses:
+    get:
+      summary: 列出当前用户的收货地址
+      deprecated: false
+      description: ''
+      tags:
+        - user/Addresses
+        - Addresses
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: ''
+          required: true
+          example: ec562f27-410f-4c67-9272-7905c5607172
+          schema:
+            type: string
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidWlkIjoxLCJhdWQiOiJ3ZWIiLCJuYmYiOjE3NjY4OTg3MTYsInJvbGVzIjoiVVNFUiIsImlzcyI6InNob3BwaW5nLmludGVybmF0aW9uYWwiLCJ0eXAiOiJhY2Nlc3MiLCJleHAiOjE3ODI0NTA3MTYsImlhdCI6MTc2Njg5ODcxNiwiZW1haWwiOiJsZWlsYTk0Njg1NTVAZ21haWwuY29tIiwidXNlcm5hbWUiOiJsZWlsYS11c2VyXzAxIn0.saKZnZfE9pPS7r3BCzwspIBUXk00-p-CebwCDtrDvHs
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          example: 1
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: 每页个数
+          required: false
+          example: 5
+          schema:
+            type: integer
+        - name: X-CSRF-Token
+          in: header
+          description: ''
+          required: true
+          example: ec562f27-410f-4c67-9272-7905c5607172
+          schema:
+            type: string
+      responses:
+        '200':
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN3G200Y9ZFD6VMTT393YN7:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AddressRespond'
+                        description: 业务数据（随具体接口定义）
+                    required: []
+                x-apifox-orders:
+                  - 01KAN3G200Y9ZFD6VMTT393YN7
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AddressRespond'
+                    description: 业务数据（随具体接口定义）
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+          headers: {}
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-name: 请求有误
+          x-apifox-ordering: 1
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-name: 未认证
+          x-apifox-ordering: 2
+      security: []
+      x-apifox-folder: user/Addresses
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958722-run
+    post:
+      summary: 新增收货地址
+      deprecated: false
+      description: ''
+      tags:
+        - user/Addresses
+        - Addresses
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: ''
+          required: true
+          example: ec562f27-410f-4c67-9272-7905c5607172
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidWlkIjoxLCJhdWQiOiJ3ZWIiLCJuYmYiOjE3NjY4OTg3MTYsInJvbGVzIjoiVVNFUiIsImlzcyI6InNob3BwaW5nLmludGVybmF0aW9uYWwiLCJ0eXAiOiJhY2Nlc3MiLCJleHAiOjE3ODI0NTA3MTYsImlhdCI6MTc2Njg5ODcxNiwiZW1haWwiOiJsZWlsYTk0Njg1NTVAZ21haWwuY29tIiwidXNlcm5hbWUiOiJsZWlsYS11c2VyXzAxIn0.saKZnZfE9pPS7r3BCzwspIBUXk00-p-CebwCDtrDvHs
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          description: 幂等键（建议对创建类接口提供，格式 UUID）
+          required: true
+          example: '{{$string.uuid}}'
+          schema:
+            type: string
+            examples:
+              - 8c1f7f5a-9c91-4a40-8d9d-7e1c1b4b0b7d
+        - name: X-CSRF-Token
+          in: header
+          description: ''
+          required: true
+          example: ec562f27-410f-4c67-9272-7905c5607172
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAddressRequest'
+            example:
+              receiver_name: 张三
+              phone_country_code: '81'
+              phone_national_number: '9012345678'
+              country: JP
+              province: Tokyo
+              city: Shinjuku
+              district: Nishi-Shinjuku
+              address_line1: 1-1-1
+              address_line2: Room 901
+              zipcode: 160-0023
+              is_default: true
+        required: true
+      responses:
+        '201':
+          x-apifox-name: 已创建
+          x-apifox-ordering: 0
+          description: 已创建
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN3NK7JJWDNB8GCHPMZ0XCT:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        description: 业务数据（随具体接口定义）
+                        $ref: '#/components/schemas/AddressRespond'
+                    required: []
+                x-apifox-orders:
+                  - 01KAN3NK7JJWDNB8GCHPMZ0XCT
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    description: 业务数据（随具体接口定义）
+                    $ref: '#/components/schemas/AddressRespond'
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+          headers: {}
+        '202':
+          x-apifox-name: 已接受
+          x-apifox-ordering: 1
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+          headers: {}
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-name: 请求有误
+          x-apifox-ordering: 2
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-name: 未认证
+          x-apifox-ordering: 3
+        '403':
+          $ref: '#/components/responses/权限不足'
+          description: ''
+          x-apifox-name: 权限不足
+          x-apifox-ordering: 4
+      security: []
+      x-apifox-folder: user/Addresses
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958723-run
+  /users/me/addresses/{id}:
+    get:
+      summary: 获取收货地址详情
+      deprecated: false
+      description: ''
+      tags:
+        - user/Addresses
+        - Addresses
+      parameters:
+        - name: access_token
+          in: cookie
+          description: ''
+          required: false
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzIxMzg2OCwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzQ3MzA2OCwiaWF0IjoxNzYzMjEzODY4LCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.8kIcQY6oVd-dAfX5XemeQPFNaS-7PxgaXUpuXqPM5lk
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: 收货地址ID
+          required: true
+          example: 1
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN4WM0MHVCDYAH2HAQHV60B:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        description: 业务数据（随具体接口定义）
+                        $ref: '#/components/schemas/AddressRespond'
+                    required: []
+                x-apifox-orders:
+                  - 01KAN4WM0MHVCDYAH2HAQHV60B
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    description: 业务数据（随具体接口定义）
+                    $ref: '#/components/schemas/AddressRespond'
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+          headers: {}
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-name: 请求有误
+          x-apifox-ordering: 1
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-name: 未认证
+          x-apifox-ordering: 2
+      security: []
+      x-apifox-folder: user/Addresses
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958724-run
+    patch:
+      summary: 修改收货地址
+      deprecated: false
+      description: ''
+      tags:
+        - user/Addresses
+        - Addresses
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: 双提交 CSRF Cookie。必须与 Header `X-CSRF-Token` 等值
+          required: true
+          example: c3c30828-0116-44d0-a5b5-72bef425b973
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzMwMTQyNCwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzU2MDYyNCwiaWF0IjoxNzYzMzAxNDI0LCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.rjWq0GVyuwFQaZ90M3gYEywvO6chu709ZaArpdOxOwI
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: 收货地址ID
+          required: true
+          example: 1
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: X-CSRF-Token
+          in: header
+          description: 双提交 CSRF 头。必须与 Cookie `csrf_token` 等值
+          required: true
+          example: c3c30828-0116-44d0-a5b5-72bef425b973
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAddressRequest'
+            example:
+              receiver_name: 张三
+              phone: +81-90-1234-5678
+              country: JP
+              province: Tokyo
+              city: Shinjuku
+              district: Nishi-Shinjuku
+              address_line1: 1-1-1
+              address_line2: Room 901
+              zipcode: 160-0023
+              is_default: true
+        required: true
+      responses:
+        '200':
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+          description: 已修改
+          content:
+            application/json:
+              schema:
+                type: object
+                x-apifox-refs:
+                  01KAN4XED9BWCWGHEBFQQJJ4YR:
+                    $ref: '#/components/schemas/Result'
+                    x-apifox-overrides:
+                      data:
+                        description: 业务数据（随具体接口定义）
+                        $ref: '#/components/schemas/AddressRespond'
+                    required: []
+                x-apifox-orders:
+                  - 01KAN4XED9BWCWGHEBFQQJJ4YR
+                properties:
+                  success:
+                    type: boolean
+                    description: 业务是否成功（非 HTTP 含义）
+                    examples:
+                      - true
+                  code:
+                    type: string
+                    description: 业务码
+                    examples:
+                      - OK
+                    enum:
+                      - OK
+                      - CREATED
+                      - ACCEPTED
+                      - FOUND
+                      - BAD_REQUEST
+                      - UNAUTHORIZED
+                      - FORBIDDEN
+                      - NOT_FOUND
+                      - CONFLICT
+                      - UNPROCESSABLE_ENTITY
+                      - TOO_MANY_REQUESTS
+                      - INTERNAL_SERVER_ERROR
+                    x-apifox-enum:
+                      - value: OK
+                        name: OK
+                        description: 成功
+                      - value: CREATED
+                        name: Created
+                        description: 已创建
+                      - value: ACCEPTED
+                        name: Accepted
+                        description: 已接受
+                      - value: FOUND
+                        name: Found / Redirect
+                        description: 重定向
+                      - value: BAD_REQUEST
+                        name: Bad Request
+                        description: 参数错误
+                      - value: UNAUTHORIZED
+                        name: Unauthorized
+                        description: 未授权
+                      - value: FORBIDDEN
+                        name: Forbidden
+                        description: 没有权限
+                      - value: NOT_FOUND
+                        name: Not Found
+                        description: 未找到
+                      - value: CONFLICT
+                        name: Conflict
+                        description: 冲突
+                      - value: UNPROCESSABLE_ENTITY
+                        name: Unprocessable Entity
+                        description: 不能处理的实体
+                      - value: TOO_MANY_REQUESTS
+                        name: Too Many Requests
+                        description: 请求过多
+                      - value: INTERNAL_SERVER_ERROR
+                        name: Internal Server Error
+                        description: 服务器内部错误
+                  message:
+                    type: string
+                    description: 人类可读的简短信息
+                    examples:
+                      - OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 服务器时间
+                    examples:
+                      - '2025-10-26T06:30:00.123Z'
+                  traceId:
+                    type:
+                      - string
+                      - 'null'
+                    description: 请求追踪ID
+                    examples:
+                      - af9c5b1f0e2a4c1b
+                  data:
+                    description: 业务数据（随具体接口定义）
+                    $ref: '#/components/schemas/AddressRespond'
+                  meta:
+                    description: 附加元信息（分页等，可选）
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      page:
+                        type: integer
+                        examples:
+                          - 1
+                      size:
+                        type: integer
+                        examples:
+                          - 20
+                      total:
+                        type: integer
+                        examples:
+                          - 135
+                    x-apifox-orders:
+                      - page
+                      - size
+                      - total
+                    x-apifox-ignore-properties: []
+                required:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                x-apifox-ignore-properties:
+                  - success
+                  - code
+                  - message
+                  - timestamp
+                  - traceId
+                  - data
+                  - meta
+              example:
+                success: true
+                code: OK
+                message: 地址已更新
+                timestamp: '2025-11-16 21:58:19'
+                data:
+                  id: 1
+                  receiver_name: 张三
+                  phone: '+819012345678'
+                  country: JP
+                  province: Tokyo
+                  city: Shinjuku
+                  district: Nishi-Shinjuku
+                  address_line1: 1-1-1
+                  address_line2: Room 901
+                  zipcode: 160-0023
+                  is_default: false
+                  created_at: '2025-11-16 11:18:21'
+                  updated_at: '2025-11-16 11:32:16'
+          headers: {}
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-name: 请求有误
+          x-apifox-ordering: 1
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-name: 未认证
+          x-apifox-ordering: 2
+        '403':
+          $ref: '#/components/responses/权限不足'
+          description: ''
+          x-apifox-name: 权限不足
+          x-apifox-ordering: 3
+      security: []
+      x-apifox-folder: user/Addresses
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958725-run
+    delete:
+      summary: 删除收货地址
+      deprecated: false
+      description: ''
+      tags:
+        - user/Addresses
+        - Addresses
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: 双提交 CSRF Cookie。必须与 Header `X-CSRF-Token` 等值
+          required: true
+          example: c3c30828-0116-44d0-a5b5-72bef425b973
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzMwMTQyNCwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzU2MDYyNCwiaWF0IjoxNzYzMzAxNDI0LCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.rjWq0GVyuwFQaZ90M3gYEywvO6chu709ZaArpdOxOwI
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: 收货地址ID
+          required: true
+          example: 1
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: X-CSRF-Token
+          in: header
+          description: 双提交 CSRF 头。必须与 Cookie `csrf_token` 等值
+          required: true
+          example: c3c30828-0116-44d0-a5b5-72bef425b973
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      responses:
+        '200':
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+          description: 已删除
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: OK
+                message: 地址已删除
+                timestamp: '2025-11-16 23:10:20'
+          headers: {}
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-name: 请求有误
+          x-apifox-ordering: 1
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-name: 未认证
+          x-apifox-ordering: 2
+        '403':
+          $ref: '#/components/responses/权限不足'
+          description: ''
+          x-apifox-name: 权限不足
+          x-apifox-ordering: 3
+      security: []
+      x-apifox-folder: user/Addresses
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958726-run
+  /users/me/addresses/{id}/set-default:
+    post:
+      summary: 设为默认地址（保证同用户仅一个默认）
+      deprecated: false
+      description: ''
+      tags:
+        - user/Addresses
+        - Addresses
+      parameters:
+        - name: csrf_token
+          in: cookie
+          description: 双提交 CSRF Cookie。必须与 Header `X-CSRF-Token` 等值
+          required: true
+          example: c3c30828-0116-44d0-a5b5-72bef425b973
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+        - name: access_token
+          in: cookie
+          description: ''
+          required: true
+          example: >-
+            eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5NiIsInVpZCI6OTYsImF1ZCI6IndlYiIsIm5iZiI6MTc2MzMwMTQyNCwicm9sZXMiOiJVU0VSIiwiaXNzIjoic2hvcHBpbmcuaW50ZXJuYXRpb25hbCIsInR5cCI6ImFjY2VzcyIsImV4cCI6MTc2MzU2MDYyNCwiaWF0IjoxNzYzMzAxNDI0LCJlbWFpbCI6ImxlaWxhOTQ2ODU1NUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImxlaWxhLXVzZXJfMDEifQ.rjWq0GVyuwFQaZ90M3gYEywvO6chu709ZaArpdOxOwI
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: 收货地址ID
+          required: true
+          example: 1
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: X-CSRF-Token
+          in: header
+          description: 双提交 CSRF 头。必须与 Cookie `csrf_token` 等值
+          required: true
+          example: c3c30828-0116-44d0-a5b5-72bef425b973
+          schema:
+            type: string
+            examples:
+              - 1fbd1a1b4f3e4a8180f3d2a7c9d2e6f0
+      responses:
+        '200':
+          x-apifox-name: 成功
+          x-apifox-ordering: 0
+          description: 已设为默认
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                success: true
+                code: OK
+                message: Default address set
+                timestamp: '2025-10-26T06:41:30.000Z'
+                data: null
+          headers: {}
+        '400':
+          $ref: '#/components/responses/参数错误'
+          description: ''
+          x-apifox-name: 请求有误
+          x-apifox-ordering: 1
+        '401':
+          $ref: '#/components/responses/未鉴权'
+          description: ''
+          x-apifox-name: 未认证
+          x-apifox-ordering: 2
+        '403':
+          $ref: '#/components/responses/权限不足'
+          description: ''
+          x-apifox-name: 权限不足
+          x-apifox-ordering: 3
+      security: []
+      x-apifox-folder: user/Addresses
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/7302473/apis/api-370958727-run
+webhooks: {}
+components:
+  schemas:
+    Result:
+      type: object
+      required:
+        - success
+        - code
+        - message
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          description: 业务是否成功（非 HTTP 含义）
+          examples:
+            - true
+        code:
+          type: string
+          description: 业务码
+          examples:
+            - OK
+          enum:
+            - OK
+            - CREATED
+            - ACCEPTED
+            - FOUND
+            - BAD_REQUEST
+            - UNAUTHORIZED
+            - FORBIDDEN
+            - NOT_FOUND
+            - CONFLICT
+            - UNPROCESSABLE_ENTITY
+            - TOO_MANY_REQUESTS
+            - INTERNAL_SERVER_ERROR
+          x-apifox-enum:
+            - value: OK
+              name: OK
+              description: 成功
+            - value: CREATED
+              name: Created
+              description: 已创建
+            - value: ACCEPTED
+              name: Accepted
+              description: 已接受
+            - value: FOUND
+              name: Found / Redirect
+              description: 重定向
+            - value: BAD_REQUEST
+              name: Bad Request
+              description: 参数错误
+            - value: UNAUTHORIZED
+              name: Unauthorized
+              description: 未授权
+            - value: FORBIDDEN
+              name: Forbidden
+              description: 没有权限
+            - value: NOT_FOUND
+              name: Not Found
+              description: 未找到
+            - value: CONFLICT
+              name: Conflict
+              description: 冲突
+            - value: UNPROCESSABLE_ENTITY
+              name: Unprocessable Entity
+              description: 不能处理的实体
+            - value: TOO_MANY_REQUESTS
+              name: Too Many Requests
+              description: 请求过多
+            - value: INTERNAL_SERVER_ERROR
+              name: Internal Server Error
+              description: 服务器内部错误
+        message:
+          type: string
+          description: 人类可读的简短信息
+          examples:
+            - OK
+        timestamp:
+          type: string
+          format: date-time
+          description: 服务器时间
+          examples:
+            - '2025-10-26T06:30:00.123Z'
+        traceId:
+          type:
+            - string
+            - 'null'
+          description: 请求追踪ID
+          examples:
+            - af9c5b1f0e2a4c1b
+        data:
+          type: object
+          properties: {}
+          x-apifox-orders: []
+          description: 业务数据（随具体接口定义）
+          x-apifox-ignore-properties: []
+        meta:
+          description: 附加元信息（分页等，可选）
+          type:
+            - object
+            - 'null'
+          properties:
+            page:
+              type: integer
+              examples:
+                - 1
+            size:
+              type: integer
+              examples:
+                - 20
+            total:
+              type: integer
+              examples:
+                - 135
+          x-apifox-orders:
+            - page
+            - size
+            - total
+          x-apifox-ignore-properties: []
+      x-apifox-orders:
+        - success
+        - code
+        - message
+        - timestamp
+        - traceId
+        - data
+        - meta
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    Gender:
+      type: string
+      enum:
+        - UNKNOWN
+        - MALE
+        - FEMALE
+      x-apifox-folder: user
+    AuthProvider:
+      type: string
+      enum:
+        - LOCAL
+        - GOOGLE
+        - TIKTOK
+        - X
+      x-apifox-enum:
+        - value: LOCAL
+          name: ''
+          description: ''
+        - value: GOOGLE
+          name: ''
+          description: ''
+        - value: TIKTOK
+          name: ''
+          description: ''
+        - value: X
+          name: ''
+          description: ''
+      x-apifox-folder: user
+    AccountStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - DISABLED
+      x-apifox-folder: user
+    LoginRequest:
+      type: object
+      required:
+        - account
+        - password
+      properties:
+        country_code:
+          type: string
+          description: 手机国家码，account 为手机号时需要传
+        account:
+          type: string
+          description: 用户名 / 邮箱 / 手机号其一
+          examples:
+            - eason
+        password:
+          type: string
+          format: password
+          examples:
+            - Passw0rd!
+      x-apifox-orders:
+        - country_code
+        - account
+        - password
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    ResendActivationRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          examples:
+            - eason@example.com
+      x-apifox-orders:
+        - email
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    VerifyEmailRequest:
+      type: object
+      required:
+        - email
+        - code
+      properties:
+        email:
+          type: string
+          format: email
+          examples:
+            - eason@example.com
+        code:
+          type: string
+          examples:
+            - '893642'
+      x-apifox-orders:
+        - email
+        - code
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    UpdateAddressRequest:
+      type: object
+      properties:
+        receiver_name:
+          type: string
+          examples:
+            - 张三
+        phone_country_code:
+          type:
+            - string
+            - 'null'
+          examples:
+            - +81-90-1234-5678
+        phone_national_number:
+          type:
+            - string
+            - 'null'
+        country:
+          type:
+            - string
+            - 'null'
+          examples:
+            - JP
+        province:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Tokyo
+        city:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Shinjuku
+        district:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Nishi-Shinjuku
+        address_line1:
+          type: string
+          examples:
+            - 1-1-1
+        address_line2:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Room 901
+        zipcode:
+          type:
+            - string
+            - 'null'
+          examples:
+            - 160-0023
+        is_default:
+          type: boolean
+          examples:
+            - true
+      x-apifox-orders:
+        - receiver_name
+        - phone_country_code
+        - phone_national_number
+        - country
+        - province
+        - city
+        - district
+        - address_line1
+        - address_line2
+        - zipcode
+        - is_default
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    CreateAddressRequest:
+      type: object
+      required:
+        - receiver_name
+        - phone_country_code
+        - address_line1
+        - phone_national_number
+        - country
+        - province
+        - city
+        - district
+        - zipcode
+      properties:
+        receiver_name:
+          type: string
+          examples:
+            - 张三
+        phone_country_code:
+          type: string
+          examples:
+            - +81-90-1234-5678
+        phone_national_number:
+          type: string
+        country:
+          type: string
+          examples:
+            - JP
+        province:
+          type: string
+          examples:
+            - Tokyo
+        city:
+          type: string
+          examples:
+            - Shinjuku
+        district:
+          type: string
+          examples:
+            - Nishi-Shinjuku
+        address_line1:
+          type: string
+          examples:
+            - 1-1-1
+        address_line2:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Room 901
+        zipcode:
+          type: string
+          examples:
+            - 160-0023
+        is_default:
+          type: boolean
+          default: false
+          examples:
+            - true
+      x-apifox-orders:
+        - receiver_name
+        - phone_country_code
+        - phone_national_number
+        - country
+        - province
+        - city
+        - district
+        - address_line1
+        - address_line2
+        - zipcode
+        - is_default
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    UpdateProfileRequest:
+      type: object
+      properties:
+        display_name:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Eason C.
+        avatar_url:
+          type:
+            - string
+            - 'null'
+          examples:
+            - https://cdn.example.com/avatar/1001.png
+        gender:
+          $ref: '#/components/schemas/Gender'
+        birthday:
+          type:
+            - string
+            - 'null'
+          format: date
+          examples:
+            - '1992-10-01'
+        country:
+          type:
+            - string
+            - 'null'
+          examples:
+            - JP
+        province:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Tokyo
+        city:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Shinjuku
+        address_line:
+          type:
+            - string
+            - 'null'
+          examples:
+            - 1-1-1 Nishi-Shinjuku
+        zipcode:
+          type:
+            - string
+            - 'null'
+          examples:
+            - 160-0023
+        extra:
+          type: object
+          additionalProperties: true
+          x-apifox-orders: []
+          examples:
+            - language: ja-JP
+          properties: {}
+          x-apifox-ignore-properties: []
+      x-apifox-orders:
+        - display_name
+        - avatar_url
+        - gender
+        - birthday
+        - country
+        - province
+        - city
+        - address_line
+        - zipcode
+        - extra
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    ChangeEmailRequest:
+      type: object
+      required:
+        - new_email
+      properties:
+        new_email:
+          type: string
+          format: email
+          examples:
+            - new.eason@example.com
+      x-apifox-orders:
+        - new_email
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    UpdateAccountRequest:
+      type: object
+      properties:
+        nickname:
+          type: string
+          examples:
+            - Eason Chen
+        phone_country_code:
+          type:
+            - string
+            - 'null'
+          examples:
+            - +81-80-0000-0000
+          description: phone_country_code 和 phone_national_number 必须同时传或同时为空
+        phone_national_number:
+          type:
+            - string
+            - 'null'
+          description: phone_country_code 和 phone_national_number 必须同时传或同时为空
+      x-apifox-orders:
+        - nickname
+        - phone_country_code
+        - phone_national_number
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - password
+        - email
+        - nickname
+      properties:
+        username:
+          type: string
+          examples:
+            - eason
+        password:
+          type: string
+          format: password
+          minLength: 8
+          examples:
+            - Passw0rd!
+        nickname:
+          type: string
+          examples:
+            - Eason
+        email:
+          type: string
+          format: email
+          examples:
+            - eason@example.com
+        phone_country_code:
+          type:
+            - string
+            - 'null'
+          examples:
+            - '86'
+          description: phone_country_code 和 phone_national_number 必须同时传或同时为空
+        phone_national_number:
+          type:
+            - string
+            - 'null'
+          examples:
+            - '13800135767'
+          description: phone_country_code 和 phone_national_number 必须同时传或同时为空
+      x-apifox-orders:
+        - username
+        - password
+        - nickname
+        - email
+        - phone_country_code
+        - phone_national_number
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    ForgotPasswordRequest:
+      type: object
+      required:
+        - account
+      properties:
+        country_code:
+          type:
+            - string
+            - 'null'
+          description: 手机号国家码
+        account:
+          type: string
+          description: 用户名 / 邮箱 / 手机号其一，用于发送重置验证码
+          examples:
+            - eason@example.com
+      x-apifox-orders:
+        - country_code
+        - account
+      x-apifox-folder: user
+      x-apifox-ignore-properties: []
+    ResetPasswordRequest:
+      type: object
+      required:
+        - account
+        - code
+        - new_password
+      properties:
+        country_code:
+          type: string
+          description: 手机号国家码，account 为手机号时需要传
+        account:
+          type: string
+          description: 用户名 / 邮箱 / 手机号其一
+          examples:
+            - eason
+        code:
+          type: string
+          examples:
+            - '893642'
+        new_password:
+          type: string
+          format: password
+          minLength: 6
+          examples:
+            - NewPassw0rd!
+      x-apifox-orders:
+        - country_code
+        - account
+        - code
+        - new_password
+      x-apifox-folder: user
+      x-apifox-ignore-properties: []
+    AddressRespond:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          examples:
+            - 123
+        receiver_name:
+          type: string
+          examples:
+            - 张三
+        phone_country_code:
+          type: string
+          examples:
+            - +81-90-1234-5678
+        phone_national_number:
+          type: string
+        country:
+          type:
+            - string
+            - 'null'
+          examples:
+            - JP
+        province:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Tokyo
+        city:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Shinjuku
+        district:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Nishi-Shinjuku
+        address_line1:
+          type: string
+          examples:
+            - 1-1-1
+        address_line2:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Room 901
+        zipcode:
+          type:
+            - string
+            - 'null'
+          examples:
+            - 160-0023
+        is_default:
+          type: boolean
+          examples:
+            - true
+        created_at:
+          type: string
+          format: date-time
+          examples:
+            - '2025-10-20T10:00:00.000Z'
+        updated_at:
+          type: string
+          format: date-time
+          examples:
+            - '2025-10-25T09:10:00.000Z'
+      required:
+        - id
+        - receiver_name
+        - phone_country_code
+        - address_line1
+        - is_default
+        - created_at
+        - updated_at
+        - phone_national_number
+      x-apifox-orders:
+        - id
+        - receiver_name
+        - phone_country_code
+        - phone_national_number
+        - country
+        - province
+        - city
+        - district
+        - address_line1
+        - address_line2
+        - zipcode
+        - is_default
+        - created_at
+        - updated_at
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    UserAuthBindingRespond:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          examples:
+            - 11
+        provider:
+          $ref: '#/components/schemas/AuthProvider'
+        issuer:
+          type:
+            - string
+            - 'null'
+          examples:
+            - https://accounts.google.com
+        providerUid:
+          type: string
+          examples:
+            - '1132244556677889900'
+        scope:
+          type:
+            - string
+            - 'null'
+          examples:
+            - openid email profile
+        lastLoginAt:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          examples:
+            - '2025-10-25T08:00:00.000Z'
+        createdAt:
+          type: string
+          format: date-time
+          examples:
+            - '2025-10-20T10:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          examples:
+            - '2025-10-25T08:00:00.000Z'
+      x-apifox-orders:
+        - id
+        - provider
+        - issuer
+        - providerUid
+        - scope
+        - lastLoginAt
+        - createdAt
+        - updatedAt
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    UserProfileRespond:
+      type: object
+      properties:
+        displayName:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Eason
+        avatarUrl:
+          type:
+            - string
+            - 'null'
+          examples:
+            - https://cdn.example.com/avatar/1001.png
+        gender:
+          $ref: '#/components/schemas/Gender'
+        birthday:
+          type:
+            - string
+            - 'null'
+          format: date
+          examples:
+            - '1990-01-01'
+        country:
+          type:
+            - string
+            - 'null'
+          examples:
+            - CN
+        province:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Guangdong
+        city:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Guangzhou
+        addressLine:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Tianhe CBD
+        zipcode:
+          type:
+            - string
+            - 'null'
+          examples:
+            - '510000'
+        extra:
+          type: object
+          additionalProperties: true
+          x-apifox-orders: []
+          examples:
+            - marketingOptIn: true
+          properties: {}
+          x-apifox-ignore-properties: []
+      required:
+        - gender
+      x-apifox-orders:
+        - displayName
+        - avatarUrl
+        - gender
+        - birthday
+        - country
+        - province
+        - city
+        - addressLine
+        - zipcode
+        - extra
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+    UserAccountRespond:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          examples:
+            - 1001
+        username:
+          type: string
+          examples:
+            - eason
+        nickname:
+          type: string
+          examples:
+            - Eason
+        email:
+          type:
+            - string
+            - 'null'
+          format: email
+          examples:
+            - eason@example.com
+        phone_country_code:
+          type:
+            - string
+            - 'null'
+          examples:
+            - +86-13800138000
+        phone_national_number:
+          type: string
+        status:
+          $ref: '#/components/schemas/AccountStatus'
+        lastLogin_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          examples:
+            - '2025-10-25T09:10:00.000Z'
+        created_at:
+          type: string
+          format: date-time
+          examples:
+            - '2025-10-20T10:00:00.000Z'
+        updated_at:
+          type: string
+          format: date-time
+          examples:
+            - '2025-10-25T09:10:00.000Z'
+      required:
+        - id
+        - username
+        - nickname
+        - status
+        - created_at
+        - updated_at
+        - phone_national_number
+      x-apifox-orders:
+        - id
+        - username
+        - nickname
+        - email
+        - phone_country_code
+        - phone_national_number
+        - status
+        - lastLogin_at
+        - created_at
+        - updated_at
+      x-apifox-ignore-properties: []
+      x-apifox-folder: user
+  responses:
+    已创建:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Result'
+    参数错误:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Result'
+          examples:
+            空值或格式错误:
+              summary: 空值或格式错误
+              value:
+                success: false
+                code: BAD_REQUEST
+                message: 用户名不能为空
+                timestamp: '2025-11-06 11:38:39'
+    已接受:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Result'
+    重定向:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Result'
+    未鉴权:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Result'
+          examples:
+            示例 1:
+              summary: 示例 1
+              value:
+                success: false
+                code: UNAUTHORIZED
+                message: Unauthorized
+                timestamp: '2025-11-15 14:23:57'
+    权限不足:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Result'
+          examples:
+            示例 1:
+              summary: 示例 1
+              value:
+                success: false
+                code: FORBIDDEN
+                message: Access denied
+                timestamp: '2025-11-06 17:31:36'
+    未找到:
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: {}
+    冲突:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Result'
+          examples:
+            示例 1:
+              summary: 示例 1
+              value:
+                success: false
+                code: CONFLICT
+                message: 邮箱已被使用
+                timestamp: '2025-11-15 14:23:56'
+    无法处理的实体:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Result'
+          examples:
+            示例 1:
+              summary: 示例 1
+              value:
+                success: false
+                code: UNPROCESSABLE_ENTITY
+                message: 验证码错误或已过期
+                timestamp: '2025-11-06 15:28:11'
+    服务器内部错误:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Result'
+    请求过多:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Result'
+          examples:
+            示例 1:
+              summary: 示例 1
+              value:
+                success: false
+                code: TOO_MANY_REQUESTS
+                message: 尝试次数过多, 请过段时间再试
+                timestamp: '2025-11-15 14:25:35'
+  securitySchemes: {}
+servers: []
+security: []
