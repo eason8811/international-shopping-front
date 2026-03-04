@@ -18,11 +18,22 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
+/**
+ * locale 布局组件参数
+ */
 interface LocaleLayoutProps {
+    /** 当前路由段渲染的页面内容 */
     children: ReactNode;
+    /** Next.js 动态路由参数 */
     params: Promise<{ locale: string }>;
 }
 
+/**
+ * 为每个 locale 生成元信息
+ *
+ * @param props 布局参数（不含 children）
+ * @returns 本地化后的 title/description
+ */
 export async function generateMetadata({
                                            params,
                                        }: Omit<LocaleLayoutProps, "children">): Promise<Metadata> {
@@ -38,10 +49,21 @@ export async function generateMetadata({
     };
 }
 
+/**
+ * 生成可静态预渲染的 locale 参数
+ *
+ * @returns 受支持 locale 列表
+ */
 export function generateStaticParams() {
     return routing.locales.map((locale) => ({locale}));
 }
 
+/**
+ * locale 根布局
+ *
+ * @param props 布局参数
+ * @returns 带 {@linkcode NextIntlClientProvider} 的页面壳
+ */
 export default async function LocaleLayout({
                                                children,
                                                params,

@@ -1,7 +1,14 @@
+/**
+ * 状态展示元信息
+ */
 export interface StatusMeta {
+    /** 可直接用于 UI 展示的英文标签（后续可替换为 i18n key） */
     label: string;
 }
 
+/**
+ * 订单状态枚举值（与后端契约保持一致）
+ */
 export const ORDER_STATUS = [
     "CREATED",
     "PENDING_PAYMENT",
@@ -13,16 +20,34 @@ export const ORDER_STATUS = [
     "REFUNDED",
 ] as const;
 
+/**
+ * 订单状态类型
+ */
 export type OrderStatus = (typeof ORDER_STATUS)[number];
 
+/**
+ * 支付状态枚举值
+ */
 export const PAY_STATUS = ["NONE", "INIT", "PENDING", "SUCCESS", "FAIL", "CLOSED", "EXCEPTION"] as const;
 
+/**
+ * 支付状态类型
+ */
 export type PayStatus = (typeof PAY_STATUS)[number];
 
+/**
+ * 退款状态枚举值
+ */
 export const REFUND_STATUS = ["INIT", "PENDING", "SUCCESS", "FAIL", "CLOSED", "EXCEPTION"] as const;
 
+/**
+ * 退款状态类型
+ */
 export type RefundStatus = (typeof REFUND_STATUS)[number];
 
+/**
+ * 物流状态枚举值
+ */
 export const SHIPMENT_STATUS = [
     "CREATED",
     "LABEL_CREATED",
@@ -40,8 +65,14 @@ export const SHIPMENT_STATUS = [
     "LOST",
 ] as const;
 
+/**
+ * 物流状态类型
+ */
 export type ShipmentStatus = (typeof SHIPMENT_STATUS)[number];
 
+/**
+ * 客服工单状态枚举值
+ */
 export const CS_TICKET_STATUS = [
     "OPEN",
     "IN_PROGRESS",
@@ -53,12 +84,24 @@ export const CS_TICKET_STATUS = [
     "CLOSED",
 ] as const;
 
+/**
+ * 客服工单状态类型
+ */
 export type CsTicketStatus = (typeof CS_TICKET_STATUS)[number];
 
+/**
+ * 补发单状态枚举值
+ */
 export const AFTER_SALES_RESHIP_STATUS = ["INIT", "APPROVED", "FULFILLING", "FULFILLED", "CANCELLED"] as const;
 
+/**
+ * 补发单状态类型
+ */
 export type AfterSalesReshipStatus = (typeof AFTER_SALES_RESHIP_STATUS)[number];
 
+/**
+ * 订单状态到展示文案的映射
+ */
 export const ORDER_STATUS_MAP: Record<OrderStatus, StatusMeta> = {
     CREATED: {label: "Created"},
     PENDING_PAYMENT: {label: "Pending Payment"},
@@ -70,6 +113,9 @@ export const ORDER_STATUS_MAP: Record<OrderStatus, StatusMeta> = {
     REFUNDED: {label: "Refunded"},
 };
 
+/**
+ * 支付状态到展示文案的映射
+ */
 export const PAY_STATUS_MAP: Record<PayStatus, StatusMeta> = {
     NONE: {label: "None"},
     INIT: {label: "Init"},
@@ -80,6 +126,9 @@ export const PAY_STATUS_MAP: Record<PayStatus, StatusMeta> = {
     EXCEPTION: {label: "Exception"},
 };
 
+/**
+ * 退款状态到展示文案的映射
+ */
 export const REFUND_STATUS_MAP: Record<RefundStatus, StatusMeta> = {
     INIT: {label: "Init"},
     PENDING: {label: "Pending"},
@@ -89,6 +138,9 @@ export const REFUND_STATUS_MAP: Record<RefundStatus, StatusMeta> = {
     EXCEPTION: {label: "Exception"},
 };
 
+/**
+ * 物流状态到展示文案的映射
+ */
 export const SHIPMENT_STATUS_MAP: Record<ShipmentStatus, StatusMeta> = {
     CREATED: {label: "Created"},
     LABEL_CREATED: {label: "Label Created"},
@@ -106,6 +158,9 @@ export const SHIPMENT_STATUS_MAP: Record<ShipmentStatus, StatusMeta> = {
     LOST: {label: "Lost"},
 };
 
+/**
+ * 客服工单状态到展示文案的映射
+ */
 export const CS_TICKET_STATUS_MAP: Record<CsTicketStatus, StatusMeta> = {
     OPEN: {label: "Open"},
     IN_PROGRESS: {label: "In Progress"},
@@ -117,6 +172,9 @@ export const CS_TICKET_STATUS_MAP: Record<CsTicketStatus, StatusMeta> = {
     CLOSED: {label: "Closed"},
 };
 
+/**
+ * 补发单状态到展示文案的映射
+ */
 export const AFTER_SALES_RESHIP_STATUS_MAP: Record<AfterSalesReshipStatus, StatusMeta> = {
     INIT: {label: "Init"},
     APPROVED: {label: "Approved"},

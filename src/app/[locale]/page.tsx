@@ -2,10 +2,20 @@ import {getTranslations} from "next-intl/server";
 
 import {Link} from "@/i18n/navigation";
 
+/**
+ * 首页参数
+ */
 interface HomePageProps {
+    /** 当前 locale 路由参数 */
     params: Promise<{ locale: string }>;
 }
 
+/**
+ * 多语言首页
+ *
+ * @param props 页面参数
+ * @returns 首页 RSC 视图
+ */
 export default async function HomePage({params}: HomePageProps) {
     const {locale} = await params;
     const t = await getTranslations({locale, namespace: "HomePage"});
