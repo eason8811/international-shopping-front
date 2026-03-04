@@ -1,0 +1,16 @@
+{
+  "Metadata": {
+    "title": "国际购物平台",
+    "description": "面向跨境电商的前端工程底座，采用 BFF 与契约优先架构。"
+  },
+  "HomePage": {
+    "eyebrow": "Phase 0 已就绪",
+    "title": "工程底座与契约层已上线。",
+    "description": "当前已通过 next-intl 提供按语言路由能力，后续业务页面请在 locale 路由段内持续交付。",
+    "actions": {
+      "browseProducts": "浏览商品",
+      "goAdmin": "进入管理端"
+    },
+    "language": "语言"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "Metadata": {
+    "title": "International Shopping Platform",
+    "description": "Cross-border ecommerce front-end baseline with BFF and contract-first architecture."
+  },
+  "HomePage": {
+    "eyebrow": "Phase 0 Ready",
+    "title": "Engineering foundation and contract layer are online.",
+    "description": "Locale-aware routing is now provided by next-intl. Continue business delivery under the locale segment.",
+    "actions": {
+      "browseProducts": "Browse Products",
+      "goAdmin": "Open Admin"
+    },
+    "language": "Language"
+  }
+}
