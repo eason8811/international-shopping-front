@@ -1,9 +1,10 @@
 import {getTranslations} from "next-intl/server";
 
 import {Link} from "@/i18n/navigation";
+import {SessionProbeCard} from "@/components/system/session-probe-card";
 
 /**
- * 首页参数
+ * 首页组件入参, 仅包含 locale 动态参数
  */
 interface HomePageProps {
     /** 当前 locale 路由参数 */
@@ -11,9 +12,9 @@ interface HomePageProps {
 }
 
 /**
- * 多语言首页
+ * 多语言首页, 展示 Phase 0 引导信息, 语言切换入口, 会话探针卡片
  *
- * @param props 页面参数
+ * @param props 页面入参
  * @returns 首页 RSC 视图
  */
 export default async function HomePage({params}: HomePageProps) {
@@ -50,13 +51,16 @@ export default async function HomePage({params}: HomePageProps) {
                     <span>{t("language")}:</span>
                     <Link href="/" locale="en-US"
                           className={locale === "en-US" ? "font-semibold text-zinc-900" : "hover:text-zinc-700"}>
-                        English
+                        {t("languageOptions.en-US")}
                     </Link>
                     <span>/</span>
                     <Link href="/" locale="zh-CN"
                           className={locale === "zh-CN" ? "font-semibold text-zinc-900" : "hover:text-zinc-700"}>
-                        简体中文
+                        {t("languageOptions.zh-CN")}
                     </Link>
+                </div>
+                <div className="mt-10">
+                    <SessionProbeCard/>
                 </div>
             </main>
         </div>

@@ -11,6 +11,71 @@
       "browseProducts": "Browse Products",
       "goAdmin": "Open Admin"
     },
-    "language": "Language"
+    "language": "Language",
+    "languageOptions": {
+      "en-US": "English",
+      "zh-CN": "Simplified Chinese"
+    }
+  },
+  "SessionProbe": {
+    "title": "Session Contract Probe",
+    "loading": "Checking /api/bff/me ...",
+    "success": "Session check succeeded.",
+    "unknownError": "Unknown network error.",
+    "labels": {
+      "userId": "User ID",
+      "code": "Code",
+      "traceId": "Trace ID",
+      "missingTraceId": "missing"
+    }
+  },
+  "TrackedError": {
+    "title": "Unified Error Surface",
+    "kinds": {
+      "unauthorized": {
+        "title": "Login is required",
+        "description": "Your session is missing or expired. Sign in and retry."
+      },
+      "csrf": {
+        "title": "Security validation failed",
+        "description": "CSRF validation failed. Refresh and submit again."
+      },
+      "rateLimit": {
+        "title": "Too many requests",
+        "description": "Request frequency is limited. Please retry later."
+      },
+      "server": {
+        "title": "Service temporarily unavailable",
+        "description": "Upstream service failed. Retry and report the trace ID if it persists."
+      },
+      "unknown": {
+        "title": "Request failed",
+        "description": "The request failed unexpectedly. Retry or contact support with trace ID."
+      }
+    },
+    "labels": {
+      "code": "Code",
+      "traceId": "Trace ID",
+      "missingTraceId": "missing",
+      "backendMessage": "Backend Message"
+    },
+    "actions": {
+      "goLogin": "Go to Login",
+      "retry": "Retry"
+    }
+  },
+  "UnhandledError": {
+    "logPrefix": "Unhandled locale error:",
+    "fallbackMessage": "Unhandled rendering error."
+  },
+  "LoginPage": {
+    "eyebrow": "Protected Route",
+    "title": "Please sign in first",
+    "description": "This route is guarded in Phase 0. Full login flow will be delivered in Phase 1.",
+    "redirectLabel": "Original target",
+    "actions": {
+      "goHome": "Back Home",
+      "continueAsGuest": "Continue as Guest"
+    }
   }
 }
