@@ -1,15 +1,16 @@
 {
   "Metadata": {
     "title": "International Shopping Platform",
-    "description": "Cross-border ecommerce front-end baseline with BFF and contract-first architecture."
+    "description": "Cross-border ecommerce front-end baseline with BFF and contract-first architecture"
   },
   "HomePage": {
-    "eyebrow": "Phase 0 Ready",
-    "title": "Engineering foundation and contract layer are online.",
-    "description": "Locale-aware routing is now provided by next-intl. Continue business delivery under the locale segment.",
+    "eyebrow": "Account And Address",
+    "title": "Unified authentication and profile center",
+    "description": "Local login, OAuth2 login, profile, and address management are now connected through BFF contracts",
     "actions": {
-      "browseProducts": "Browse Products",
-      "goAdmin": "Open Admin"
+      "login": "Sign In",
+      "register": "Create Account",
+      "account": "Open Account Center"
     },
     "language": "Language",
     "languageOptions": {
@@ -17,16 +18,261 @@
       "zh-CN": "Simplified Chinese"
     }
   },
-  "SessionProbe": {
-    "title": "Session Contract Probe",
-    "loading": "Checking /api/bff/me ...",
-    "success": "Session check succeeded.",
-    "unknownError": "Unknown network error.",
-    "labels": {
-      "userId": "User ID",
-      "code": "Code",
-      "traceId": "Trace ID",
-      "missingTraceId": "missing"
+  "AuthLogin": {
+    "title": "Sign In",
+    "description": "Use password login or continue with a third-party account",
+    "fields": {
+      "account": "Account",
+      "password": "Password"
+    },
+    "placeholders": {
+      "account": "Username, email, or phone",
+      "password": "Enter password"
+    },
+    "actions": {
+      "login": "Sign In",
+      "loggingIn": "Signing in",
+      "oauthGoogle": "Google",
+      "oauthTiktok": "TikTok",
+      "oauthX": "X",
+      "oauthDivider": "Or use account and password",
+      "redirecting": "Redirecting"
+    },
+    "links": {
+      "register": "No account, register",
+      "forgotPassword": "Forgot password"
+    },
+    "errors": {
+      "accountRequired": "Please enter your account",
+      "passwordRequired": "Please enter your password",
+      "oauthUrlMissing": "OAuth authorize URL is missing",
+      "unknown": "Request failed, please retry"
+    }
+  },
+  "AuthRegister": {
+    "title": "Create Account",
+    "description": "Start with minimal required fields, then activate by email",
+    "fields": {
+      "username": "Username",
+      "nickname": "Nickname",
+      "email": "Email",
+      "password": "Password",
+      "phoneCountry": "Phone Country Code",
+      "phone": "Phone Number"
+    },
+    "placeholders": {
+      "username": "3-32 characters",
+      "nickname": "Display nickname",
+      "email": "you@example.com",
+      "password": "At least 8 characters",
+      "phoneCountry": "For example +1",
+      "phone": "Optional"
+    },
+    "actions": {
+      "register": "Submit Registration",
+      "submitting": "Submitting",
+      "showOptional": "Show optional phone fields",
+      "hideOptional": "Hide optional phone fields"
+    },
+    "links": {
+      "login": "Already have an account, sign in"
+    },
+    "errors": {
+      "username": "Invalid username",
+      "nickname": "Nickname is required",
+      "email": "Invalid email",
+      "password": "Password is too short",
+      "phonePair": "Country code and phone number must be provided together",
+      "unknown": "Request failed, please retry"
+    }
+  },
+  "AuthRegisterVerify": {
+    "title": "Email Activation",
+    "description": "Enter the verification code from your email",
+    "emailLabel": "Activation Email",
+    "status": {
+      "pending": "Status syncing",
+      "refreshing": "Refreshing",
+      "codeSent": "Verification email sent"
+    },
+    "fields": {
+      "code": "Verification Code"
+    },
+    "placeholders": {
+      "code": "Enter code from email"
+    },
+    "actions": {
+      "verify": "Verify And Activate",
+      "verifying": "Verifying",
+      "resend": "Resend Activation Email",
+      "resending": "Sending"
+    },
+    "links": {
+      "backRegister": "Back to register"
+    },
+    "errors": {
+      "code": "Please enter verification code",
+      "emailMissing": "Email query is missing, return to register",
+      "unknown": "Request failed, please retry"
+    }
+  },
+  "AuthForgotPassword": {
+    "title": "Reset Password",
+    "description": "Send code first, then set a new password",
+    "status": {
+      "codeSent": "Verification code sent, check your email"
+    },
+    "fields": {
+      "account": "Account",
+      "countryCode": "Country Code",
+      "code": "Verification Code",
+      "newPassword": "New Password"
+    },
+    "placeholders": {
+      "account": "Username, email, or phone",
+      "countryCode": "Optional, for example +1",
+      "code": "Enter verification code",
+      "newPassword": "At least 6 characters"
+    },
+    "actions": {
+      "sendCode": "Send Code",
+      "sending": "Sending",
+      "resetPassword": "Reset Password",
+      "resetting": "Resetting",
+      "back": "Back"
+    },
+    "links": {
+      "backLogin": "Back to sign in"
+    },
+    "errors": {
+      "account": "Please enter account",
+      "code": "Please enter verification code",
+      "newPassword": "New password is too short",
+      "unknown": "Request failed, please retry"
+    }
+  },
+  "AuthOauthCallback": {
+    "title": "Sign In Confirmation",
+    "description": "Checking authorization result and redirecting",
+    "status": {
+      "checking": "Checking session",
+      "redirecting": "Redirecting shortly"
+    },
+    "actions": {
+      "backToLogin": "Back to sign in"
+    },
+    "errors": {
+      "unknown": "OAuth callback handling failed"
+    }
+  },
+  "AccountWorkspace": {
+    "title": "Account And Address",
+    "description": "Manage nickname, profile, and shipping addresses",
+    "actions": {
+      "refresh": "Refresh",
+      "saveAccount": "Save Account",
+      "saveProfile": "Save Profile"
+    },
+    "status": {
+      "accountSaved": "Account info saved",
+      "profileSaved": "Profile saved",
+      "addressCreated": "Address created",
+      "addressUpdated": "Address updated",
+      "addressDeleted": "Address deleted",
+      "defaultUpdated": "Default address updated"
+    },
+    "errors": {
+      "loadFailed": "Load failed, please refresh",
+      "saveFailed": "Save failed, please retry"
+    },
+    "account": {
+      "title": "Account",
+      "description": "Update nickname and phone",
+      "fields": {
+        "nickname": "Nickname",
+        "phoneCountry": "Country Code",
+        "phone": "Phone"
+      }
+    },
+    "profile": {
+      "title": "Profile",
+      "description": "Update display and location info",
+      "fields": {
+        "displayName": "Display Name",
+        "avatarUrl": "Avatar URL",
+        "gender": "Gender",
+        "birthday": "Birthday",
+        "country": "Country",
+        "province": "Province",
+        "city": "City",
+        "zipcode": "Zipcode",
+        "addressLine": "Address"
+      },
+      "gender": {
+        "UNKNOWN": "Not Set",
+        "MALE": "Male",
+        "FEMALE": "Female"
+      }
+    },
+    "addresses": {
+      "title": "Shipping Address",
+      "description": "Create, edit, delete, and set default address",
+      "default": "Default",
+      "empty": "No address yet, create one first",
+      "confirmDelete": "Delete this address",
+      "fields": {
+        "receiver": "Receiver",
+        "phoneCountry": "Country Code",
+        "phone": "Phone",
+        "country": "Country",
+        "province": "Province",
+        "city": "City",
+        "district": "District",
+        "addressLine1": "Address Line 1",
+        "addressLine2": "Address Line 2",
+        "zipcode": "Zipcode",
+        "isDefault": "Set as default"
+      },
+      "actions": {
+        "add": "Add Address",
+        "edit": "Edit",
+        "delete": "Delete",
+        "setDefault": "Set Default",
+        "cancel": "Cancel",
+        "saveCreate": "Create Address",
+        "saveEdit": "Save Changes"
+      },
+      "dialog": {
+        "createTitle": "Create Address",
+        "editTitle": "Edit Address",
+        "description": "Fill in complete address fields"
+      }
+    },
+    "validation": {
+      "invalid": "Invalid input, please check and retry",
+      "nickname_required": "Nickname is required",
+      "nickname_max": "Nickname is too long",
+      "phone_pair_required": "Country code and phone number must be provided together",
+      "display_name_max": "Display name is too long",
+      "avatar_url_invalid": "Avatar URL is invalid",
+      "country_max": "Country is too long",
+      "province_max": "Province is too long",
+      "city_max": "City is too long",
+      "zipcode_max": "Zipcode is too long",
+      "address_max": "Address is too long",
+      "receiver_required": "Receiver is required",
+      "receiver_max": "Receiver is too long",
+      "phone_country_required": "Country code is required",
+      "phone_country_max": "Country code is too long",
+      "phone_required": "Phone number is required",
+      "phone_max": "Phone number is too long",
+      "country_required": "Country is required",
+      "province_required": "Province is required",
+      "city_required": "City is required",
+      "district_required": "District is required",
+      "district_max": "District is too long",
+      "address_line1_required": "Address line 1 is required",
+      "zipcode_required": "Zipcode is required"
     }
   },
   "TrackedError": {
@@ -34,23 +280,23 @@
     "kinds": {
       "unauthorized": {
         "title": "Login is required",
-        "description": "Your session is missing or expired. Sign in and retry."
+        "description": "Session is missing or expired, please sign in again"
       },
       "csrf": {
         "title": "Security validation failed",
-        "description": "CSRF validation failed. Refresh and submit again."
+        "description": "CSRF validation failed, refresh and retry"
       },
       "rateLimit": {
         "title": "Too many requests",
-        "description": "Request frequency is limited. Please retry later."
+        "description": "Request is rate-limited, please retry later"
       },
       "server": {
         "title": "Service temporarily unavailable",
-        "description": "Upstream service failed. Retry and report the trace ID if it persists."
+        "description": "Upstream service failed, retry and report trace ID if needed"
       },
       "unknown": {
         "title": "Request failed",
-        "description": "The request failed unexpectedly. Retry or contact support with trace ID."
+        "description": "Unexpected failure, retry or contact support with trace ID"
       }
     },
     "labels": {
@@ -66,16 +312,6 @@
   },
   "UnhandledError": {
     "logPrefix": "Unhandled locale error:",
-    "fallbackMessage": "Unhandled rendering error."
-  },
-  "LoginPage": {
-    "eyebrow": "Protected Route",
-    "title": "Please sign in first",
-    "description": "This route is guarded in Phase 0. Full login flow will be delivered in Phase 1.",
-    "redirectLabel": "Original target",
-    "actions": {
-      "goHome": "Back Home",
-      "continueAsGuest": "Continue as Guest"
-    }
+    "fallbackMessage": "Unhandled rendering error"
   }
 }
