@@ -1,16 +1,15 @@
 {
   "Metadata": {
     "title": "国际购物平台",
-    "description": "面向跨境电商的前端工程底座, 采用 BFF 与契约优先架构"
+    "description": "面向跨境电商的前端工程底座，采用 BFF 与契约优先架构。"
   },
   "HomePage": {
-    "eyebrow": "账号与地址",
-    "title": "统一认证与个人资料中心",
-    "description": "当前已接入本地登录, OAuth2 登录, 个人资料与地址管理, 全部通过 BFF 契约访问",
+    "eyebrow": "Phase 0 已就绪",
+    "title": "工程底座与契约层已上线。",
+    "description": "当前已通过 next-intl 提供按语言路由能力，后续业务页面请在 locale 路由段内持续交付。",
     "actions": {
-      "login": "登录",
-      "register": "注册",
-      "account": "进入账号中心"
+      "browseProducts": "浏览商品",
+      "goAdmin": "进入管理端"
     },
     "language": "语言",
     "languageOptions": {
@@ -18,261 +17,16 @@
       "zh-CN": "简体中文"
     }
   },
-  "AuthLogin": {
-    "title": "登录",
-    "description": "使用账号密码或第三方账号继续",
-    "fields": {
-      "account": "账号",
-      "password": "密码"
-    },
-    "placeholders": {
-      "account": "用户名, 邮箱或手机号",
-      "password": "输入密码"
-    },
-    "actions": {
-      "login": "登录",
-      "loggingIn": "登录中",
-      "oauthGoogle": "Google",
-      "oauthTiktok": "TikTok",
-      "oauthX": "X",
-      "oauthDivider": "或使用账号密码",
-      "redirecting": "跳转中"
-    },
-    "links": {
-      "register": "没有账号, 去注册",
-      "forgotPassword": "忘记密码"
-    },
-    "errors": {
-      "accountRequired": "请输入账号",
-      "passwordRequired": "请输入密码",
-      "oauthUrlMissing": "未获取到授权地址",
-      "unknown": "请求失败, 请稍后重试"
-    }
-  },
-  "AuthRegister": {
-    "title": "注册",
-    "description": "先完成最小信息注册, 再通过邮箱激活账号",
-    "fields": {
-      "username": "用户名",
-      "nickname": "昵称",
-      "email": "邮箱",
-      "password": "密码",
-      "phoneCountry": "手机区号",
-      "phone": "手机号"
-    },
-    "placeholders": {
-      "username": "3-32 位",
-      "nickname": "展示昵称",
-      "email": "you@example.com",
-      "password": "至少 8 位",
-      "phoneCountry": "例如 +86",
-      "phone": "可选"
-    },
-    "actions": {
-      "register": "提交注册",
-      "submitting": "提交中",
-      "showOptional": "展开可选手机号字段",
-      "hideOptional": "收起可选手机号字段"
-    },
-    "links": {
-      "login": "已有账号, 去登录"
-    },
-    "errors": {
-      "username": "用户名格式不正确",
-      "nickname": "昵称不能为空",
-      "email": "邮箱格式不正确",
-      "password": "密码长度不足",
-      "phonePair": "若填写手机号, 区号和号码需同时填写",
-      "unknown": "请求失败, 请稍后重试"
-    }
-  },
-  "AuthRegisterVerify": {
-    "title": "邮箱激活",
-    "description": "输入邮件验证码完成账号激活",
-    "emailLabel": "激活邮箱",
-    "status": {
-      "pending": "状态同步中",
-      "refreshing": "轮询中",
-      "codeSent": "验证码已发送"
-    },
-    "fields": {
-      "code": "验证码"
-    },
-    "placeholders": {
-      "code": "输入邮件中的验证码"
-    },
-    "actions": {
-      "verify": "验证并激活",
-      "verifying": "验证中",
-      "resend": "重新发送激活邮件",
-      "resending": "发送中"
-    },
-    "links": {
-      "backRegister": "返回注册页"
-    },
-    "errors": {
-      "code": "请输入验证码",
-      "emailMissing": "缺少邮箱参数, 请返回注册页",
-      "unknown": "请求失败, 请稍后重试"
-    }
-  },
-  "AuthForgotPassword": {
-    "title": "找回密码",
-    "description": "先发送验证码, 再设置新密码",
-    "status": {
-      "codeSent": "验证码已发送, 请查收邮件"
-    },
-    "fields": {
-      "account": "账号",
-      "countryCode": "手机区号",
-      "code": "验证码",
-      "newPassword": "新密码"
-    },
-    "placeholders": {
-      "account": "用户名, 邮箱或手机号",
-      "countryCode": "可选, 例如 +86",
-      "code": "输入验证码",
-      "newPassword": "至少 6 位"
-    },
-    "actions": {
-      "sendCode": "发送验证码",
-      "sending": "发送中",
-      "resetPassword": "重置密码",
-      "resetting": "重置中",
-      "back": "返回上一步"
-    },
-    "links": {
-      "backLogin": "返回登录页"
-    },
-    "errors": {
-      "account": "请输入账号",
-      "code": "请输入验证码",
-      "newPassword": "新密码长度不足",
-      "unknown": "请求失败, 请稍后重试"
-    }
-  },
-  "AuthOauthCallback": {
-    "title": "登录确认",
-    "description": "正在确认授权结果并跳转",
-    "status": {
-      "checking": "正在检查登录状态",
-      "redirecting": "即将跳转"
-    },
-    "actions": {
-      "backToLogin": "返回登录页"
-    },
-    "errors": {
-      "unknown": "授权回调处理失败"
-    }
-  },
-  "AccountWorkspace": {
-    "title": "账号与地址",
-    "description": "管理昵称, 资料与收货地址",
-    "actions": {
-      "refresh": "刷新",
-      "saveAccount": "保存账户",
-      "saveProfile": "保存资料"
-    },
-    "status": {
-      "accountSaved": "账户信息已保存",
-      "profileSaved": "资料已保存",
-      "addressCreated": "地址已新增",
-      "addressUpdated": "地址已更新",
-      "addressDeleted": "地址已删除",
-      "defaultUpdated": "默认地址已更新"
-    },
-    "errors": {
-      "loadFailed": "加载失败, 请刷新重试",
-      "saveFailed": "保存失败, 请稍后重试"
-    },
-    "account": {
-      "title": "账户信息",
-      "description": "更新昵称与手机号",
-      "fields": {
-        "nickname": "昵称",
-        "phoneCountry": "区号",
-        "phone": "手机号"
-      }
-    },
-    "profile": {
-      "title": "资料信息",
-      "description": "完善展示信息与地区",
-      "fields": {
-        "displayName": "展示名称",
-        "avatarUrl": "头像链接",
-        "gender": "性别",
-        "birthday": "生日",
-        "country": "国家",
-        "province": "省份",
-        "city": "城市",
-        "zipcode": "邮编",
-        "addressLine": "详细地址"
-      },
-      "gender": {
-        "UNKNOWN": "未设置",
-        "MALE": "男",
-        "FEMALE": "女"
-      }
-    },
-    "addresses": {
-      "title": "收货地址",
-      "description": "支持新增, 编辑, 删除与设置默认地址",
-      "default": "默认",
-      "empty": "暂无地址, 请先新增地址",
-      "confirmDelete": "确认删除该地址",
-      "fields": {
-        "receiver": "收货人",
-        "phoneCountry": "区号",
-        "phone": "手机号",
-        "country": "国家",
-        "province": "省份",
-        "city": "城市",
-        "district": "区县",
-        "addressLine1": "地址行 1",
-        "addressLine2": "地址行 2",
-        "zipcode": "邮编",
-        "isDefault": "设为默认地址"
-      },
-      "actions": {
-        "add": "新增地址",
-        "edit": "编辑",
-        "delete": "删除",
-        "setDefault": "设为默认",
-        "cancel": "取消",
-        "saveCreate": "创建地址",
-        "saveEdit": "保存修改"
-      },
-      "dialog": {
-        "createTitle": "新增地址",
-        "editTitle": "编辑地址",
-        "description": "请填写完整地址信息"
-      }
-    },
-    "validation": {
-      "invalid": "输入有误, 请检查后重试",
-      "nickname_required": "昵称不能为空",
-      "nickname_max": "昵称长度不能超过 32",
-      "phone_pair_required": "区号与手机号需要同时填写",
-      "display_name_max": "展示名称过长",
-      "avatar_url_invalid": "头像链接格式不正确",
-      "country_max": "国家字段过长",
-      "province_max": "省份字段过长",
-      "city_max": "城市字段过长",
-      "zipcode_max": "邮编字段过长",
-      "address_max": "地址字段过长",
-      "receiver_required": "请输入收货人",
-      "receiver_max": "收货人字段过长",
-      "phone_country_required": "请输入区号",
-      "phone_country_max": "区号字段过长",
-      "phone_required": "请输入手机号",
-      "phone_max": "手机号字段过长",
-      "country_required": "请输入国家",
-      "province_required": "请输入省份",
-      "city_required": "请输入城市",
-      "district_required": "请输入区县",
-      "district_max": "区县字段过长",
-      "address_line1_required": "请输入地址行 1",
-      "zipcode_required": "请输入邮编"
+  "SessionProbe": {
+    "title": "会话契约探针",
+    "loading": "正在检查 /api/bff/me ...",
+    "success": "会话检查通过。",
+    "unknownError": "未知网络错误。",
+    "labels": {
+      "userId": "用户 ID",
+      "code": "错误码",
+      "traceId": "Trace ID",
+      "missingTraceId": "缺失"
     }
   },
   "TrackedError": {
@@ -280,23 +34,23 @@
     "kinds": {
       "unauthorized": {
         "title": "需要先登录",
-        "description": "会话不存在或已过期, 请登录后重试"
+        "description": "会话不存在或已过期，请登录后重试。"
       },
       "csrf": {
         "title": "安全校验失败",
-        "description": "CSRF 校验失败, 请刷新页面后重试"
+        "description": "CSRF 校验失败，请刷新页面后重试。"
       },
       "rateLimit": {
         "title": "请求过于频繁",
-        "description": "当前触发频率限制, 请稍后再试"
+        "description": "当前触发频率限制，请稍后再试。"
       },
       "server": {
         "title": "服务暂时不可用",
-        "description": "上游服务异常, 请重试, 若持续失败请反馈 Trace ID"
+        "description": "上游服务异常，请重试；若持续失败请反馈 Trace ID。"
       },
       "unknown": {
         "title": "请求失败",
-        "description": "发生未知异常, 请重试或携带 Trace ID 联系支持"
+        "description": "发生未知异常，请重试或携带 Trace ID 联系支持。"
       }
     },
     "labels": {
@@ -311,7 +65,17 @@
     }
   },
   "UnhandledError": {
-    "logPrefix": "未处理的 locale 错误:",
-    "fallbackMessage": "页面渲染出现未处理错误"
+    "logPrefix": "未处理的 locale 错误：",
+    "fallbackMessage": "页面渲染出现未处理错误。"
+  },
+  "LoginPage": {
+    "eyebrow": "受保护路由",
+    "title": "请先登录",
+    "description": "该路由在 Phase 0 已启用守卫。完整登录流程将在 Phase 1 交付。",
+    "redirectLabel": "原始目标",
+    "actions": {
+      "goHome": "返回首页",
+      "continueAsGuest": "以访客继续"
+    }
   }
 }
