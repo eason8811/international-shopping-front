@@ -58,14 +58,232 @@
     "logPrefix": "未处理的 locale 错误：",
     "fallbackMessage": "页面渲染出现未处理错误。"
   },
-  "LoginPage": {
-    "eyebrow": "受保护路由",
-    "title": "请先登录",
-    "description": "该路由需要登录后访问。",
-    "redirectLabel": "原始目标",
+  "AuthLoginPage": {
+    "shell": {
+      "eyebrow": "账号登录",
+      "title": "快速进入你的跨境购物空间",
+      "description": "优先使用第三方账号继续，邮箱登录作为次级路径放在同一卡片中。",
+      "highlights": {
+        "fast": "跨境发货进度集中可见",
+        "track": "订单与物流状态实时追踪",
+        "secure": "会话与安全校验由系统统一处理"
+      }
+    },
+    "card": {
+      "title": "登录",
+      "subtitle": "优先使用第三方账户继续"
+    },
+    "oauth": {
+      "google": "继续使用 Google",
+      "tiktok": "继续使用 TikTok",
+      "x": "继续使用 X"
+    },
+    "or": "或",
+    "fields": {
+      "account": "账号",
+      "accountPlaceholder": "支持用户名 / 邮箱 / 手机号",
+      "password": "密码",
+      "passwordPlaceholder": "请输入密码",
+      "activationEmail": "激活邮箱",
+      "activationEmailPlaceholder": "请输入可接收验证码的邮箱"
+    },
     "actions": {
-      "goHome": "返回首页",
-      "continueAsGuest": "以访客继续"
+      "useEmail": "使用邮箱登录",
+      "forgotPassword": "忘记密码",
+      "submit": "登录",
+      "loggingIn": "登录中",
+      "resendActivation": "重新发送激活邮件",
+      "resendingActivation": "发送中",
+      "enterActivationCode": "输入验证码激活"
+    },
+    "footer": {
+      "noAccount": "没有账户？",
+      "goRegister": "去注册"
+    },
+    "messages": {
+      "attention": "需要完成激活",
+      "submitFailed": "提交失败",
+      "activationSent": "激活邮件已发送，请检查邮箱。"
+    },
+    "errors": {
+      "accountRequired": "请输入账号",
+      "passwordRequired": "请输入密码",
+      "tooManyRequests": "请求过于频繁，请稍后再试。",
+      "oauthAuthorizeMissing": "未获取到授权地址，请稍后重试。",
+      "oauthFailed": "OAuth 登录暂时不可用，请稍后重试。",
+      "network": "网络异常，请检查连接后重试。",
+      "loginFailed": "登录失败，请检查账号或密码。",
+      "activationEmailRequired": "请先输入有效邮箱后再重发。",
+      "activationResendFailed": "激活邮件重发失败，请稍后重试。"
+    }
+  },
+  "AuthRegisterPage": {
+    "shell": {
+      "eyebrow": "创建账户",
+      "title": "完成注册后即可进入订单与地址能力",
+      "description": "注册流程拆分为信息填写与邮箱激活两阶段，避免用户在邮箱和页面之间迷路。",
+      "highlights": {
+        "orders": "注册后可直接查看订单进度",
+        "addresses": "地址簿可用于快速结账",
+        "support": "售后与客服入口保持可见"
+      }
+    },
+    "card": {
+      "title": "创建账户",
+      "subtitle": "先用更低输入成本的登录方式，邮箱注册作为兜底路径。"
+    },
+    "oauth": {
+      "google": "继续使用 Google",
+      "tiktok": "继续使用 TikTok",
+      "x": "继续使用 X"
+    },
+    "or": "或使用邮箱注册",
+    "fields": {
+      "email": "邮箱",
+      "emailPlaceholder": "请输入常用邮箱",
+      "password": "密码",
+      "passwordPlaceholder": "至少 8 位密码",
+      "passwordHint": "至少 8 位，建议包含数字和字母。",
+      "username": "用户名",
+      "usernamePlaceholder": "用于登录和展示",
+      "nickname": "昵称",
+      "nicknamePlaceholder": "可在账户页继续修改",
+      "phoneCountryCode": "手机号国家码（可选）",
+      "phoneCountryCodePlaceholder": "例如 86",
+      "phoneNationalNumber": "手机号（可选）",
+      "phoneNationalNumberPlaceholder": "例如 13800138000",
+      "verifyCode": "验证码",
+      "verifyCodePlaceholder": "请输入 6 位验证码"
+    },
+    "verify": {
+      "title": "验证邮箱",
+      "email": "当前邮箱：{email}",
+      "manualHint": "系统将在前 60 秒自动刷新投递状态，之后可手动刷新。",
+      "status": {
+        "sent": "发送中",
+        "pending": "暂未送达",
+        "delivered": "已投递",
+        "failed": "发送失败，请重试",
+        "unknown": "状态暂不可用",
+        "rawPrefix": "当前状态"
+      }
+    },
+    "actions": {
+      "addPhoneOptional": "添加手机号（可选）",
+      "create": "创建账户",
+      "creating": "创建中",
+      "verifyAndContinue": "激活并继续",
+      "verifying": "激活中",
+      "resend": "重新发送",
+      "resending": "重发中",
+      "resendCountdown": "{seconds}s 后可重发",
+      "editEmail": "修改邮箱",
+      "refreshStatus": "刷新状态",
+      "refreshing": "刷新中"
+    },
+    "footer": {
+      "hasAccount": "已有账户？",
+      "goLogin": "去登录",
+      "stayOnVerify": "继续当前激活流程"
+    },
+    "messages": {
+      "submitFailed": "提交失败",
+      "statusUpdate": "状态更新",
+      "activationSent": "注册已受理，激活邮件正在发送。",
+      "activationResent": "已重新发送激活邮件。"
+    },
+    "errors": {
+      "invalidEmail": "请输入有效邮箱地址",
+      "passwordRule": "密码至少 8 位",
+      "usernameRule": "用户名至少 3 位",
+      "nicknameRequired": "请输入昵称",
+      "phonePair": "手机号国家码和手机号需要同时填写",
+      "verifyCodeRule": "请输入 6 位验证码",
+      "tooManyRequests": "请求过于频繁，请稍后再试。",
+      "oauthAuthorizeMissing": "未获取到授权地址，请稍后重试。",
+      "oauthFailed": "OAuth 注册暂时不可用，请稍后重试。",
+      "network": "网络异常，请检查连接后重试。",
+      "emailTaken": "该邮箱已被使用",
+      "usernameTaken": "该用户名已被使用",
+      "phoneTaken": "该手机号已被使用",
+      "registerFailed": "注册失败，请检查输入后重试。",
+      "activationEmailRequired": "缺少激活邮箱，请返回上一步修改。",
+      "verifyCodeInvalid": "验证码无效或已过期。",
+      "verifyFailed": "激活失败，请检查验证码后重试。",
+      "activationResendFailed": "重发失败，请稍后重试。"
+    }
+  },
+  "AuthForgotPasswordPage": {
+    "shell": {
+      "eyebrow": "找回密码",
+      "title": "在同一路由内完成密码恢复",
+      "description": "输入账号后发送验证码，再设置新密码，避免跳转过多页面造成中断。",
+      "highlights": {
+        "recovery": "仅需两步即可恢复会话",
+        "security": "重置成功后自动建立新会话",
+        "resume": "可直接继续原业务流程"
+      }
+    },
+    "card": {
+      "title": "找回密码",
+      "subtitle": "输入账号后发送验证码，再设置新密码。"
+    },
+    "fields": {
+      "account": "账号",
+      "accountPlaceholder": "支持用户名 / 邮箱 / 手机号",
+      "countryCode": "手机号国家码（可选）",
+      "countryCodePlaceholder": "例如 86",
+      "code": "验证码",
+      "codePlaceholder": "请输入 6 位验证码",
+      "newPassword": "新密码",
+      "newPasswordPlaceholder": "请输入新密码"
+    },
+    "reset": {
+      "accountLabel": "正在重置账号"
+    },
+    "actions": {
+      "sendCode": "发送验证码",
+      "sending": "发送中",
+      "resetPassword": "重置密码",
+      "resetting": "重置中",
+      "changeAccount": "更换账号"
+    },
+    "footer": {
+      "backToLogin": "返回登录"
+    },
+    "messages": {
+      "submitFailed": "提交失败",
+      "statusUpdate": "状态更新",
+      "requestAccepted": "若账号存在，验证码将发送到绑定邮箱。"
+    },
+    "errors": {
+      "accountRequired": "请输入账号",
+      "codeRule": "请输入 6 位验证码",
+      "newPasswordRule": "新密码至少 6 位",
+      "tooManyRequests": "请求过于频繁，请稍后再试。",
+      "requestFailed": "验证码发送失败，请稍后重试。",
+      "network": "网络异常，请检查连接后重试。",
+      "codeInvalid": "验证码无效或已过期。",
+      "resetFailed": "密码重置失败，请稍后重试。"
+    }
+  },
+  "AuthOAuthCallbackPage": {
+    "card": {
+      "title": "第三方登录处理中",
+      "subtitle": "系统正在确认会话并准备跳转。"
+    },
+    "status": {
+      "processing": "正在完成登录",
+      "success": "登录成功，正在跳转"
+    },
+    "actions": {
+      "backToLogin": "返回登录",
+      "useEmail": "改用邮箱登录"
+    },
+    "errors": {
+      "providerMissing": "缺少 OAuth 提供方信息，请重新发起登录。",
+      "callbackFailed": "第三方回调处理失败，请重试。",
+      "sessionNotEstablished": "会话尚未建立，请返回登录页重试。"
     }
   }
 }

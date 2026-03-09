@@ -4,35 +4,35 @@ import {redirect} from "next/navigation";
 
 import {sanitizeInternalPath, toLocalizedPath} from "@/features/auth/api/client";
 import {AuthPageShell} from "@/features/auth/components/auth-page-shell";
-import {LoginPanel} from "@/features/auth/components/login-panel";
+import {RegisterPanel} from "@/features/auth/components/register-panel";
 
 /**
- * 登录页属性, 包含 locale 参数和重定向查询参数
+ * 注册页属性, 包含 locale 参数和注册流程查询参数
  */
-interface LoginPageProps {
+interface RegisterPageProps {
     params: Promise<{ locale: string }>;
     searchParams: Promise<{
-        redirect?: string;
         returnTo?: string;
+        step?: string;
         email?: string;
     }>;
 }
 
 /**
- * 渲染登录页, 已认证用户会跳到账户页或请求路径
+ * 渲染注册页, 已认证用户会跳到账户页或请求路径
  *
- * @param props 登录页属性
- * @returns 登录页视图
+ * @param props 注册页属性
+ * @returns 注册页视图
  */
-export default async function LoginPage({params, searchParams}: LoginPageProps) {
+export default async function RegisterPage({params, searchParams}: RegisterPageProps) {
     const {locale} = await params;
     const search = await searchParams;
-    const t = await getTranslations({locale, namespace: "AuthLoginPage"});
+    const t = await getTranslations({locale, namespace: "AuthRegisterPage"});
 
     const cookieStore = await cookies();
     const hasAuthCookie = Boolean(cookieStore.get("access_token")?.value || cookieStore.get("refresh_token")?.value);
 
-    const safeReturnTo = sanitizeInternalPath(search.returnTo ?? search.redirect);
+    const safeReturnTo = sanitizeInternalPath(search.returnTo);
     if (hasAuthCookie) {
         redirect(safeReturnTo ?? toLocalizedPath(locale, "/account"));
     }
@@ -43,17 +43,19 @@ export default async function LoginPage({params, searchParams}: LoginPageProps) 
             title={t("shell.title")}
             description={t("shell.description")}
             highlights={[
-                t("shell.highlights.fast"),
-                t("shell.highlights.track"),
-                t("shell.highlights.secure"),
+                t("shell.highlights.orders"),
+                t("shell.highlights.addresses"),
+                t("shell.highlights.support"),
             ]}
             panelMaxWidthClassName="max-w-full md:max-w-[560px]"
-            mobileSummaryVariant="highlights"
+            mobileSummaryVariant="title"
+            mobileHighlightCount={1}
         >
-            <LoginPanel
+            <RegisterPanel
                 locale={locale}
                 returnTo={safeReturnTo ?? undefined}
-                expandEmail={search.email === "1"}
+                initialEmail={search.email}
+                startInVerify={search.step === "verify"}
             />
         </AuthPageShell>
     );

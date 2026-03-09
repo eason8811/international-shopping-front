@@ -58,14 +58,232 @@
     "logPrefix": "Unhandled locale error:",
     "fallbackMessage": "Unhandled rendering error."
   },
-  "LoginPage": {
-    "eyebrow": "Protected Route",
-    "title": "Please sign in first",
-    "description": "You need to sign in to access this route.",
-    "redirectLabel": "Original target",
+  "AuthLoginPage": {
+    "shell": {
+      "eyebrow": "Sign In",
+      "title": "Get back to your cross-border shopping workspace",
+      "description": "Social login comes first. Email login stays available as a secondary path in the same card.",
+      "highlights": {
+        "fast": "Shipping progress is always visible",
+        "track": "Order and logistics status stay in sync",
+        "secure": "Session and security validation are handled consistently"
+      }
+    },
+    "card": {
+      "title": "Sign In",
+      "subtitle": "Use a third-party account first"
+    },
+    "oauth": {
+      "google": "Continue with Google",
+      "tiktok": "Continue with TikTok",
+      "x": "Continue with X"
+    },
+    "or": "or",
+    "fields": {
+      "account": "Account",
+      "accountPlaceholder": "Username / Email / Phone",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "activationEmail": "Activation Email",
+      "activationEmailPlaceholder": "Email to receive the activation code"
+    },
     "actions": {
-      "goHome": "Back Home",
-      "continueAsGuest": "Continue as Guest"
+      "useEmail": "Use email login",
+      "forgotPassword": "Forgot password",
+      "submit": "Sign In",
+      "loggingIn": "Signing in",
+      "resendActivation": "Resend activation email",
+      "resendingActivation": "Sending",
+      "enterActivationCode": "Enter activation code"
+    },
+    "footer": {
+      "noAccount": "No account yet?",
+      "goRegister": "Create one"
+    },
+    "messages": {
+      "attention": "Activation required",
+      "submitFailed": "Submit failed",
+      "activationSent": "Activation email has been sent."
+    },
+    "errors": {
+      "accountRequired": "Account is required",
+      "passwordRequired": "Password is required",
+      "tooManyRequests": "Too many requests. Please try again later.",
+      "oauthAuthorizeMissing": "Authorization URL is missing. Please retry.",
+      "oauthFailed": "OAuth sign-in is temporarily unavailable.",
+      "network": "Network error. Please retry.",
+      "loginFailed": "Sign-in failed. Check your account and password.",
+      "activationEmailRequired": "Enter a valid email before resending.",
+      "activationResendFailed": "Failed to resend activation email."
+    }
+  },
+  "AuthRegisterPage": {
+    "shell": {
+      "eyebrow": "Create Account",
+      "title": "Register once and continue with orders and addresses",
+      "description": "The flow is split into registration and activation so users do not get lost between inbox and page.",
+      "highlights": {
+        "orders": "Track order progress right after activation",
+        "addresses": "Address book is ready for fast checkout",
+        "support": "Support and after-sales entry points stay visible"
+      }
+    },
+    "card": {
+      "title": "Create Account",
+      "subtitle": "Social signup first. Email signup remains as fallback."
+    },
+    "oauth": {
+      "google": "Continue with Google",
+      "tiktok": "Continue with TikTok",
+      "x": "Continue with X"
+    },
+    "or": "or register with email",
+    "fields": {
+      "email": "Email",
+      "emailPlaceholder": "Enter your primary email",
+      "password": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "passwordHint": "At least 8 characters. Include letters and numbers when possible.",
+      "username": "Username",
+      "usernamePlaceholder": "Used for sign-in and display",
+      "nickname": "Nickname",
+      "nicknamePlaceholder": "You can change this later",
+      "phoneCountryCode": "Phone country code (optional)",
+      "phoneCountryCodePlaceholder": "e.g. 86",
+      "phoneNationalNumber": "Phone number (optional)",
+      "phoneNationalNumberPlaceholder": "e.g. 13800138000",
+      "verifyCode": "Verification code",
+      "verifyCodePlaceholder": "Enter the 6-digit code"
+    },
+    "verify": {
+      "title": "Verify Email",
+      "email": "Current email: {email}",
+      "manualHint": "Status auto-polls for 60 seconds, then you can refresh manually.",
+      "status": {
+        "sent": "Sending",
+        "pending": "Not delivered yet",
+        "delivered": "Delivered",
+        "failed": "Delivery failed, please resend",
+        "unknown": "Status is temporarily unavailable",
+        "rawPrefix": "Current status"
+      }
+    },
+    "actions": {
+      "addPhoneOptional": "Add phone (optional)",
+      "create": "Create Account",
+      "creating": "Creating",
+      "verifyAndContinue": "Activate and continue",
+      "verifying": "Activating",
+      "resend": "Resend",
+      "resending": "Resending",
+      "resendCountdown": "Resend in {seconds}s",
+      "editEmail": "Edit email",
+      "refreshStatus": "Refresh status",
+      "refreshing": "Refreshing"
+    },
+    "footer": {
+      "hasAccount": "Already have an account?",
+      "goLogin": "Sign in",
+      "stayOnVerify": "Stay on activation flow"
+    },
+    "messages": {
+      "submitFailed": "Submit failed",
+      "statusUpdate": "Status update",
+      "activationSent": "Registration accepted. Activation email is being sent.",
+      "activationResent": "Activation email has been resent."
+    },
+    "errors": {
+      "invalidEmail": "Enter a valid email",
+      "passwordRule": "Password must be at least 8 characters",
+      "usernameRule": "Username must be at least 3 characters",
+      "nicknameRequired": "Nickname is required",
+      "phonePair": "Phone country code and phone number must be provided together",
+      "verifyCodeRule": "Enter a 6-digit verification code",
+      "tooManyRequests": "Too many requests. Please try again later.",
+      "oauthAuthorizeMissing": "Authorization URL is missing. Please retry.",
+      "oauthFailed": "OAuth signup is temporarily unavailable.",
+      "network": "Network error. Please retry.",
+      "emailTaken": "This email is already in use",
+      "usernameTaken": "This username is already in use",
+      "phoneTaken": "This phone number is already in use",
+      "registerFailed": "Registration failed. Check your input and retry.",
+      "activationEmailRequired": "Activation email is missing. Return to edit.",
+      "verifyCodeInvalid": "Verification code is invalid or expired.",
+      "verifyFailed": "Activation failed. Please retry.",
+      "activationResendFailed": "Failed to resend activation email."
+    }
+  },
+  "AuthForgotPasswordPage": {
+    "shell": {
+      "eyebrow": "Password Recovery",
+      "title": "Complete recovery in one route",
+      "description": "Send code by account, then reset password without jumping across multiple pages.",
+      "highlights": {
+        "recovery": "Recover session in two focused steps",
+        "security": "A new session is established after reset",
+        "resume": "Users can continue their original task directly"
+      }
+    },
+    "card": {
+      "title": "Forgot Password",
+      "subtitle": "Send a code first, then set a new password."
+    },
+    "fields": {
+      "account": "Account",
+      "accountPlaceholder": "Username / Email / Phone",
+      "countryCode": "Phone country code (optional)",
+      "countryCodePlaceholder": "e.g. 86",
+      "code": "Verification code",
+      "codePlaceholder": "Enter the 6-digit code",
+      "newPassword": "New password",
+      "newPasswordPlaceholder": "Enter your new password"
+    },
+    "reset": {
+      "accountLabel": "Resetting account"
+    },
+    "actions": {
+      "sendCode": "Send code",
+      "sending": "Sending",
+      "resetPassword": "Reset password",
+      "resetting": "Resetting",
+      "changeAccount": "Change account"
+    },
+    "footer": {
+      "backToLogin": "Back to login"
+    },
+    "messages": {
+      "submitFailed": "Submit failed",
+      "statusUpdate": "Status update",
+      "requestAccepted": "If the account exists, the code will be sent to its bound email."
+    },
+    "errors": {
+      "accountRequired": "Account is required",
+      "codeRule": "Enter a 6-digit code",
+      "newPasswordRule": "New password must be at least 6 characters",
+      "tooManyRequests": "Too many requests. Please try again later.",
+      "requestFailed": "Failed to send verification code.",
+      "network": "Network error. Please retry.",
+      "codeInvalid": "Verification code is invalid or expired.",
+      "resetFailed": "Password reset failed. Please retry."
+    }
+  },
+  "AuthOAuthCallbackPage": {
+    "card": {
+      "title": "Completing OAuth",
+      "subtitle": "We are confirming your session and preparing the redirect."
+    },
+    "status": {
+      "processing": "Completing sign-in",
+      "success": "Sign-in successful, redirecting"
+    },
+    "actions": {
+      "backToLogin": "Back to login",
+      "useEmail": "Use email login"
+    },
+    "errors": {
+      "providerMissing": "Missing OAuth provider. Please restart sign-in.",
+      "callbackFailed": "OAuth callback processing failed. Please retry.",
+      "sessionNotEstablished": "Session is not established. Please sign in again."
     }
   }
 }
