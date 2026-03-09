@@ -1,32 +1,22 @@
 {
   "Metadata": {
     "title": "国际购物平台",
-    "description": "面向跨境电商的前端工程底座，采用 BFF 与契约优先架构。"
+    "description": "面向跨境电商的多语言购物前端。"
   },
   "HomePage": {
-    "eyebrow": "Phase 0 已就绪",
-    "title": "工程底座与契约层已上线。",
-    "description": "当前已通过 next-intl 提供按语言路由能力，后续业务页面请在 locale 路由段内持续交付。",
+    "eyebrow": "International Shopping",
+    "title": "欢迎来到国际购物平台",
+    "description": "请选择入口继续登录, 注册或管理你的账户与地址。",
     "actions": {
-      "browseProducts": "浏览商品",
-      "goAdmin": "进入管理端"
+      "login": "登录",
+      "register": "注册",
+      "account": "账户中心",
+      "addresses": "地址管理"
     },
     "language": "语言",
     "languageOptions": {
       "en-US": "英文",
       "zh-CN": "简体中文"
-    }
-  },
-  "SessionProbe": {
-    "title": "会话契约探针",
-    "loading": "正在检查 /api/bff/me ...",
-    "success": "会话检查通过。",
-    "unknownError": "未知网络错误。",
-    "labels": {
-      "userId": "用户 ID",
-      "code": "错误码",
-      "traceId": "Trace ID",
-      "missingTraceId": "缺失"
     }
   },
   "TrackedError": {
@@ -71,7 +61,7 @@
   "LoginPage": {
     "eyebrow": "受保护路由",
     "title": "请先登录",
-    "description": "该路由在 Phase 0 已启用守卫。完整登录流程将在 Phase 1 交付。",
+    "description": "该路由需要登录后访问。",
     "redirectLabel": "原始目标",
     "actions": {
       "goHome": "返回首页",

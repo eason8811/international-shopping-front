@@ -1,32 +1,22 @@
 {
   "Metadata": {
     "title": "International Shopping Platform",
-    "description": "Cross-border ecommerce front-end baseline with BFF and contract-first architecture."
+    "description": "A multilingual frontend for cross-border shopping."
   },
   "HomePage": {
-    "eyebrow": "Phase 0 Ready",
-    "title": "Engineering foundation and contract layer are online.",
-    "description": "Locale-aware routing is now provided by next-intl. Continue business delivery under the locale segment.",
+    "eyebrow": "International Shopping",
+    "title": "Welcome to International Shopping",
+    "description": "Choose an entry to sign in, register, or manage your account and addresses.",
     "actions": {
-      "browseProducts": "Browse Products",
-      "goAdmin": "Open Admin"
+      "login": "Sign In",
+      "register": "Register",
+      "account": "Account",
+      "addresses": "Addresses"
     },
     "language": "Language",
     "languageOptions": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese"
-    }
-  },
-  "SessionProbe": {
-    "title": "Session Contract Probe",
-    "loading": "Checking /api/bff/me ...",
-    "success": "Session check succeeded.",
-    "unknownError": "Unknown network error.",
-    "labels": {
-      "userId": "User ID",
-      "code": "Code",
-      "traceId": "Trace ID",
-      "missingTraceId": "missing"
     }
   },
   "TrackedError": {
@@ -71,7 +61,7 @@
   "LoginPage": {
     "eyebrow": "Protected Route",
     "title": "Please sign in first",
-    "description": "This route is guarded in Phase 0. Full login flow will be delivered in Phase 1.",
+    "description": "You need to sign in to access this route.",
     "redirectLabel": "Original target",
     "actions": {
       "goHome": "Back Home",

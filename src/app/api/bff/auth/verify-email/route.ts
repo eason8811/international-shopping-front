@@ -1,0 +1,18 @@
+import type {NextRequest} from "next/server";
+
+import {proxyBffRequest} from "@/lib/api/bff";
+
+/**
+ * BFF: 邮箱验证码激活
+ *
+ * 映射: `POST /api/bff/auth/verify-email` -> `POST /api/v1/auth/verify-email`
+ *
+ * @param request Next 请求对象
+ * @returns 统一 `Result` 响应, 透传后端 `Set-Cookie`
+ */
+export async function POST(request: NextRequest) {
+    return proxyBffRequest(request, {
+        backendPath: "/auth/verify-email",
+        method: "POST",
+    });
+}

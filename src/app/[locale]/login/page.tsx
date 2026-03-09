@@ -15,7 +15,7 @@ interface LoginPageProps {
 }
 
 /**
- * Phase 0 登录占位页, 作为守卫跳转承接点, 展示下一步可执行动作
+ * 登录占位页, 作为守卫跳转承接点, 展示下一步可执行动作
  *
  * @param props 页面入参
  * @returns 登录占位页面
