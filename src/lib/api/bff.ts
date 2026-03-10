@@ -243,7 +243,7 @@ function handleResultEnvelope(
 ): NextResponse {
     const traceId = getTraceId(payload, upstream.headers);
 
-    if (upstream.status === 200 && payload.success) {
+    if (upstream.ok && payload.success) {
         return createSuccessResponse(
             {
                 success: true,

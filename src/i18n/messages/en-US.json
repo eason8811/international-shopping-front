@@ -1,32 +1,19 @@
 {
   "Metadata": {
     "title": "International Shopping Platform",
-    "description": "Cross-border ecommerce front-end baseline with BFF and contract-first architecture."
+    "description": "Cross-border ecommerce app shell with BFF and contract-first architecture."
   },
   "HomePage": {
-    "eyebrow": "Phase 0 Ready",
-    "title": "Engineering foundation and contract layer are online.",
-    "description": "Locale-aware routing is now provided by next-intl. Continue business delivery under the locale segment.",
+    "eyebrow": "International Shopping",
+    "title": "App shell and user-domain access layer are ready.",
+    "description": "The repository now exposes user-domain BFF routes and feature access methods. Business UI pages will be delivered in later phases.",
     "actions": {
-      "browseProducts": "Browse Products",
-      "goAdmin": "Open Admin"
+      "openLogin": "Open Login Placeholder"
     },
     "language": "Language",
     "languageOptions": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese"
-    }
-  },
-  "SessionProbe": {
-    "title": "Session Contract Probe",
-    "loading": "Checking /api/bff/me ...",
-    "success": "Session check succeeded.",
-    "unknownError": "Unknown network error.",
-    "labels": {
-      "userId": "User ID",
-      "code": "Code",
-      "traceId": "Trace ID",
-      "missingTraceId": "missing"
     }
   },
   "TrackedError": {
@@ -69,13 +56,12 @@
     "fallbackMessage": "Unhandled rendering error."
   },
   "LoginPage": {
-    "eyebrow": "Protected Route",
-    "title": "Please sign in first",
-    "description": "This route is guarded in Phase 0. Full login flow will be delivered in Phase 1.",
+    "eyebrow": "Reserved Auth Route",
+    "title": "Login UI is not implemented yet",
+    "description": "Only the user-domain BFF routes and feature access layer are implemented for now. This route is reserved for the future login page.",
     "redirectLabel": "Original target",
     "actions": {
-      "goHome": "Back Home",
-      "continueAsGuest": "Continue as Guest"
+      "goHome": "Back Home"
     }
   }
 }

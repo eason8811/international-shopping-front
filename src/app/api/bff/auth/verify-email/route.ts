@@ -3,18 +3,18 @@ import type {NextRequest} from "next/server";
 import {proxyBffRequest} from "@/lib/api/bff";
 
 /**
- * BFF: 刷新登录令牌
+ * BFF, 验证注册邮箱验证码
  *
- * 映射：`POST /api/bff/auth/refresh` -> `POST /api/v1/auth/refresh-token`
+ * 映射, `POST /api/bff/auth/verify-email` -> `POST /api/v1/auth/verify-email`
  *
  * @param request Next 请求对象
- * @returns 统一 `Result` 响应，透传后端 `Set-Cookie`
+ * @returns 统一 `Result` 响应
  */
 export async function POST(request: NextRequest) {
     return proxyBffRequest(request, {
-        backendPath: "/auth/refresh-token",
+        backendPath: "/auth/verify-email",
         method: "POST",
         requireCsrf: false,
-        includeBody: false,
+        includeBody: true,
     });
 }

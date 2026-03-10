@@ -15,7 +15,7 @@ interface LoginPageProps {
 }
 
 /**
- * Phase 0 登录占位页, 作为守卫跳转承接点, 展示下一步可执行动作
+ * 登录占位页, 仅用于承接路由守卫跳转
  *
  * @param props 页面入参
  * @returns 登录占位页面
@@ -46,9 +46,6 @@ export default async function LoginPage({searchParams}: LoginPageProps) {
                 <CardFooter className="justify-end gap-2 border-t border-zinc-200 bg-zinc-50/80">
                     <Button asChild variant="outline">
                         <Link href="/">{t("actions.goHome")}</Link>
-                    </Button>
-                    <Button asChild>
-                        <Link href="/products">{t("actions.continueAsGuest")}</Link>
                     </Button>
                 </CardFooter>
             </Card>
