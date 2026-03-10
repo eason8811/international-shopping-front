@@ -39,22 +39,7 @@ function resolveLocaleAndPath(pathname: string): { locale: string; appPath: stri
  * @returns 是否命中受保护路径
  */
 function isProtectedPath(pathname: string): boolean {
-    return (
-        pathname === "/me"
-        || pathname.startsWith("/me/")
-        || pathname === "/account"
-        || pathname.startsWith("/account/")
-        || pathname === "/addresses"
-        || pathname.startsWith("/addresses/")
-        || pathname === "/orders"
-        || pathname.startsWith("/orders/")
-        || pathname === "/payments"
-        || pathname.startsWith("/payments/")
-        || pathname === "/support"
-        || pathname.startsWith("/support/")
-        || pathname === "/admin"
-        || pathname.startsWith("/admin/")
-    );
+    return pathname === "/me" || pathname.startsWith("/me/") || pathname === "/admin" || pathname.startsWith("/admin/");
 }
 
 /**
