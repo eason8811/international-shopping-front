@@ -1,60 +1,57 @@
-import {cookies} from "next/headers";
+import {LockKeyhole} from "lucide-react";
 import {getTranslations} from "next-intl/server";
-import {redirect} from "next/navigation";
 
-import {sanitizeInternalPath, toLocalizedPath} from "@/features/auth/api/client";
-import {AuthPageShell} from "@/features/auth/components/auth-page-shell";
-import {LoginPanel} from "@/features/auth/components/login-panel";
+import {Link} from "@/i18n/navigation";
+import {Badge} from "@/components/ui/badge";
+import {Button} from "@/components/ui/button";
+import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 
 /**
- * 登录页属性, 包含 locale 参数和重定向查询参数
+ * 登录页入参, 读取守卫带来的 redirect 参数
  */
 interface LoginPageProps {
-    params: Promise<{ locale: string }>;
-    searchParams: Promise<{
-        redirect?: string;
-        returnTo?: string;
-        email?: string;
-    }>;
+    /** 查询参数, redirect 用于记录原始目标路径 */
+    searchParams: Promise<{ redirect?: string }>;
 }
 
 /**
- * 渲染登录页, 已认证用户会跳到账户页或请求路径
+ * 登录占位页, 作为守卫跳转承接点, 展示下一步可执行动作
  *
- * @param props 登录页属性
- * @returns 登录页视图
+ * @param props 页面入参
+ * @returns 登录占位页面
  */
-export default async function LoginPage({params, searchParams}: LoginPageProps) {
-    const {locale} = await params;
-    const search = await searchParams;
-    const t = await getTranslations({locale, namespace: "AuthLoginPage"});
-
-    const cookieStore = await cookies();
-    const hasAuthCookie = Boolean(cookieStore.get("access_token")?.value || cookieStore.get("refresh_token")?.value);
-
-    const safeReturnTo = sanitizeInternalPath(search.returnTo ?? search.redirect);
-    if (hasAuthCookie) {
-        redirect(safeReturnTo ?? toLocalizedPath(locale, "/account"));
-    }
+export default async function LoginPage({searchParams}: LoginPageProps) {
+    const t = await getTranslations("LoginPage");
+    const {redirect} = await searchParams;
 
     return (
-        <AuthPageShell
-            eyebrow={t("shell.eyebrow")}
-            title={t("shell.title")}
-            description={t("shell.description")}
-            highlights={[
-                t("shell.highlights.fast"),
-                t("shell.highlights.track"),
-                t("shell.highlights.secure"),
-            ]}
-            panelMaxWidthClassName="max-w-full md:max-w-[560px]"
-            mobileSummaryVariant="highlights"
-        >
-            <LoginPanel
-                locale={locale}
-                returnTo={safeReturnTo ?? undefined}
-                expandEmail={search.email === "1"}
-            />
-        </AuthPageShell>
+        <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-6 py-16">
+            <Card className="w-full max-w-xl border border-zinc-200 bg-white">
+                <CardHeader className="space-y-2">
+                    <div
+                        className="inline-flex w-fit items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">
+                        <LockKeyhole className="size-3.5"/>
+                        <span>{t("eyebrow")}</span>
+                    </div>
+                    <CardTitle className="text-2xl leading-tight text-zinc-950">{t("title")}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-zinc-600">
+                    <p>{t("description")}</p>
+                    {redirect ? (
+                        <Badge variant="outline" className="break-all whitespace-normal">
+                            {t("redirectLabel")}: {redirect}
+                        </Badge>
+                    ) : null}
+                </CardContent>
+                <CardFooter className="justify-end gap-2 border-t border-zinc-200 bg-zinc-50/80">
+                    <Button asChild variant="outline">
+                        <Link href="/">{t("actions.goHome")}</Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/products">{t("actions.continueAsGuest")}</Link>
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
     );
 }

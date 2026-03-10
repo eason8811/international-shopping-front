@@ -9,28 +9,28 @@ import {IDEMPOTENCY_HEADER_NAME, resolveIdempotencyKey} from "./idempotency";
 import {getTraceId, isResultEnvelope, parseJsonSafely, type ResultCode, type ResultEnvelope} from "./result";
 
 /**
- * 默认开启 CSRF 校验和请求体透传的 HTTP 方法
+ * 需要默认开启 CSRF 校验与请求体透传的 HTTP 方法
  */
 const WRITE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 /**
- * 代理请求配置, 用于 BFF 转发流程
+ * BFF 代理请求配置
  */
 export interface ProxyBffRequestOptions {
-    /** 后端 API 路径, 相对于 `/api/v1` */
+    /** 后端 API 路径 (相对于 `/api/v1`) */
     backendPath: string;
-    /** 指定上游请求方法, 默认沿用入站请求方法 */
+    /** 指定上游请求方法；默认沿用入站请求方法 */
     method?: string;
-    /** 是否强制要求 CSRF, 默认在写请求中开启 */
+    /** 是否强制要求 CSRF (默认写请求开启) */
     requireCsrf?: boolean;
-    /** 是否透传请求体, 默认在写请求中透传 */
+    /** 是否透传请求体 (默认写请求透传) */
     includeBody?: boolean;
     /** 是否注入幂等键 */
     idempotent?: boolean;
 }
 
 /**
- * 对外成功响应体, 统一遵循 `Result` 语义
+ * 对外成功响应体, 统一为 `Result` 语义
  *
  * @template T 业务数据类型
  */
@@ -45,7 +45,7 @@ interface NormalizedSuccessPayload<T = unknown> {
 }
 
 /**
- * 对外失败响应体, 统一遵循 `Result` 语义
+ * 对外失败响应体, 统一为 `Result` 语义
  */
 interface NormalizedErrorPayload {
     success: false;
@@ -56,11 +56,17 @@ interface NormalizedErrorPayload {
 }
 
 /**
- * 统一 BFF 代理入口, 负责转发请求到后端并规范化响应
+ * 统一 BFF 代理入口
+ *
+ * 职责:
+ * 1. 构建上游请求头 (Cookie, CSRF, 幂等键)
+ * 2. 透传 query 和请求体
+ * 3. 归一化上游成功/失败响应为前端统一协议
+ * 4. 透传 `Set-Cookie` 和 `x-trace-id`
  *
  * @param request Next 请求对象
  * @param options 代理配置
- * @returns 规范化后的 BFF 响应
+ * @returns 归一化后的 BFF 响应
  */
 export async function proxyBffRequest(request: NextRequest, options: ProxyBffRequestOptions): Promise<NextResponse> {
     const method = (options.method ?? request.method).toUpperCase();
@@ -123,7 +129,7 @@ export async function proxyBffRequest(request: NextRequest, options: ProxyBffReq
 }
 
 /**
- * 构建上游请求头时使用的控制项
+ * 构建上游请求头时所需的控制项
  */
 interface BuildHeaderOptions {
     /** 上游请求方法 */
@@ -132,12 +138,12 @@ interface BuildHeaderOptions {
     requireCsrf: boolean;
     /** 是否注入幂等键 */
     idempotent?: boolean;
-    /** 用于累积需要写回浏览器的 `Set-Cookie` */
+    /** 用于累积需要写回给浏览器的 `Set-Cookie` */
     collectedSetCookies: string[];
 }
 
 /**
- * 构造发往后端的请求头, 处理 cookie, CSRF 和幂等键
+ * 构造发往后端的请求头
  *
  * @param request 入站请求
  * @param options 构建参数
@@ -207,10 +213,10 @@ function withForwardedQuery(path: string, requestUrl: string): string {
 }
 
 /**
- * 读取请求体, 空字符串视为无请求体
+ * 读取请求体；空字符串视为无请求体
  *
  * @param request Next 请求对象
- * @returns 请求体字符串, 或 `undefined`
+ * @returns 请求体字符串或 `undefined`
  */
 async function readRequestBody(request: NextRequest): Promise<string | undefined> {
     const rawBody = await request.text();
@@ -237,7 +243,7 @@ function handleResultEnvelope(
 ): NextResponse {
     const traceId = getTraceId(payload, upstream.headers);
 
-    if (upstream.status < 400 && payload.success) {
+    if (upstream.status === 200 && payload.success) {
         return createSuccessResponse(
             {
                 success: true,
@@ -262,7 +268,7 @@ function handleResultEnvelope(
 }
 
 /**
- * 构造统一成功响应, 并附加透传头
+ * 构造统一成功响应并附加透传头
  *
  * @param payload 成功响应体
  * @param setCookies 需要透传的 `Set-Cookie`
@@ -280,7 +286,7 @@ function createSuccessResponse(payload: NormalizedSuccessPayload, setCookies: st
 }
 
 /**
- * 构造统一错误响应, 并附加透传头
+ * 构造统一错误响应并附加透传头
  *
  * @param error 标准化错误对象
  * @param setCookies 需要透传的 `Set-Cookie`
@@ -306,7 +312,7 @@ function createErrorResponse(error: ApiError, setCookies: string[]): NextRespons
 }
 
 /**
- * 将任意错误归一化为 `ApiError`
+ * 归一化任意错误为 `ApiError`
  *
  * @param error 任意抛出值
  * @returns 标准化后的 `ApiError`
@@ -335,6 +341,12 @@ function normalizeError(error: unknown): ApiError {
 
 /**
  * 从上游失败响应中提取可展示消息
+ *
+ * 提取优先级:
+ * 1. `ResultEnvelope.message`
+ * 2. 任意对象中的 `message`
+ * 3. 原始文本
+ * 4. 兜底文案
  *
  * @param payload 已解析上游响应
  * @param rawText 上游原始文本
