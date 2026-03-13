@@ -5,10 +5,12 @@
   },
   "HomePage": {
     "eyebrow": "International Shopping",
-    "title": "应用壳与用户域访问层已就绪。",
-    "description": "当前仓库已接入 user 域 BFF 与 feature 访问方法，业务 UI 页面将在后续阶段继续交付。",
+    "title": "Phase 1 账号与地址页面已接入真实业务流程。",
+    "description": "现在可以从登录, 注册, 邮箱验证, 找回密码一路进入个人中心, 并完成资料维护与地址管理。",
     "actions": {
-      "openLogin": "打开登录占位页"
+      "openLogin": "打开登录页",
+      "openRegister": "打开注册页",
+      "openAccount": "打开个人中心"
     },
     "language": "语言",
     "languageOptions": {
@@ -16,28 +18,49 @@
       "zh-CN": "简体中文"
     }
   },
+  "AuthShell": {
+    "brand": "跨境交易账户中心",
+    "actions": {
+      "backHome": "返回首页"
+    },
+    "highlights": {
+      "session": {
+        "title": "会话安全收口",
+        "description": "登录, 注册, 验证和退出都统一走 BFF, 不把敏感信息散到页面实现里。"
+      },
+      "address": {
+        "title": "默认地址先到位",
+        "description": "把收货信息提前补全, 后续下单与支付页面可以直接复用。"
+      },
+      "checkout": {
+        "title": "为交易闭环铺路",
+        "description": "Phase 1 完成后, 用户已经具备进入购物车与结算链路的前置条件。"
+      }
+    },
+    "footer": "保持信息完整, 能显著减少下单阶段的中断和返工。"
+  },
   "TrackedError": {
     "title": "统一错误展示",
     "kinds": {
       "unauthorized": {
         "title": "需要先登录",
-        "description": "会话不存在或已过期，请登录后重试。"
+        "description": "会话不存在或已过期, 请登录后重试。"
       },
       "csrf": {
         "title": "安全校验失败",
-        "description": "CSRF 校验失败，请刷新页面后重试。"
+        "description": "CSRF 校验失败, 请刷新页面后重试。"
       },
       "rateLimit": {
         "title": "请求过于频繁",
-        "description": "当前触发频率限制，请稍后再试。"
+        "description": "当前触发频率限制, 请稍后再试。"
       },
       "server": {
         "title": "服务暂时不可用",
-        "description": "上游服务异常，请重试；若持续失败请反馈 Trace ID。"
+        "description": "上游服务异常, 请重试, 若持续失败请反馈 Trace ID。"
       },
       "unknown": {
         "title": "请求失败",
-        "description": "发生未知异常，请重试或携带 Trace ID 联系支持。"
+        "description": "发生未知异常, 请重试或携带 Trace ID 联系支持。"
       }
     },
     "labels": {
@@ -56,12 +79,487 @@
     "fallbackMessage": "页面渲染出现未处理错误。"
   },
   "LoginPage": {
-    "eyebrow": "登录路由预留",
-    "title": "登录 UI 暂未实现",
-    "description": "当前只完成 user 域 BFF 与 feature 访问层，这个路由保留给后续登录页面接入。",
-    "redirectLabel": "原始目标",
+    "eyebrow": "账号登录",
+    "title": "回到你的全球购物账户",
+    "description": "登录后即可查看个人资料, 保存地址, 并为后续购物车与下单流程做好准备。",
+    "cardTag": "账号访问",
+    "cardTitle": "登录并继续",
+    "cardDescription": "支持用户名, 邮箱或手机号登录。若使用手机号, 可以补充国家码帮助后端准确识别。",
+    "redirectLabel": "登录后返回",
+    "fields": {
+      "account": "账号",
+      "countryCode": "手机号国家码",
+      "password": "密码"
+    },
+    "placeholders": {
+      "account": "输入用户名, 邮箱或手机号",
+      "countryCode": "如 +86 或 +1",
+      "password": "输入登录密码"
+    },
+    "hints": {
+      "account": "建议直接输入常用邮箱或用户名, 降低登录路径的思考成本。",
+      "countryCode": "仅当账号字段填的是手机号时需要填写。"
+    },
     "actions": {
-      "goHome": "返回首页"
+      "forgotPassword": "忘记密码",
+      "submitting": "登录中",
+      "submit": "登录"
+    },
+    "footer": {
+      "prompt": "还没有账号？",
+      "action": "立即注册"
+    },
+    "errors": {
+      "title": "登录失败",
+      "submitFailed": "登录请求失败, 请稍后重试。"
+    }
+  },
+  "RegisterPage": {
+    "eyebrow": "创建账号",
+    "title": "先建立身份, 再进入完整交易链路",
+    "description": "注册完成后可立即进入邮箱验证, 激活当前会话, 并继续完善资料与地址。",
+    "cardTag": "邮箱验证流程",
+    "cardTitle": "创建你的新账号",
+    "cardDescription": "填写基础账户信息后, 页面会直接进入验证码验证阶段。",
+    "fields": {
+      "username": "用户名",
+      "nickname": "昵称",
+      "email": "邮箱",
+      "password": "密码",
+      "confirmPassword": "确认密码",
+      "phoneOptional": "手机号, 可选"
+    },
+    "placeholders": {
+      "username": "建议使用便于记忆的用户名",
+      "nickname": "个人昵称",
+      "email": "输入常用邮箱",
+      "password": "设置登录密码",
+      "confirmPassword": "再次输入密码",
+      "phoneCountryCode": "+86",
+      "phoneNationalNumber": "手机号"
+    },
+    "hints": {
+      "phone": "手机号不是必填项, 但补齐后有利于后续通知和账户找回。"
+    },
+    "actions": {
+      "submitting": "提交中",
+      "submit": "创建账号并发送验证码",
+      "verifying": "验证中",
+      "verify": "验证邮箱",
+      "resend": "重新发送邮件",
+      "checkingStatus": "检查中",
+      "checkStatus": "查询投递状态"
+    },
+    "footer": {
+      "prompt": "已经有账号？",
+      "action": "返回登录"
+    },
+    "verify": {
+      "noticeTitle": "验证码已发送",
+      "description": "输入邮箱中的 6 位验证码, 完成激活后即可进入个人中心。",
+      "sentTo": "验证码已发送到以下邮箱",
+      "codeLabel": "邮箱验证码",
+      "deliveryStatus": "邮件投递状态",
+      "messageId": "消息 ID",
+      "resendTitle": "邮件已重新发送",
+      "statusTitle": "邮件状态已更新",
+      "statusDelivered": "邮件已送达, 请检查收件箱或垃圾邮件文件夹。",
+      "statusPending": "邮件仍在投递链路中, 可以稍后再次查询。"
+    },
+    "success": {
+      "title": "邮箱验证完成",
+      "description": "当前会话已经激活, 接下来可以直接进入个人中心补齐资料与地址。",
+      "action": "进入个人中心"
+    },
+    "errors": {
+      "title": "注册流程失败",
+      "passwordMismatch": "两次输入的密码不一致, 请重新确认。",
+      "submitFailed": "注册请求失败, 请稍后重试。",
+      "verifyFailed": "邮箱验证码验证失败, 请检查后重试。",
+      "resendFailed": "重发激活邮件失败, 请稍后再试。",
+      "statusFailed": "查询邮箱投递状态失败, 请稍后再试。"
+    }
+  },
+  "ForgotPasswordPage": {
+    "eyebrow": "找回密码",
+    "title": "先验证身份, 再重置当前账户密码",
+    "description": "找回密码走独立验证码流程, 成功后会自动恢复会话, 方便你继续完善资料或下单。",
+    "cardTag": "密码恢复",
+    "cardTitle": "重置访问凭据",
+    "cardDescription": "填写账号后先发起验证码申请, 再完成新密码设置。",
+    "fields": {
+      "account": "账号",
+      "countryCode": "手机号国家码",
+      "newPassword": "新密码",
+      "confirmPassword": "确认新密码"
+    },
+    "placeholders": {
+      "account": "输入用户名, 邮箱或手机号",
+      "countryCode": "如 +86 或 +1",
+      "newPassword": "输入新的登录密码",
+      "confirmPassword": "再次输入新密码"
+    },
+    "hints": {
+      "countryCode": "仅当使用手机号找回时填写。"
+    },
+    "actions": {
+      "sending": "发送中",
+      "sendCode": "发送验证码",
+      "resetting": "重置中",
+      "reset": "重置密码"
+    },
+    "footer": {
+      "prompt": "想起密码了？",
+      "action": "返回登录"
+    },
+    "request": {
+      "noticeTitle": "验证码申请已提交"
+    },
+    "reset": {
+      "description": "输入验证码并设置新密码, 成功后会自动恢复当前登录态。",
+      "accountLabel": "当前找回账号",
+      "codeLabel": "验证码"
+    },
+    "success": {
+      "title": "密码已重置",
+      "description": "新密码已经生效, 可以直接进入个人中心继续操作。",
+      "action": "进入个人中心"
+    },
+    "errors": {
+      "title": "密码恢复失败",
+      "requestFailed": "验证码申请失败, 请稍后重试。",
+      "passwordMismatch": "两次输入的新密码不一致, 请重新确认。",
+      "resetFailed": "密码重置失败, 请检查验证码后重试。"
+    }
+  },
+  "AccountPage": {
+    "eyebrow": "个人中心",
+    "title": "先把账号资料与地址维护扎实",
+    "description": "这个页面整合了账号, 个人资料和地址簿三个 Phase 1 核心任务, 让用户从首次登录就能走到可下单状态。",
+    "headerStats": {
+      "status": "账户状态",
+      "lastLogin": "最近登录",
+      "never": "暂无记录",
+      "addresses": "地址数量"
+    },
+    "status": {
+      "ACTIVE": "正常",
+      "DISABLED": "已停用"
+    },
+    "summary": {
+      "emailReady": "邮箱已接入",
+      "phoneReady": "联系电话已补齐",
+      "profileReady": "展示资料已完善",
+      "addressReady": "默认地址已配置",
+      "email": "邮箱",
+      "emailMissing": "未设置邮箱",
+      "phone": "联系电话",
+      "phoneMissing": "未设置手机号",
+      "defaultAddress": "默认地址",
+      "addressMissing": "还没有默认地址",
+      "defaultAddressReady": "默认地址已就绪",
+      "addAddress": "新增地址",
+      "loggingOut": "退出中",
+      "logout": "退出登录"
+    },
+    "readiness": {
+      "title": "可下单准备度",
+      "description": "把以下项目都补齐后, 后续 checkout 页面可以直接复用这些信息。",
+      "ready": "已完成",
+      "pending": "待完成"
+    },
+    "navigation": {
+      "title": "快速定位",
+      "description": "直接跳到当前最需要处理的板块。",
+      "account": "账号信息",
+      "profile": "资料补充",
+      "address": "地址簿"
+    },
+    "accountForm": {
+      "title": "账号信息",
+      "description": "维护登录识别信息与基础联系方式, 保持后续通知链路稳定。",
+      "successTitle": "账号信息已更新",
+      "successMessage": "新的昵称和联系电话已保存。",
+      "updatedAt": "账户最近更新时间",
+      "fields": {
+        "username": "用户名",
+        "email": "邮箱",
+        "nickname": "昵称",
+        "phoneCountryCode": "手机号国家码",
+        "phoneNationalNumber": "手机号"
+      },
+      "actions": {
+        "saving": "保存中",
+        "save": "保存账号信息"
+      }
+    },
+    "profileForm": {
+      "title": "个人资料",
+      "description": "展示名, 性别, 所在地区和补充地址会用于后续页面的人性化展示。",
+      "successTitle": "资料已更新",
+      "successMessage": "个人资料已经同步到最新状态。",
+      "updatedAt": "资料同步时间",
+      "fields": {
+        "displayName": "展示名",
+        "birthday": "生日",
+        "gender": "性别",
+        "country": "国家",
+        "province": "省份",
+        "city": "城市",
+        "addressLine": "详细地址",
+        "zipcode": "邮编"
+      },
+      "placeholders": {
+        "gender": "请选择性别"
+      },
+      "gender": {
+        "UNKNOWN": "暂不透露",
+        "MALE": "男",
+        "FEMALE": "女"
+      },
+      "actions": {
+        "saving": "保存中",
+        "save": "保存个人资料"
+      }
+    },
+    "addressSection": {
+      "title": "地址簿",
+      "description": "管理收货地址, 默认地址会优先用于下单预览和结算。",
+      "defaultBadge": "默认地址",
+      "emptyTitle": "还没有可用地址",
+      "emptyDescription": "先补一条完整收货地址, 后续下单时可以直接带入。",
+      "createTitle": "地址已创建",
+      "createMessage": "新的收货地址已经加入地址簿。",
+      "updateTitle": "地址已更新",
+      "updateMessage": "当前地址变更已保存。",
+      "defaultTitle": "默认地址已切换",
+      "defaultMessage": "后续下单会优先使用这条地址。",
+      "deleteTitle": "地址已删除",
+      "deleteMessage": "该地址已经从地址簿中移除。",
+      "deleteConfirmTitle": "确认删除这条地址？",
+      "deleteConfirmDescription": "删除后将无法直接用于后续下单, 如仍需要请重新创建。",
+      "validation": {
+        "UNVALIDATED": "待校验",
+        "ACCEPT": "已接受",
+        "REVIEW": "待复核",
+        "FIX": "待修正",
+        "REJECT": "已拒绝"
+      },
+      "meta": {
+        "updatedAt": "最近更新",
+        "source": "来源"
+      },
+      "actions": {
+        "add": "新增地址",
+        "setDefault": "设为默认",
+        "edit": "编辑",
+        "delete": "删除",
+        "cancel": "取消",
+        "confirmDelete": "确认删除"
+      }
+    },
+    "addressDialog": {
+      "createTitle": "新增收货地址",
+      "editTitle": "编辑收货地址",
+      "description": "先补齐最核心的收件与地区信息, 保持订单收货链路清晰可用。",
+      "fields": {
+        "receiverName": "收件人",
+        "country": "国家",
+        "phoneCountryCode": "手机号国家码",
+        "phoneNationalNumber": "手机号",
+        "countryCode": "国家编码",
+        "addressLine1": "地址第一行",
+        "addressLine2": "地址第二行, 可选",
+        "province": "省份",
+        "city": "城市",
+        "district": "区县",
+        "zipcode": "邮编",
+        "isDefault": "保存为默认地址"
+      },
+      "actions": {
+        "cancel": "取消",
+        "saving": "保存中",
+        "save": "保存地址"
+      },
+      "errors": {
+        "title": "地址信息不完整",
+        "required": "请至少填写收件人, 电话, 国家编码, 国家和地址第一行。"
+      }
+    },
+    "errors": {
+      "title": "操作失败",
+      "accountSaveFailed": "账号信息保存失败, 请稍后重试。",
+      "profileSaveFailed": "个人资料保存失败, 请稍后重试。",
+      "addressSaveFailed": "地址保存失败, 请稍后重试。",
+      "addressDefaultFailed": "默认地址切换失败, 请稍后重试。",
+      "addressDeleteFailed": "地址删除失败, 请稍后重试。",
+      "logoutFailed": "退出登录失败, 请稍后重试。"
+    }
+  },
+  "AuthUi": {
+    "layout": {
+      "imageAlt": "极简抽象背景",
+      "quote": "“以更顺滑的跨境购物体验，连接全球精选时尚与生活方式商品，并将它们直接送到你的门口。”",
+      "quoteAuthor": "GlobalLink Commerce"
+    },
+    "social": {
+      "google": "使用 Google 继续",
+      "tiktok": "使用 TikTok 继续",
+      "x": "使用 X 继续",
+      "comingSoon": "社交登录暂未开放。"
+    },
+    "login": {
+      "title": "欢迎回来",
+      "subtitle": "登录账户后继续购物。",
+      "divider": "或",
+      "continueWithEmail": "使用邮箱继续",
+      "footerPrompt": "还没有账号？",
+      "footerAction": "立即注册"
+    },
+    "register": {
+      "title": "创建账号",
+      "subtitle": "加入 GlobalLink，开启你的跨境购物旅程。",
+      "divider": "或",
+      "continueWithEmail": "使用邮箱继续",
+      "footerPrompt": "已经有账号？",
+      "footerAction": "去登录",
+      "legalPrefix": "点击继续即表示你同意我们的",
+      "legalTerms": "服务条款",
+      "legalMiddle": "和",
+      "legalPrivacy": "隐私政策"
+    },
+    "forgot": {
+      "title": "重置访问权限",
+      "subtitle": "先完成邮箱验证，再设置新的登录密码。",
+      "footerPrompt": "已经想起来了？",
+      "footerAction": "返回登录"
+    },
+    "form": {
+      "labels": {
+        "account": "账号",
+        "email": "邮箱地址",
+        "verificationSentTo": "验证码已发送至",
+        "password": "密码",
+        "newPassword": "新密码",
+        "confirmPassword": "确认密码"
+      },
+      "placeholders": {
+        "account": "邮箱或手机号",
+        "email": "name@example.com",
+        "phone": "手机号",
+        "password": "••••••••"
+      },
+      "actions": {
+        "forgotPassword": "忘记密码？"
+      },
+      "buttons": {
+        "signIn": "登录账户",
+        "sendCode": "发送邮箱验证码",
+        "verify": "验证",
+        "resetPassword": "重置密码"
+      },
+      "resendPrompt": "没有收到验证码？",
+      "resendAction": "重新发送",
+      "sentCountdown": "已发送，{seconds}s 后可重新发送",
+      "resendSuccess": "新的验证码已发送。",
+      "errors": {
+        "passwordMismatch": "两次输入的密码不一致。",
+        "loginFailed": "登录请求失败，请稍后重试。",
+        "registerFailed": "注册请求失败，请稍后重试。",
+        "verifyFailed": "验证失败，请检查验证码后重试。",
+        "resetRequestFailed": "密码重置请求失败，请稍后重试。",
+        "resetFailed": "密码重置失败，请检查验证码后重试。",
+        "resendFailed": "重新发送验证码失败，请稍后重试。"
+      }
+    },
+    "success": {
+      "verifyTitle": "验证成功",
+      "verifyDescription": "账户已经完成验证，正在为你跳转。",
+      "resetTitle": "密码重置成功",
+      "resetDescription": "新密码已经生效，账户已可继续使用。"
+    }
+  },
+  "ProfilePage": {
+    "common": {
+      "comingSoon": "该模块暂未开放。",
+      "emailCopied": "邮箱已复制到剪贴板。",
+      "copyFailed": "复制失败，请稍后重试。",
+      "invalidPhone": "请输入国际格式手机号，例如 +1 234 567 8900。",
+      "addressSaveFailed": "地址保存失败，请稍后重试。",
+      "logoutFailed": "退出登录失败，请稍后重试。"
+    },
+    "sidebar": {
+      "expand": "展开侧边栏",
+      "ordersTitle": "订单与物流",
+      "settings": "设置",
+      "logout": "退出登录",
+      "cancel": "取消",
+      "logoutConfirmTitle": "确认退出登录",
+      "logoutConfirmDescription": "确定要退出当前账户吗？"
+    },
+    "orders": {
+      "title": "我的订单",
+      "viewAll": "查看全部",
+      "unpaid": "待付款",
+      "toShip": "待发货",
+      "shipped": "已发货",
+      "delivered": "已签收",
+      "returns": "退换货"
+    },
+    "address": {
+      "title": "地址簿",
+      "defaultBadge": "默认地址",
+      "phoneFallback": "暂无联系电话",
+      "empty": "暂无地址",
+      "add": "新增地址",
+      "created": "地址添加成功。",
+      "updated": "地址更新成功。"
+    },
+    "support": {
+      "title": "支持与服务",
+      "tickets": "我的工单",
+      "logistics": "物流问题",
+      "help": "帮助中心"
+    },
+    "security": {
+      "title": "账户与安全",
+      "passwordTitle": "登录密码",
+      "passwordMeta": "上次修改于 3 个月前",
+      "update": "更新",
+      "google": "Google",
+      "x": "X（Twitter）",
+      "tiktok": "TikTok",
+      "connected": "已连接",
+      "notConnected": "未连接",
+      "connect": "连接",
+      "unlink": "解绑"
+    },
+    "dialog": {
+      "createTitle": "新增地址",
+      "editTitle": "编辑地址",
+      "description": "搜索你的地址，或者在地图上拖动定位点来自动填写位置。",
+      "searchLabel": "搜索地址",
+      "searchPlaceholder": "搜索地点...",
+      "noPlaces": "未找到地点",
+      "mapDisclaimer": "地图数据 ©2026 Google",
+      "optional": "可选",
+      "phonePlaceholder": "+1 234 567 8900",
+      "setDefault": "设为默认地址",
+      "cancel": "取消",
+      "save": "保存地址",
+      "validation": {
+        "required": "请至少填写联系人、电话、国家和地址第一行。"
+      },
+      "fields": {
+        "country": "国家/地区",
+        "state": "州/省",
+        "city": "城市",
+        "zipcode": "邮编",
+        "line1": "地址第一行",
+        "line2": "地址第二行（公寓、楼层等）",
+        "name": "联系人",
+        "phone": "电话号码"
+      }
     }
   }
 }

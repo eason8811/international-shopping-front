@@ -5,16 +5,39 @@
   },
   "HomePage": {
     "eyebrow": "International Shopping",
-    "title": "App shell and user-domain access layer are ready.",
-    "description": "The repository now exposes user-domain BFF routes and feature access methods. Business UI pages will be delivered in later phases.",
+    "title": "Phase 1 account and address pages now run on the real flow.",
+    "description": "You can move from sign in, registration, email verification, and password reset straight into a working account center with profile and address management.",
     "actions": {
-      "openLogin": "Open Login Placeholder"
+      "openLogin": "Open Login",
+      "openRegister": "Open Register",
+      "openAccount": "Open Account Center"
     },
     "language": "Language",
     "languageOptions": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese"
     }
+  },
+  "AuthShell": {
+    "brand": "Cross-border Account Center",
+    "actions": {
+      "backHome": "Back Home"
+    },
+    "highlights": {
+      "session": {
+        "title": "Session safety first",
+        "description": "Login, registration, verification, and logout all stay behind the BFF so sensitive protocol details do not leak into page code."
+      },
+      "address": {
+        "title": "Default address up front",
+        "description": "A complete shipping profile makes the checkout path much shorter once cart and order pages land."
+      },
+      "checkout": {
+        "title": "Built for the next phase",
+        "description": "Phase 1 gives users everything they need before entering cart, checkout, and payment flows."
+      }
+    },
+    "footer": "Completing identity and address details early removes avoidable friction later in checkout."
   },
   "TrackedError": {
     "title": "Unified Error Surface",
@@ -56,12 +79,487 @@
     "fallbackMessage": "Unhandled rendering error."
   },
   "LoginPage": {
-    "eyebrow": "Reserved Auth Route",
-    "title": "Login UI is not implemented yet",
-    "description": "Only the user-domain BFF routes and feature access layer are implemented for now. This route is reserved for the future login page.",
-    "redirectLabel": "Original target",
+    "eyebrow": "Account access",
+    "title": "Return to your global shopping account",
+    "description": "Sign in to review profile data, manage saved addresses, and prepare the account for later cart and checkout flows.",
+    "cardTag": "Account access",
+    "cardTitle": "Sign in to continue",
+    "cardDescription": "Use a username, email address, or phone number. Add a country code only when the account field is a phone number.",
+    "redirectLabel": "Return after login",
+    "fields": {
+      "account": "Account",
+      "countryCode": "Phone country code",
+      "password": "Password"
+    },
+    "placeholders": {
+      "account": "Username, email, or phone number",
+      "countryCode": "Such as +86 or +1",
+      "password": "Enter your password"
+    },
+    "hints": {
+      "account": "Using the most familiar identifier keeps the login path short and obvious.",
+      "countryCode": "Only needed when the account field contains a phone number."
+    },
     "actions": {
-      "goHome": "Back Home"
+      "forgotPassword": "Forgot password",
+      "submitting": "Signing in",
+      "submit": "Sign in"
+    },
+    "footer": {
+      "prompt": "Need a new account?",
+      "action": "Create one"
+    },
+    "errors": {
+      "title": "Sign in failed",
+      "submitFailed": "The login request failed. Please try again."
+    }
+  },
+  "RegisterPage": {
+    "eyebrow": "Create account",
+    "title": "Build identity first, then enter the full buying flow",
+    "description": "Registration moves directly into email verification so the same session can continue into profile and address completion.",
+    "cardTag": "Email verification flow",
+    "cardTitle": "Create your new account",
+    "cardDescription": "Submit the core account fields first, then verify the mailbox in the next step.",
+    "fields": {
+      "username": "Username",
+      "nickname": "Nickname",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "phoneOptional": "Phone, optional"
+    },
+    "placeholders": {
+      "username": "Choose a memorable username",
+      "nickname": "Public display nickname",
+      "email": "Enter a working email",
+      "password": "Set a password",
+      "confirmPassword": "Repeat the password",
+      "phoneCountryCode": "+86",
+      "phoneNationalNumber": "Phone number"
+    },
+    "hints": {
+      "phone": "Phone is optional, but filling it in now helps with later notifications and account recovery."
+    },
+    "actions": {
+      "submitting": "Submitting",
+      "submit": "Create account and send code",
+      "verifying": "Verifying",
+      "verify": "Verify email",
+      "resend": "Resend email",
+      "checkingStatus": "Checking",
+      "checkStatus": "Check delivery status"
+    },
+    "footer": {
+      "prompt": "Already have an account?",
+      "action": "Back to login"
+    },
+    "verify": {
+      "noticeTitle": "Verification code sent",
+      "description": "Enter the 6-digit code from your email to activate the account and keep moving.",
+      "sentTo": "Verification code sent to",
+      "codeLabel": "Email verification code",
+      "deliveryStatus": "Delivery status",
+      "messageId": "Message ID",
+      "resendTitle": "Activation email sent again",
+      "statusTitle": "Delivery status updated",
+      "statusDelivered": "The message was delivered. Check the inbox and spam folders.",
+      "statusPending": "The message is still moving through the delivery pipeline. Check again shortly."
+    },
+    "success": {
+      "title": "Email verified",
+      "description": "The session is now active. Continue into the account center to finish profile and address setup.",
+      "action": "Go to account center"
+    },
+    "errors": {
+      "title": "Registration flow failed",
+      "passwordMismatch": "The password confirmation does not match.",
+      "submitFailed": "The registration request failed. Please try again.",
+      "verifyFailed": "Email verification failed. Check the code and retry.",
+      "resendFailed": "Resending the activation email failed. Please try again later.",
+      "statusFailed": "Checking the email delivery status failed. Please try again later."
+    }
+  },
+  "ForgotPasswordPage": {
+    "eyebrow": "Recover access",
+    "title": "Verify identity first, then reset the account password",
+    "description": "Password recovery uses a dedicated code flow and restores the session on success so work can continue immediately.",
+    "cardTag": "Password recovery",
+    "cardTitle": "Reset access credentials",
+    "cardDescription": "Start by requesting a verification code, then set the new password in the next step.",
+    "fields": {
+      "account": "Account",
+      "countryCode": "Phone country code",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password"
+    },
+    "placeholders": {
+      "account": "Username, email, or phone number",
+      "countryCode": "Such as +86 or +1",
+      "newPassword": "Enter the new password",
+      "confirmPassword": "Repeat the new password"
+    },
+    "hints": {
+      "countryCode": "Only needed when password recovery uses a phone number."
+    },
+    "actions": {
+      "sending": "Sending",
+      "sendCode": "Send verification code",
+      "resetting": "Resetting",
+      "reset": "Reset password"
+    },
+    "footer": {
+      "prompt": "Remembered it?",
+      "action": "Back to login"
+    },
+    "request": {
+      "noticeTitle": "Verification request submitted"
+    },
+    "reset": {
+      "description": "Enter the verification code and the new password. Success restores the current session.",
+      "accountLabel": "Account in recovery",
+      "codeLabel": "Verification code"
+    },
+    "success": {
+      "title": "Password updated",
+      "description": "The new password is active and the session is ready. Continue into the account center.",
+      "action": "Go to account center"
+    },
+    "errors": {
+      "title": "Password recovery failed",
+      "requestFailed": "Requesting the verification code failed. Please try again.",
+      "passwordMismatch": "The new password confirmation does not match.",
+      "resetFailed": "Password reset failed. Check the verification code and retry."
+    }
+  },
+  "AccountPage": {
+    "eyebrow": "Account center",
+    "title": "Lock down profile and address details before checkout arrives",
+    "description": "This screen combines account data, profile details, and the address book so Phase 1 users can reach a checkout-ready state in one place.",
+    "headerStats": {
+      "status": "Account status",
+      "lastLogin": "Last login",
+      "never": "No record yet",
+      "addresses": "Saved addresses"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "DISABLED": "Disabled"
+    },
+    "summary": {
+      "emailReady": "Email is connected",
+      "phoneReady": "Phone is available",
+      "profileReady": "Profile details are ready",
+      "addressReady": "Default address is set",
+      "email": "Email",
+      "emailMissing": "No email on file",
+      "phone": "Phone",
+      "phoneMissing": "No phone on file",
+      "defaultAddress": "Default address",
+      "addressMissing": "No default address yet",
+      "defaultAddressReady": "Default address ready",
+      "addAddress": "Add address",
+      "loggingOut": "Signing out",
+      "logout": "Sign out"
+    },
+    "readiness": {
+      "title": "Checkout readiness",
+      "description": "Once these items are complete, later checkout pages can reuse them directly.",
+      "ready": "Ready",
+      "pending": "Pending"
+    },
+    "navigation": {
+      "title": "Jump links",
+      "description": "Move straight to the section that needs work now.",
+      "account": "Account",
+      "profile": "Profile",
+      "address": "Address book"
+    },
+    "accountForm": {
+      "title": "Account information",
+      "description": "Keep login identifiers and baseline contact details current so downstream notices remain stable.",
+      "successTitle": "Account information updated",
+      "successMessage": "The nickname and phone details were saved.",
+      "updatedAt": "Account updated",
+      "fields": {
+        "username": "Username",
+        "email": "Email",
+        "nickname": "Nickname",
+        "phoneCountryCode": "Phone country code",
+        "phoneNationalNumber": "Phone number"
+      },
+      "actions": {
+        "saving": "Saving",
+        "save": "Save account info"
+      }
+    },
+    "profileForm": {
+      "title": "Profile details",
+      "description": "Display name, gender, and location details help later pages speak to the user more naturally.",
+      "successTitle": "Profile updated",
+      "successMessage": "The profile details are now up to date.",
+      "updatedAt": "Profile sync time",
+      "fields": {
+        "displayName": "Display name",
+        "birthday": "Birthday",
+        "gender": "Gender",
+        "country": "Country",
+        "province": "Province",
+        "city": "City",
+        "addressLine": "Address line",
+        "zipcode": "Postal code"
+      },
+      "placeholders": {
+        "gender": "Select a gender"
+      },
+      "gender": {
+        "UNKNOWN": "Prefer not to say",
+        "MALE": "Male",
+        "FEMALE": "Female"
+      },
+      "actions": {
+        "saving": "Saving",
+        "save": "Save profile"
+      }
+    },
+    "addressSection": {
+      "title": "Address book",
+      "description": "Manage shipping addresses here. The default one will be preferred in later order flows.",
+      "defaultBadge": "Default",
+      "emptyTitle": "No address yet",
+      "emptyDescription": "Add a complete shipping address now so future checkout screens can prefill it.",
+      "createTitle": "Address created",
+      "createMessage": "The new shipping address was added to the address book.",
+      "updateTitle": "Address updated",
+      "updateMessage": "The address changes were saved.",
+      "defaultTitle": "Default address changed",
+      "defaultMessage": "Future order flows will prefer this address.",
+      "deleteTitle": "Address deleted",
+      "deleteMessage": "The address was removed from the address book.",
+      "deleteConfirmTitle": "Delete this address?",
+      "deleteConfirmDescription": "It will no longer be available for future orders unless you create it again.",
+      "validation": {
+        "UNVALIDATED": "Pending review",
+        "ACCEPT": "Accepted",
+        "REVIEW": "Needs review",
+        "FIX": "Needs fix",
+        "REJECT": "Rejected"
+      },
+      "meta": {
+        "updatedAt": "Updated",
+        "source": "Source"
+      },
+      "actions": {
+        "add": "Add address",
+        "setDefault": "Set default",
+        "edit": "Edit",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "confirmDelete": "Delete address"
+      }
+    },
+    "addressDialog": {
+      "createTitle": "Add shipping address",
+      "editTitle": "Edit shipping address",
+      "description": "Fill the core recipient and location fields first so the shipping path remains reliable.",
+      "fields": {
+        "receiverName": "Recipient",
+        "country": "Country",
+        "phoneCountryCode": "Phone country code",
+        "phoneNationalNumber": "Phone number",
+        "countryCode": "Country code",
+        "addressLine1": "Address line 1",
+        "addressLine2": "Address line 2, optional",
+        "province": "Province",
+        "city": "City",
+        "district": "District",
+        "zipcode": "Postal code",
+        "isDefault": "Save as default address"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "saving": "Saving",
+        "save": "Save address"
+      },
+      "errors": {
+        "title": "Address is incomplete",
+        "required": "Please fill recipient, phone, country code, country, and address line 1."
+      }
+    },
+    "errors": {
+      "title": "Action failed",
+      "accountSaveFailed": "Saving account information failed. Please retry.",
+      "profileSaveFailed": "Saving profile details failed. Please retry.",
+      "addressSaveFailed": "Saving the address failed. Please retry.",
+      "addressDefaultFailed": "Changing the default address failed. Please retry.",
+      "addressDeleteFailed": "Deleting the address failed. Please retry.",
+      "logoutFailed": "Signing out failed. Please retry."
+    }
+  },
+  "AuthUi": {
+    "layout": {
+      "imageAlt": "Abstract minimal background",
+      "quote": "\"Experience seamless cross-border shopping with a curated selection of global fashion and lifestyle products, delivered straight to your door.\"",
+      "quoteAuthor": "GlobalLink Commerce"
+    },
+    "social": {
+      "google": "Continue with Google",
+      "tiktok": "Continue with TikTok",
+      "x": "Continue with X",
+      "comingSoon": "Social sign-in is not available yet."
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Log in to your account to continue shopping.",
+      "divider": "Or",
+      "continueWithEmail": "Continue with Email",
+      "footerPrompt": "Don't have an account?",
+      "footerAction": "Sign up"
+    },
+    "register": {
+      "title": "Create an account",
+      "subtitle": "Join GlobalLink and start your cross-border journey.",
+      "divider": "Or",
+      "continueWithEmail": "Continue with Email",
+      "footerPrompt": "Already have an account?",
+      "footerAction": "Log in",
+      "legalPrefix": "By clicking continue, you agree to our",
+      "legalTerms": "Terms of Service",
+      "legalMiddle": "and",
+      "legalPrivacy": "Privacy Policy"
+    },
+    "forgot": {
+      "title": "Reset access",
+      "subtitle": "Start with email verification, then set a new password.",
+      "footerPrompt": "Remembered it?",
+      "footerAction": "Back to login"
+    },
+    "form": {
+      "labels": {
+        "account": "Account",
+        "email": "Email address",
+        "verificationSentTo": "Verification code sent to",
+        "password": "Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm Password"
+      },
+      "placeholders": {
+        "account": "Email or phone number",
+        "email": "name@example.com",
+        "phone": "Phone number",
+        "password": "••••••••"
+      },
+      "actions": {
+        "forgotPassword": "Forgot password?"
+      },
+      "buttons": {
+        "signIn": "Sign in to your account",
+        "sendCode": "Send email verification code",
+        "verify": "Verify",
+        "resetPassword": "Reset Password"
+      },
+      "resendPrompt": "Didn't receive the code?",
+      "resendAction": "Resend",
+      "sentCountdown": "Sent. Resend in {seconds}s",
+      "resendSuccess": "A new verification code has been sent.",
+      "errors": {
+        "passwordMismatch": "The passwords do not match.",
+        "loginFailed": "The login request failed. Please try again.",
+        "registerFailed": "The registration request failed. Please try again.",
+        "verifyFailed": "Verification failed. Please check the code and retry.",
+        "resetRequestFailed": "The password reset request failed. Please try again.",
+        "resetFailed": "The password reset request failed. Please check the code and retry.",
+        "resendFailed": "Resending the verification code failed. Please try again."
+      }
+    },
+    "success": {
+      "verifyTitle": "Verification Successful",
+      "verifyDescription": "Your account is verified and ready to use. Redirecting you...",
+      "resetTitle": "Password Reset Successful",
+      "resetDescription": "Your password has been updated and the account is ready to continue."
+    }
+  },
+  "ProfilePage": {
+    "common": {
+      "comingSoon": "This module is not available yet.",
+      "emailCopied": "Email copied to clipboard.",
+      "copyFailed": "Copy failed. Please try again.",
+      "invalidPhone": "Enter the phone number in international format, for example +1 234 567 8900.",
+      "addressSaveFailed": "Saving the address failed. Please try again.",
+      "logoutFailed": "Signing out failed. Please try again."
+    },
+    "sidebar": {
+      "expand": "Expand Sidebar",
+      "ordersTitle": "Orders & Logistics",
+      "settings": "Settings",
+      "logout": "Logout",
+      "cancel": "Cancel",
+      "logoutConfirmTitle": "Confirm Logout",
+      "logoutConfirmDescription": "Are you sure you want to exit?"
+    },
+    "orders": {
+      "title": "My Orders",
+      "viewAll": "View All",
+      "unpaid": "Unpaid",
+      "toShip": "To Ship",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "returns": "Returns"
+    },
+    "address": {
+      "title": "Address Book",
+      "defaultBadge": "Default",
+      "phoneFallback": "No phone number",
+      "empty": "No addresses found",
+      "add": "Add New Address",
+      "created": "Address added successfully.",
+      "updated": "Address updated successfully."
+    },
+    "support": {
+      "title": "Support & Services",
+      "tickets": "My Tickets",
+      "logistics": "Logistics Issues",
+      "help": "Help Center"
+    },
+    "security": {
+      "title": "Account & Security",
+      "passwordTitle": "Login Password",
+      "passwordMeta": "Last changed 3 months ago",
+      "update": "Update",
+      "google": "Google",
+      "x": "X (Twitter)",
+      "tiktok": "TikTok",
+      "connected": "Connected",
+      "notConnected": "Not connected",
+      "connect": "Connect",
+      "unlink": "Unlink"
+    },
+    "dialog": {
+      "createTitle": "Add New Address",
+      "editTitle": "Edit Address",
+      "description": "Search for your address or move the pin on the map to autofill your location.",
+      "searchLabel": "Search Address",
+      "searchPlaceholder": "Search places...",
+      "noPlaces": "No places found",
+      "mapDisclaimer": "Map data ©2026 Google",
+      "optional": "Optional",
+      "phonePlaceholder": "+1 234 567 8900",
+      "setDefault": "Set as Default Address",
+      "cancel": "Cancel",
+      "save": "Save Address",
+      "validation": {
+        "required": "Please complete name, phone, country, and address line 1."
+      },
+      "fields": {
+        "country": "Country/Region",
+        "state": "State/Province",
+        "city": "City",
+        "zipcode": "ZIP/Postal Code",
+        "line1": "Address Line 1",
+        "line2": "Address Line 2 (Apt, Suite, Floor)",
+        "name": "Contact Name",
+        "phone": "Phone Number"
+      }
     }
   }
 }

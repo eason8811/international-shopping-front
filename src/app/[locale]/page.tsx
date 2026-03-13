@@ -21,34 +21,52 @@ export default async function HomePage({params}: HomePageProps) {
     const t = await getTranslations({locale, namespace: "HomePage"});
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-6 py-16">
-            <main className="w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-10 shadow-sm">
-                <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
+        <div className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
+            <main className="w-full max-w-3xl rounded-4xl border border-border bg-card p-10 shadow-sm">
+                <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                     {t("eyebrow")}
                 </p>
-                <h1 className="mb-4 text-3xl font-semibold leading-tight text-zinc-950">
+                <h1 className="mb-4 font-serif text-4xl leading-tight text-foreground">
                     {t("title")}
                 </h1>
-                <p className="mb-8 text-base leading-7 text-zinc-600">
+                <p className="mb-8 max-w-2xl text-base leading-7 text-muted-foreground">
                     {t("description")}
                 </p>
                 <div className="mb-8 flex flex-col gap-3 sm:flex-row">
                     <Link
                         href="/login"
-                        className="inline-flex h-11 items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800"
+                        className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
                     >
                         {t("actions.openLogin")}
                     </Link>
+                    <Link
+                        href="/register"
+                        className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-medium text-foreground transition hover:bg-muted"
+                    >
+                        {t("actions.openRegister")}
+                    </Link>
+                    <Link
+                        href="/me/account"
+                        className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-medium text-foreground transition hover:bg-muted"
+                    >
+                        {t("actions.openAccount")}
+                    </Link>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-zinc-500">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <span>{t("language")}:</span>
-                    <Link href="/" locale="en-US"
-                          className={locale === "en-US" ? "font-semibold text-zinc-900" : "hover:text-zinc-700"}>
+                    <Link
+                        href="/"
+                        locale="en-US"
+                        className={locale === "en-US" ? "font-semibold text-foreground" : "hover:text-foreground"}
+                    >
                         {t("languageOptions.en-US")}
                     </Link>
                     <span>/</span>
-                    <Link href="/" locale="zh-CN"
-                          className={locale === "zh-CN" ? "font-semibold text-zinc-900" : "hover:text-zinc-700"}>
+                    <Link
+                        href="/"
+                        locale="zh-CN"
+                        className={locale === "zh-CN" ? "font-semibold text-foreground" : "hover:text-foreground"}
+                    >
                         {t("languageOptions.zh-CN")}
                     </Link>
                 </div>
