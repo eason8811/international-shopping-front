@@ -43,24 +43,29 @@ const buttonVariants = cva(
     }
 )
 
-function Button({
-                    className,
-                    variant = "default",
-                    size = "default",
-                    asChild = false,
-                    isLoading = false,
-                    isSuccess = false,
-                    children,
-                    disabled,
-                    ...props
-                }: React.ComponentProps<"button"> &
+function Button(buttonProps: React.ComponentProps<"button"> &
     VariantProps<typeof buttonVariants> & {
     asChild?: boolean
     isLoading?: boolean
     isSuccess?: boolean
+    contentKey?: string | number
 }) {
+    const {
+        className,
+        variant = "default",
+        size = "default",
+        asChild = false,
+        isLoading = false,
+        isSuccess = false,
+        contentKey,
+        children,
+        disabled,
+        ...props
+    } = buttonProps
     const Comp = asChild ? Slot.Root : "button"
-    const showAnimatedState = !asChild && (isLoading || isSuccess)
+    const hasAnimatedStateProp = "isLoading" in buttonProps || "isSuccess" in buttonProps
+    const showAnimatedState = !asChild && (hasAnimatedStateProp || contentKey !== undefined)
+    const isDisabled = disabled || isLoading || isSuccess
 
     if (showAnimatedState) {
         return (
@@ -72,53 +77,53 @@ function Button({
                     buttonVariants({variant, size, className}),
                     "relative overflow-hidden"
                 )}
-                disabled={disabled || isLoading || isSuccess}
+                disabled={isDisabled}
                 {...props}
             >
-        <span
-            className="invisible flex items-center justify-center gap-2 px-1"
-            aria-hidden="true"
-        >
-          {children}
-        </span>
-                <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <AnimatePresence mode="wait" initial={false}>
-            {isSuccess ? (
-                <motion.span
-                    key="success"
-                    initial={{opacity: 0, scale: 0.8}}
-                    animate={{opacity: 1, scale: 1}}
-                    exit={{opacity: 0, scale: 0.8}}
-                    transition={{duration: 0.2}}
-                    className="flex items-center justify-center"
-                >
-                    <Check className="size-5"/>
-                </motion.span>
-            ) : isLoading ? (
-                <motion.span
-                    key="loading"
-                    initial={{opacity: 0, scale: 0.8}}
-                    animate={{opacity: 1, scale: 1}}
-                    exit={{opacity: 0, scale: 0.8}}
-                    transition={{duration: 0.2}}
-                    className="flex items-center justify-center"
-                >
-                    <Loader2 className="size-5 animate-spin"/>
-                </motion.span>
-            ) : (
-                <motion.span
-                    key="content"
-                    initial={{opacity: 0, y: 10}}
-                    animate={{opacity: 1, y: 0}}
-                    exit={{opacity: 0, y: -10}}
-                    transition={{duration: 0.2}}
-                    className="flex h-full w-full items-center justify-center gap-2"
+                <span
+                    className="invisible flex h-full items-center justify-center gap-2 px-1"
+                    aria-hidden="true"
                 >
                     {children}
-                </motion.span>
-            )}
-          </AnimatePresence>
-        </span>
+                </span>
+                <span className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
+                    <AnimatePresence mode="wait" initial={false}>
+                        {isSuccess ? (
+                            <motion.span
+                                key="success"
+                                initial={{opacity: 0, scale: 0.82}}
+                                animate={{opacity: 1, scale: 1}}
+                                exit={{opacity: 0, scale: 0.82}}
+                                transition={{duration: 0.18, ease: "easeOut"}}
+                                className="flex items-center justify-center"
+                            >
+                                <Check className="size-5"/>
+                            </motion.span>
+                        ) : isLoading ? (
+                            <motion.span
+                                key="loading"
+                                initial={{opacity: 0, y: 8, scale: 0.92}}
+                                animate={{opacity: 1, y: 0, scale: 1}}
+                                exit={{opacity: 0, y: -8, scale: 0.92}}
+                                transition={{duration: 0.22, ease: "easeOut"}}
+                                className="flex items-center justify-center"
+                            >
+                                <Loader2 className="size-5 animate-spin"/>
+                            </motion.span>
+                        ) : (
+                            <motion.span
+                                key={`content-${contentKey ?? "default"}`}
+                                initial={{opacity: 0, y: 10}}
+                                animate={{opacity: 1, y: 0}}
+                                exit={{opacity: 0, y: -10}}
+                                transition={{duration: 0.22, ease: [0.22, 1, 0.36, 1]}}
+                                className="flex h-full w-full items-center justify-center gap-2"
+                            >
+                                {children}
+                            </motion.span>
+                        )}
+                    </AnimatePresence>
+                </span>
             </button>
         )
     }

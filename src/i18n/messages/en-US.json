@@ -470,6 +470,17 @@
         "resetRequestFailed": "The password reset request failed. Please try again.",
         "resetFailed": "The password reset request failed. Please check the code and retry.",
         "resendFailed": "Resending the verification code failed. Please try again."
+      },
+      "validation": {
+        "accountRequired": "Enter an email address or phone number.",
+        "accountInvalid": "Enter a valid email address or phone number.",
+        "emailRequired": "Enter an email address.",
+        "emailInvalid": "Enter a valid email address.",
+        "phoneInvalid": "Enter a phone number with 6 to 20 digits.",
+        "passwordRequired": "Enter a password.",
+        "passwordInvalid": "Your password must be at least 8 characters and include one lowercase and one uppercase letter.",
+        "confirmPasswordRequired": "Confirm your password.",
+        "confirmPasswordMismatch": "The passwords do not match."
       }
     },
     "success": {

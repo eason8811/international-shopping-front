@@ -25,7 +25,7 @@ export function SocialAuthButtons() {
         <div className="flex w-full flex-col gap-3">
             <Button
                 variant="outline"
-                className="relative flex h-12 w-full items-center justify-center gap-3 bg-black font-medium text-white hover:bg-black/90 hover:text-white px-2"
+                className="relative flex h-12 w-full items-center justify-center gap-3 bg-black font-medium text-white hover:bg-black/90 hover:text-white"
                 isLoading={loadingProvider === "google"}
                 disabled={loadingProvider !== null}
                 onClick={() => handleAuth("google")}
@@ -36,7 +36,7 @@ export function SocialAuthButtons() {
 
             <Button
                 variant="outline"
-                className="relative flex h-12 w-full items-center justify-center gap-3 bg-black font-medium text-white hover:bg-black/90 hover:text-white px-2"
+                className="relative flex h-12 w-full items-center justify-center gap-3 bg-black font-medium text-white hover:bg-black/90 hover:text-white"
                 isLoading={loadingProvider === "tiktok"}
                 disabled={loadingProvider !== null}
                 onClick={() => handleAuth("tiktok")}
@@ -47,7 +47,7 @@ export function SocialAuthButtons() {
 
             <Button
                 variant="outline"
-                className="relative flex h-12 w-full items-center justify-center gap-3 bg-black font-medium text-white hover:bg-black/90 hover:text-white px-2"
+                className="relative flex h-12 w-full items-center justify-center gap-3 bg-black font-medium text-white hover:bg-black/90 hover:text-white"
                 isLoading={loadingProvider === "x"}
                 disabled={loadingProvider !== null}
                 onClick={() => handleAuth("x")}

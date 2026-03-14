@@ -25,6 +25,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 type RegisterStep = "credentials" | "verify" | "success";
 type ForgotStep = "none" | "email" | "verify" | "reset" | "success";
+type ActivationStep = "none" | "verify" | "success";
 type SubmissionStatus = "idle" | "loading" | "success";
 
 interface EmailAuthFormProps {
@@ -49,6 +50,7 @@ export function EmailAuthForm({
     const [status, setStatus] = useState<SubmissionStatus>("idle");
     const [registerStep, setRegisterStep] = useState<RegisterStep>("credentials");
     const [forgotStep, setForgotStep] = useState<ForgotStep>(initialForgotStep);
+    const [activationStep, setActivationStep] = useState<ActivationStep>("none");
     const [countdown, setCountdown] = useState(0);
     const [countryCode, setCountryCode] = useState("+86");
 
@@ -61,16 +63,27 @@ export function EmailAuthForm({
         return () => window.clearTimeout(timer);
     }, [countdown]);
 
-    const isVerifyOtp = registerStep === "verify" || forgotStep === "verify";
-    const isStaticAccount = registerStep === "verify" || forgotStep === "verify" || forgotStep === "reset";
-    const isSuccess = registerStep === "success" || forgotStep === "success";
-    const isNumericAccount = mode === "login" && forgotStep === "none" && /^\d+$/.test(account);
+    const isActivationVerify = activationStep === "verify";
+    const isEmailVerificationFlow = registerStep === "verify" || isActivationVerify;
+    const isVerifyOtp = isEmailVerificationFlow || forgotStep === "verify";
+    const isStaticAccount = isEmailVerificationFlow || forgotStep === "verify" || forgotStep === "reset";
+    const isSuccess = registerStep === "success" || forgotStep === "success" || activationStep === "success";
+    const isNumericAccount =
+        mode === "login" &&
+        forgotStep === "none" &&
+        activationStep === "none" &&
+        /^\d+$/.test(account);
     const showPasswords =
-        (mode === "login" && forgotStep === "none") ||
+        (mode === "login" && forgotStep === "none" && activationStep === "none") ||
         (mode === "register" && registerStep === "credentials") ||
         forgotStep === "reset";
     const showConfirmPassword =
         (mode === "register" && registerStep === "credentials") || forgotStep === "reset";
+    const collapsibleSectionClassName = "w-full overflow-hidden";
+    const interactiveFieldShellClassName =
+        "flex h-12 w-full items-center overflow-hidden rounded-[var(--radius)] bg-muted/40 transition-all duration-500 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2";
+    const interactiveFieldInputClassName =
+        "h-full w-full border-none bg-transparent shadow-none transition-all duration-500 ease-in-out focus-visible:ring-0 focus-visible:ring-offset-0";
 
     async function handleResend() {
         if (countdown > 0 || status !== "idle") {
@@ -80,7 +93,7 @@ export function EmailAuthForm({
         setStatus("loading");
 
         try {
-            if (mode === "register") {
+            if (registerStep === "verify" || activationStep === "verify") {
                 await resendActivationEmail({email: account.trim()});
             } else {
                 await requestPasswordReset({
@@ -117,6 +130,27 @@ export function EmailAuthForm({
     }
 
     async function handleLoginSubmit() {
+        if (activationStep === "verify") {
+            setStatus("loading");
+
+            try {
+                await verifyRegistrationEmail({
+                    email: account.trim(),
+                    code: otp,
+                });
+
+                setActivationStep("success");
+                setStatus("idle");
+                window.setTimeout(() => onSuccess?.(), 2200);
+            } catch (error) {
+                setStatus("idle");
+                const normalized = normalizeClientError(error, t("form.errors.verifyFailed"));
+                toast.error(normalized.message);
+            }
+
+            return;
+        }
+
         if (forgotStep === "none") {
             setStatus("loading");
 
@@ -135,8 +169,24 @@ export function EmailAuthForm({
                     onSuccess?.();
                 }, 1200);
             } catch (error) {
-                setStatus("idle");
                 const normalized = normalizeClientError(error, t("form.errors.loginFailed"));
+                if (normalized.status === 401 && normalized.message === "账户未激活") {
+                    try {
+                        await resendActivationEmail({email: account.trim()});
+                        setOtp("");
+                        setCountdown(60);
+                        setActivationStep("verify");
+                    } catch (resendError) {
+                        const resendNormalized = normalizeClientError(resendError, t("form.errors.resendFailed"));
+                        toast.error(resendNormalized.message);
+                    } finally {
+                        setStatus("idle");
+                    }
+
+                    return;
+                }
+
+                setStatus("idle");
                 toast.error(normalized.message);
             }
 
@@ -258,12 +308,15 @@ export function EmailAuthForm({
         mode,
         registerStep,
         forgotStep,
+        activationStep,
         translate: t,
     });
 
     let isButtonDisabled = status !== "idle";
     if (mode === "login") {
-        if (forgotStep === "none") {
+        if (activationStep === "verify") {
+            isButtonDisabled = isButtonDisabled || otp.length < 6;
+        } else if (forgotStep === "none") {
             isButtonDisabled = isButtonDisabled || !account.trim() || !password;
         } else if (forgotStep === "email") {
             isButtonDisabled = isButtonDisabled || !account.trim();
@@ -352,7 +405,7 @@ export function EmailAuthForm({
                         <motion.div
                             layout
                             className={cn(
-                                "flex flex-col transition-all duration-500",
+                                "flex flex-col transition-all duration-500 px-2",
                                 isStaticAccount ? "mt-2 items-center gap-1 text-center" : "gap-2",
                             )}
                         >
@@ -375,10 +428,10 @@ export function EmailAuthForm({
                             <motion.div
                                 layout
                                 className={cn(
-                                    "relative flex w-full overflow-hidden rounded-[var(--radius)] transition-all duration-500",
+                                    "relative transition-all duration-500",
                                     isStaticAccount
-                                        ? "h-8 items-center justify-center bg-transparent"
-                                        : "h-12 items-center bg-muted/40 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+                                        ? "flex h-8 w-full items-center justify-center overflow-hidden rounded-[var(--radius)] bg-transparent"
+                                        : interactiveFieldShellClassName,
                                 )}
                             >
                                 <AnimatePresence initial={false}>
@@ -437,7 +490,7 @@ export function EmailAuthForm({
                                     onChange={(event) => setAccount(event.target.value)}
                                     disabled={status !== "idle"}
                                     className={cn(
-                                        "h-full w-full border-none bg-transparent shadow-none transition-all duration-500 ease-in-out focus-visible:ring-0 focus-visible:ring-offset-0",
+                                        interactiveFieldInputClassName,
                                         isStaticAccount
                                             ? "pointer-events-none px-0 text-center text-lg font-medium text-foreground disabled:opacity-100"
                                             : isNumericAccount
@@ -457,10 +510,10 @@ export function EmailAuthForm({
                                         animate={{opacity: 1, height: "auto"}}
                                         exit={{opacity: 0, height: 0}}
                                         transition={{duration: 0.3, ease: "easeInOut"}}
-                                        className="w-full overflow-hidden"
+                                        className={collapsibleSectionClassName}
                                     >
                                         <div className="flex flex-col gap-4 pb-2">
-                                            <div className="flex flex-col gap-2">
+                                            <div className="flex flex-col gap-2 px-2">
                                                 <div className="flex items-center justify-between">
                                                     <Label htmlFor="auth-password">
                                                         {forgotStep === "reset"
@@ -477,33 +530,37 @@ export function EmailAuthForm({
                                                         </button>
                                                     ) : null}
                                                 </div>
-                                                <Input
-                                                    id="auth-password"
-                                                    type="password"
-                                                    placeholder={t("form.placeholders.password")}
-                                                    required
-                                                    value={password}
-                                                    onChange={(event) => setPassword(event.target.value)}
-                                                    disabled={status !== "idle"}
-                                                    className="h-12 rounded-[var(--radius)] border-none bg-muted/40 px-4"
-                                                />
-                                            </div>
-
-                                            {showConfirmPassword ? (
-                                                <div className="flex flex-col gap-2">
-                                                    <Label htmlFor="auth-confirm-password">
-                                                        {t("form.labels.confirmPassword")}
-                                                    </Label>
+                                                <div className={interactiveFieldShellClassName}>
                                                     <Input
-                                                        id="auth-confirm-password"
+                                                        id="auth-password"
                                                         type="password"
                                                         placeholder={t("form.placeholders.password")}
                                                         required
-                                                        value={confirmPassword}
-                                                        onChange={(event) => setConfirmPassword(event.target.value)}
+                                                        value={password}
+                                                        onChange={(event) => setPassword(event.target.value)}
                                                         disabled={status !== "idle"}
-                                                        className="h-12 rounded-[var(--radius)] border-none bg-muted/40 px-4"
+                                                        className={cn(interactiveFieldInputClassName)}
                                                     />
+                                                </div>
+                                            </div>
+
+                                            {showConfirmPassword ? (
+                                                <div className="flex flex-col gap-2 px-2">
+                                                    <Label htmlFor="auth-confirm-password">
+                                                        {t("form.labels.confirmPassword")}
+                                                    </Label>
+                                                    <div className={interactiveFieldShellClassName}>
+                                                        <Input
+                                                            id="auth-confirm-password"
+                                                            type="password"
+                                                            placeholder={t("form.placeholders.password")}
+                                                            required
+                                                            value={confirmPassword}
+                                                            onChange={(event) => setConfirmPassword(event.target.value)}
+                                                            disabled={status !== "idle"}
+                                                            className={cn(interactiveFieldInputClassName)}
+                                                        />
+                                                    </div>
                                                 </div>
                                             ) : null}
                                         </div>
@@ -519,7 +576,7 @@ export function EmailAuthForm({
                                         animate={{opacity: 1, height: "auto"}}
                                         exit={{opacity: 0, height: 0}}
                                         transition={{duration: 0.3, ease: "easeInOut"}}
-                                        className="w-full overflow-hidden"
+                                        className={collapsibleSectionClassName}
                                     >
                                         <div className="flex flex-col items-center justify-center gap-6 pt-2 pb-2">
                                             <InputOTP maxLength={6} value={otp} onChange={setOtp} disabled={status !== "idle"}>
@@ -583,6 +640,7 @@ export function EmailAuthForm({
                                 size="lg"
                                 isLoading={status === "loading"}
                                 isSuccess={status === "success"}
+                                contentKey={buttonText}
                                 disabled={isButtonDisabled}
                             >
                                 {buttonText}
@@ -599,14 +657,20 @@ function resolveButtonText({
                                mode,
                                registerStep,
                                forgotStep,
+                               activationStep,
                                translate,
                            }: {
     mode: "login" | "register";
     registerStep: RegisterStep;
     forgotStep: ForgotStep;
+    activationStep: ActivationStep;
     translate: (key: string, values?: Record<string, string | number>) => string;
 }) {
     if (mode === "login") {
+        if (activationStep === "verify") {
+            return translate("form.buttons.verify");
+        }
+
         if (forgotStep === "none") {
             return translate("form.buttons.signIn");
         }
