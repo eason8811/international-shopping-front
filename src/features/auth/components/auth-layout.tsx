@@ -37,7 +37,7 @@ export function AuthLayout({children, title, subtitle}: AuthLayoutProps) {
                         <p className="text-muted-foreground">{subtitle}</p>
                     </motion.div>
 
-                    <div className="flex flex-col gap-6 lg:gap-8">{children}</div>
+                    <div className="flex flex-col gap-6 lg:gap-8 ">{children}</div>
                 </motion.div>
             </div>
 

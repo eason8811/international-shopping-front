@@ -286,7 +286,7 @@ export function EmailAuthForm({
             exit={{opacity: 0, y: 10}}
             transition={{duration: 0.3, ease: "easeInOut"}}
             onSubmit={handleSubmit}
-            className="relative flex w-full flex-col gap-4 overflow-hidden"
+            className="relative flex w-full flex-col gap-4 overflow-hidden p-2"
         >
             <AnimatePresence mode="popLayout" initial={false}>
                 {isSuccess ? (
