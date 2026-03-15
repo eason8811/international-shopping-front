@@ -25,6 +25,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 type RegisterStep = "credentials" | "verify" | "success";
 type ForgotStep = "none" | "email" | "verify" | "reset" | "success";
+type ActivationStep = "none" | "verify" | "success";
 type SubmissionStatus = "idle" | "loading" | "success";
 type FieldName = "account" | "password" | "confirmPassword";
 
@@ -51,6 +52,7 @@ export function EmailAuthForm({
     const [status, setStatus] = useState<SubmissionStatus>("idle");
     const [registerStep, setRegisterStep] = useState<RegisterStep>("credentials");
     const [forgotStep, setForgotStep] = useState<ForgotStep>(initialForgotStep);
+    const [activationStep, setActivationStep] = useState<ActivationStep>("none");
     const [countdown, setCountdown] = useState(0);
     const [countryCode, setCountryCode] = useState("+86");
     const [touchedFields, setTouchedFields] = useState<Record<FieldName, boolean>>({
@@ -68,13 +70,19 @@ export function EmailAuthForm({
         return () => window.clearTimeout(timer);
     }, [countdown]);
 
-    const isVerifyOtp = registerStep === "verify" || forgotStep === "verify";
-    const isStaticAccount = registerStep === "verify" || forgotStep === "verify" || forgotStep === "reset";
-    const isSuccess = registerStep === "success" || forgotStep === "success";
+    const isActivationVerify = activationStep === "verify";
+    const isEmailVerificationFlow = registerStep === "verify" || isActivationVerify;
+    const isVerifyOtp = isEmailVerificationFlow || forgotStep === "verify";
+    const isStaticAccount = isEmailVerificationFlow || forgotStep === "verify" || forgotStep === "reset";
+    const isSuccess = registerStep === "success" || forgotStep === "success" || activationStep === "success";
     const normalizedAccount = account.trim();
-    const isNumericAccount = mode === "login" && forgotStep === "none" && PHONE_INPUT_REGEX.test(normalizedAccount);
+    const isNumericAccount =
+        mode === "login" &&
+        forgotStep === "none" &&
+        activationStep === "none" &&
+        PHONE_INPUT_REGEX.test(normalizedAccount);
     const showPasswords =
-        (mode === "login" && forgotStep === "none") ||
+        (mode === "login" && forgotStep === "none" && activationStep === "none") ||
         (mode === "register" && registerStep === "credentials") ||
         forgotStep === "reset";
     const showConfirmPassword =
@@ -85,7 +93,7 @@ export function EmailAuthForm({
         ? null
         : resolveAccountError({
             account: normalizedAccount,
-            allowPhone: mode === "login" && forgotStep === "none",
+            allowPhone: mode === "login" && forgotStep === "none" && activationStep === "none",
             translate: t,
         });
     const passwordError = showPasswords ? resolvePasswordError(password, t) : null;
@@ -130,7 +138,7 @@ export function EmailAuthForm({
         setStatus("loading");
 
         try {
-            if (mode === "register") {
+            if (registerStep === "verify" || activationStep === "verify") {
                 await resendActivationEmail({email: normalizedAccount});
             } else {
                 await requestPasswordReset({
@@ -173,6 +181,27 @@ export function EmailAuthForm({
     }
 
     async function handleLoginSubmit() {
+        if (activationStep === "verify") {
+            setStatus("loading");
+
+            try {
+                await verifyRegistrationEmail({
+                    email: normalizedAccount,
+                    code: otp,
+                });
+
+                setActivationStep("success");
+                setStatus("idle");
+                window.setTimeout(() => onSuccess?.(), 2200);
+            } catch (error) {
+                setStatus("idle");
+                const normalized = normalizeClientError(error, t("form.errors.verifyFailed"));
+                toast.error(normalized.message);
+            }
+
+            return;
+        }
+
         if (forgotStep === "none") {
             setStatus("loading");
 
@@ -191,8 +220,24 @@ export function EmailAuthForm({
                     onSuccess?.();
                 }, 1200);
             } catch (error) {
-                setStatus("idle");
                 const normalized = normalizeClientError(error, t("form.errors.loginFailed"));
+                if (normalized.status === 401 && normalized.message === "账户未激活") {
+                    try {
+                        await resendActivationEmail({email: normalizedAccount});
+                        setOtp("");
+                        setCountdown(60);
+                        setActivationStep("verify");
+                    } catch (resendError) {
+                        const resendNormalized = normalizeClientError(resendError, t("form.errors.resendFailed"));
+                        toast.error(resendNormalized.message);
+                    } finally {
+                        setStatus("idle");
+                    }
+
+                    return;
+                }
+
+                setStatus("idle");
                 toast.error(normalized.message);
             }
 
@@ -304,12 +349,15 @@ export function EmailAuthForm({
         mode,
         registerStep,
         forgotStep,
+        activationStep,
         translate: t,
     });
 
     let isButtonDisabled = status !== "idle";
     if (mode === "login") {
-        if (forgotStep === "none") {
+        if (activationStep === "verify") {
+            isButtonDisabled = isButtonDisabled || otp.length < 6;
+        } else if (forgotStep === "none") {
             isButtonDisabled = isButtonDisabled || !normalizedAccount || !password;
         } else if (forgotStep === "email") {
             isButtonDisabled = isButtonDisabled || !normalizedAccount;
@@ -467,7 +515,7 @@ export function EmailAuthForm({
                                     id="auth-account"
                                     type="text"
                                     inputMode={
-                                        mode === "login" && forgotStep === "none"
+                                        mode === "login" && forgotStep === "none" && activationStep === "none"
                                             ? isNumericAccount
                                                 ? "numeric"
                                                 : "email"
@@ -666,14 +714,20 @@ function resolveButtonText({
                                mode,
                                registerStep,
                                forgotStep,
+                               activationStep,
                                translate,
                            }: {
     mode: "login" | "register";
     registerStep: RegisterStep;
     forgotStep: ForgotStep;
+    activationStep: ActivationStep;
     translate: (key: string, values?: Record<string, string | number>) => string;
 }) {
     if (mode === "login") {
+        if (activationStep === "verify") {
+            return translate("form.buttons.verify");
+        }
+
         if (forgotStep === "none") {
             return translate("form.buttons.signIn");
         }
