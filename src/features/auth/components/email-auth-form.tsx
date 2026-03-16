@@ -1,6 +1,6 @@
 "use client";
 
-import {type ComponentProps, useEffect, useRef, useState} from "react";
+import {type ComponentProps, type RefObject, useEffect, useRef, useState} from "react";
 import {Check} from "lucide-react";
 import {useTranslations} from "next-intl";
 import {AnimatePresence, motion} from "motion/react";
@@ -18,6 +18,7 @@ import {normalizeClientError} from "@/lib/api/normalize-client-error";
 import {normalizeOptionalPhoneCountryCodeInput} from "@/lib/format/phone";
 import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
+import {InputGroup, InputGroupAddon, InputGroupInput} from "@/components/ui/input-group";
 import {InputOTP, InputOTPGroup, InputOTPSlot} from "@/components/ui/input-otp";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
@@ -446,110 +447,39 @@ export function EmailAuthForm({
                         transition={{duration: 0.3}}
                         className="flex w-full flex-col gap-4"
                     >
-                        <motion.div
-                            layout
-                            className={cn(
-                                "flex flex-col transition-all duration-500 px-2",
-                                isStaticAccount ? "mt-2 items-center gap-1 text-center" : "gap-2",
-                            )}
-                        >
-                            <motion.div layout="position">
-                                <Label
-                                    htmlFor="auth-account"
-                                    className={cn(
-                                        "transition-colors duration-500",
-                                        isStaticAccount ? "font-normal text-muted-foreground" : "font-medium",
-                                    )}
-                                >
-                                    {isStaticAccount
-                                        ? t("form.labels.verificationSentTo")
-                                        : mode === "login" && forgotStep === "none"
-                                            ? t("form.labels.account")
-                                            : t("form.labels.email")}
-                                </Label>
-                            </motion.div>
-
-                            <motion.div
-                                layout
-                                className={cn(
-                                    "relative flex w-full overflow-hidden rounded-[var(--radius)] transition-all duration-500",
-                                    isStaticAccount
-                                        ? "h-8 items-center justify-center bg-transparent"
-                                        : "h-12 items-center bg-muted/40 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-                                )}
-                            >
-                                <AnimatePresence initial={false}>
-                                    {!isStaticAccount && isNumericAccount ? (
-                                        <motion.div
-                                            key="phone-prefix"
-                                            initial={{width: 0, opacity: 0, paddingLeft: 0}}
-                                            animate={{width: "auto", opacity: 1, paddingLeft: 8}}
-                                            exit={{width: 0, opacity: 0, paddingLeft: 0}}
-                                            transition={{duration: 0.3, ease: "easeInOut"}}
-                                            className="flex shrink-0 items-center overflow-hidden whitespace-nowrap"
-                                        >
-                                            <Select value={countryCode} onValueChange={setCountryCode} disabled={status !== "idle"}>
-                                                <SelectTrigger className="h-auto w-auto gap-1 rounded-none border-none bg-transparent px-1 py-0 text-sm text-muted-foreground shadow-none hover:text-foreground focus:ring-0 focus:ring-offset-0">
-                                                    <SelectValue placeholder="Code"/>
-                                                </SelectTrigger>
-                                                <SelectContent
-                                                    className="min-w-30"
-                                                    onCloseAutoFocus={(event) => {
-                                                        event.preventDefault();
-                                                        inputRef.current?.focus();
-                                                    }}
-                                                >
-                                                    <SelectItem value="+1">+1 (US)</SelectItem>
-                                                    <SelectItem value="+44">+44 (UK)</SelectItem>
-                                                    <SelectItem value="+81">+81 (JP)</SelectItem>
-                                                    <SelectItem value="+86">+86 (CN)</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <div className="mx-1 h-4 w-px shrink-0 bg-border"/>
-                                        </motion.div>
-                                    ) : null}
-                                </AnimatePresence>
-
-                                <Input
-                                    ref={inputRef}
-                                    id="auth-account"
-                                    type="text"
-                                    inputMode={
-                                        mode === "login" && forgotStep === "none" && activationStep === "none"
-                                            ? isNumericAccount
-                                                ? "numeric"
-                                                : "email"
-                                            : "email"
-                                    }
-                                    placeholder={
-                                        mode === "login" && forgotStep === "none"
-                                            ? isNumericAccount
-                                                ? t("form.placeholders.phone")
-                                                : t("form.placeholders.account")
-                                            : t("form.placeholders.email")
-                                    }
-                                    required
-                                    readOnly={isStaticAccount}
-                                    tabIndex={isStaticAccount ? -1 : 0}
-                                    value={isStaticAccount && isNumericAccount ? `${countryCode} ${account}` : account}
-                                    onChange={(event) => setAccount(event.target.value)}
-                                    onBlur={() => touchField("account")}
-                                    disabled={status !== "idle"}
-                                    aria-invalid={shouldShowAccountError || undefined}
-                                    data-invalid={shouldShowAccountError ? "true" : undefined}
-                                    className={cn(
-                                        "h-full w-full border-none bg-transparent shadow-none transition-all duration-500 ease-in-out focus-visible:ring-0 focus-visible:ring-offset-0",
-                                        isStaticAccount
-                                            ? "pointer-events-none px-0 text-center text-lg font-medium text-foreground disabled:opacity-100"
-                                            : isNumericAccount
-                                                ? "pl-2 pr-4 text-left"
-                                                : "px-4 text-left",
-                                    )}
-                                />
-                            </motion.div>
-
-                            <AnimatedFieldError message={shouldShowAccountError ? accountError : null}/>
-                        </motion.div>
+                        <AccountField
+                            account={account}
+                            countryCode={countryCode}
+                            disabled={status !== "idle"}
+                            errorMessage={shouldShowAccountError ? accountError : null}
+                            inputMode={
+                                mode === "login" && forgotStep === "none" && activationStep === "none"
+                                    ? isNumericAccount
+                                        ? "numeric"
+                                        : "email"
+                                    : "email"
+                            }
+                            inputRef={inputRef}
+                            isNumericAccount={isNumericAccount}
+                            isStaticAccount={isStaticAccount}
+                            label={
+                                isStaticAccount
+                                    ? t("form.labels.verificationSentTo")
+                                    : mode === "login" && forgotStep === "none"
+                                        ? t("form.labels.account")
+                                        : t("form.labels.email")
+                            }
+                            placeholder={
+                                mode === "login" && forgotStep === "none"
+                                    ? isNumericAccount
+                                        ? t("form.placeholders.phone")
+                                        : t("form.placeholders.account")
+                                    : t("form.placeholders.email")
+                            }
+                            onAccountBlur={() => touchField("account")}
+                            onAccountChange={setAccount}
+                            onCountryCodeChange={setCountryCode}
+                        />
 
                         <div className="relative flex w-full flex-col">
                             <AnimatePresence initial={false}>
@@ -707,6 +637,138 @@ export function EmailAuthForm({
                 )}
             </AnimatePresence>
         </motion.form>
+    );
+}
+
+interface AccountFieldProps {
+    account: string;
+    countryCode: string;
+    disabled: boolean;
+    errorMessage: string | null;
+    inputMode: "email" | "numeric";
+    inputRef: RefObject<HTMLInputElement | null>;
+    isNumericAccount: boolean;
+    isStaticAccount: boolean;
+    label: string;
+    placeholder: string;
+    onAccountBlur: () => void;
+    onAccountChange: (value: string) => void;
+    onCountryCodeChange: (value: string) => void;
+}
+
+function AccountField({
+                          account,
+                          countryCode,
+                          disabled,
+                          errorMessage,
+                          inputMode,
+                          inputRef,
+                          isNumericAccount,
+                          isStaticAccount,
+                          label,
+                          placeholder,
+                          onAccountBlur,
+                          onAccountChange,
+                          onCountryCodeChange,
+                      }: AccountFieldProps) {
+    return (
+        <div
+            className={cn(
+                "flex flex-col px-2 transition-all duration-500",
+                isStaticAccount ? "mt-2 items-center gap-1 text-center" : "gap-2",
+            )}
+        >
+            <motion.div layout="position">
+                <Label
+                    htmlFor={isStaticAccount ? undefined : "auth-account"}
+                    className={cn(
+                        "transition-colors duration-500",
+                        isStaticAccount ? "font-normal text-muted-foreground" : "font-medium",
+                    )}
+                >
+                    {label}
+                </Label>
+            </motion.div>
+
+            <AnimatePresence initial={false} mode="wait">
+                {isStaticAccount ? (
+                    <motion.div
+                        key="account-static"
+                        initial={{opacity: 0, height: 0, y: -6}}
+                        animate={{opacity: 1, height: "auto", y: 0}}
+                        exit={{opacity: 0, height: 0, y: 6}}
+                        transition={{duration: 0.25, ease: "easeInOut"}}
+                        className="w-full overflow-hidden"
+                    >
+                        <div className="flex h-8 items-center justify-center bg-transparent">
+                            <span className="text-center text-lg font-medium text-foreground">
+                                {account}
+                            </span>
+                        </div>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="account-edit"
+                        initial={{opacity: 0, height: 0, y: 6}}
+                        animate={{opacity: 1, height: "auto", y: 0}}
+                        exit={{opacity: 0, height: 0, y: -6}}
+                        transition={{duration: 0.25, ease: "easeInOut"}}
+                        className="w-full overflow-hidden"
+                    >
+                        <InputGroup
+                            className="h-12 overflow-hidden bg-muted/40 shadow-none transition-all duration-500 ease-in-out"
+                        >
+                            {isNumericAccount ? (
+                                <InputGroupAddon align="inline-start" className="gap-1 pr-0">
+                                    <Select
+                                        value={countryCode}
+                                        onValueChange={onCountryCodeChange}
+                                        disabled={disabled}
+                                    >
+                                        <SelectTrigger className="h-auto w-auto gap-1 rounded-none border-none bg-transparent px-1 py-0 text-sm text-muted-foreground shadow-none hover:text-foreground focus:ring-0 focus:ring-offset-0">
+                                            <SelectValue placeholder="Code"/>
+                                        </SelectTrigger>
+                                        <SelectContent
+                                            className="min-w-30"
+                                            onCloseAutoFocus={(event) => {
+                                                event.preventDefault();
+                                                inputRef.current?.focus();
+                                            }}
+                                        >
+                                            <SelectItem value="+1">+1 (US)</SelectItem>
+                                            <SelectItem value="+44">+44 (UK)</SelectItem>
+                                            <SelectItem value="+81">+81 (JP)</SelectItem>
+                                            <SelectItem value="+86">+86 (CN)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <div className="mx-1 h-4 w-px shrink-0 bg-border"/>
+                                </InputGroupAddon>
+                            ) : null}
+
+                            <InputGroupInput
+                                ref={inputRef}
+                                id="auth-account"
+                                type="text"
+                                inputMode={inputMode}
+                                placeholder={placeholder}
+                                required
+                                value={account}
+                                onChange={(event) => onAccountChange(event.target.value)}
+                                onBlur={onAccountBlur}
+                                disabled={disabled}
+                                aria-invalid={Boolean(errorMessage) || undefined}
+                                className={cn(
+                                    "h-full transition-all duration-500 ease-in-out",
+                                    isNumericAccount ? "pr-4 text-left" : "px-4 text-left",
+                                )}
+                            />
+                        </InputGroup>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatedFieldError message={errorMessage}/>
+        </div>
     );
 }
 
