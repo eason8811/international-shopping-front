@@ -87,6 +87,12 @@ export function EmailAuthForm({
         forgotStep === "reset";
     const showConfirmPassword =
         (mode === "register" && registerStep === "credentials") || forgotStep === "reset";
+    const animatedAccountFieldClassName =
+        "relative flex w-full overflow-hidden rounded-[var(--radius)] transition-all duration-500 ease-in-out";
+    const interactiveAccountFieldClassName =
+        "h-12 items-center bg-muted/40 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 data-[invalid=true]:ring-3 data-[invalid=true]:ring-destructive/20 dark:data-[invalid=true]:border-destructive/50 dark:data-[invalid=true]:ring-destructive/40";
+    const animatedAccountInputClassName =
+        "h-full w-full border-none bg-transparent shadow-none transition-all duration-500 ease-in-out focus-visible:ring-0 focus-visible:ring-offset-0 aria-invalid:ring-0 data-[invalid=true]:ring-0";
     const animatedPasswordInputClassName =
         "h-12 rounded-[var(--radius)] border-none bg-muted/40 px-4 shadow-none transition-all duration-500 ease-in-out";
     const accountError = isStaticAccount
@@ -471,12 +477,23 @@ export function EmailAuthForm({
 
                             <motion.div
                                 layout
+                                /*animate={{
+                                    height: isStaticAccount ? 32 : 48,
+                                    backgroundColor: isStaticAccount ? "transparent" : "var(--muted-40)",
+                                    justifyContent: isStaticAccount ? "center" : "normal"
+                                }}
+                                transition={{
+                                    layout: { duration: 0.35, ease: "easeInOut" },
+                                    height: { duration: 0.35, ease: "easeInOut" },
+                                }}*/
+                                data-invalid={shouldShowAccountError ? "true" : undefined}
                                 className={cn(
-                                    "relative flex w-full overflow-hidden rounded-[var(--radius)] transition-all duration-500",
+                                    animatedAccountFieldClassName,
                                     isStaticAccount
                                         ? "h-8 items-center justify-center bg-transparent"
-                                        : "h-12 items-center bg-muted/40 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+                                        : interactiveAccountFieldClassName,
                                 )}
+
                             >
                                 <AnimatePresence initial={false}>
                                     {!isStaticAccount && isNumericAccount ? (
@@ -538,7 +555,7 @@ export function EmailAuthForm({
                                     aria-invalid={shouldShowAccountError || undefined}
                                     data-invalid={shouldShowAccountError ? "true" : undefined}
                                     className={cn(
-                                        "h-full w-full border-none bg-transparent shadow-none transition-all duration-500 ease-in-out focus-visible:ring-0 focus-visible:ring-offset-0",
+                                        animatedAccountInputClassName,
                                         isStaticAccount
                                             ? "pointer-events-none px-0 text-center text-lg font-medium text-foreground disabled:opacity-100"
                                             : isNumericAccount
