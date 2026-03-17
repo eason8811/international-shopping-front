@@ -93,12 +93,11 @@ export function EmailAuthForm({
     const animatedAccountFieldClassName =
         "relative flex w-full overflow-hidden rounded-[var(--radius)] transition-all duration-500 ease-in-out";
     const interactiveAccountFieldClassName =
-        "h-12 items-center bg-muted/40 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 data-[invalid=true]:ring-3 data-[invalid=true]:ring-destructive/20 dark:data-[invalid=true]:border-destructive/50 dark:data-[invalid=true]:ring-destructive/40";
+        "h-12 items-center bg-muted/40 border focus-within:border-ring/50 focus-within:ring-3 focus-within:ring-ring/50 data-[invalid=true]:ring-3 data-[invalid=true]:ring-destructive/20 data-[invalid=true]:border-destructive/20 dark:data-[invalid=true]:border-destructive/50 dark:data-[invalid=true]:ring-destructive/40";
     const animatedAccountInputClassName =
         "h-full w-full border-none bg-transparent shadow-none transition-all duration-500 ease-in-out focus-visible:ring-0 focus-visible:ring-offset-0 aria-invalid:ring-0 data-[invalid=true]:ring-0";
     const animatedPasswordFieldClassName =
-        "h-12 rounded-[var(--radius)] border-none bg-muted/40 shadow-none transition-all duration-500 ease-in-out has-[[data-slot=input-group-control]:focus-visible]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-3";
-
+        "h-12 rounded-[var(--radius)] bg-muted/40 shadow-none transition-all duration-500 ease-in-out border has-[[data-slot=input-group-control]:focus-visible]:border-ring/50 has-[[data-slot=input-group-control]:focus-visible]:ring-3 has-[[data-slot=input-group-control]:focus-visible]:ring-ring/50 has-[[data-slot][aria-invalid=true]]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-destructive/20 has-[[data-slot][aria-invalid=true]]:border-destructive/20 dark:has-[[data-slot][aria-invalid=true]]:border-destructive/50 dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40";
     useEffect(() => {
         if (!showPasswords) {
             setIsPasswordVisible(false);
