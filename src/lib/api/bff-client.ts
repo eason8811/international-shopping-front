@@ -19,9 +19,9 @@ export interface BffQueryParams {
 export interface BffRequestOptions {
     /** HTTP 方法, 默认 `GET` */
     method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-    /** query 参数 */
+    /** query 参数, key 会自动转换为 snake_case */
     query?: BffQueryParams;
-    /** 请求体, 传入对象时会自动按 JSON 序列化 */
+    /** 请求体, 传入对象时会自动按 JSON 序列化并将 key 转为 snake_case */
     body?: BodyInit | Record<string, unknown> | Array<unknown> | null;
     /** 额外请求头 */
     headers?: HeadersInit;
@@ -230,7 +230,7 @@ function buildBffUrl(path: string, query: BffQueryParams | undefined, origin?: s
                 continue;
             }
 
-            url.searchParams.set(key, String(value));
+            url.searchParams.set(toSnakeCaseKey(key), String(value));
         }
     }
 
@@ -260,7 +260,59 @@ function serializeBody(
         headers.set("content-type", "application/json");
     }
 
-    return JSON.stringify(body);
+    return JSON.stringify(serializeJsonPayload(body));
+}
+
+/**
+ * 统一将可序列化请求体转为 snake_case JSON 结构
+ *
+ * @param value 原始值
+ * @returns 转换后的值
+ */
+function serializeJsonPayload(value: unknown): unknown {
+    if (Array.isArray(value)) {
+        return value.map(serializeJsonPayload);
+    }
+
+    if (!isPlainObject(value)) {
+        return value;
+    }
+
+    return Object.fromEntries(
+        Object.entries(value).map(([key, nestedValue]) => [
+            toSnakeCaseKey(key),
+            serializeJsonPayload(nestedValue),
+        ]),
+    );
+}
+
+/**
+ * 判断值是否为普通对象
+ *
+ * @param value 原始值
+ * @returns 是否为普通对象
+ */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    if (!value || typeof value !== "object") {
+        return false;
+    }
+
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+}
+
+/**
+ * 将 key 统一转换为 snake_case
+ *
+ * @param value 原始 key
+ * @returns snake_case key
+ */
+function toSnakeCaseKey(value: string): string {
+    return value
+        .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+        .replace(/([A-Z])([A-Z][a-z])/g, "$1_$2")
+        .replace(/[-\s]+/g, "_")
+        .toLowerCase();
 }
 
 /**

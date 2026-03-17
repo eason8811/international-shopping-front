@@ -14,7 +14,7 @@ import {
     resetPassword,
     verifyRegistrationEmail,
 } from "@/features/auth";
-import {normalizeClientError} from "@/lib/api/normalize-client-error";
+import {normalizeClientError, type NormalizedClientError} from "@/lib/api/normalize-client-error";
 import {normalizeOptionalPhoneCountryCodeInput} from "@/lib/format/phone";
 import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
@@ -25,7 +25,7 @@ import {Label} from "@/components/ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 type RegisterStep = "credentials" | "verify" | "success";
-type ForgotStep = "none" | "email" | "verify" | "reset" | "success";
+type ForgotStep = "none" | "email" | "reset" | "success";
 type ActivationStep = "none" | "verify" | "success";
 type SubmissionStatus = "idle" | "loading" | "success";
 type FieldName = "account" | "password" | "confirmPassword";
@@ -52,6 +52,7 @@ export function EmailAuthForm({
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
     const [otp, setOtp] = useState("");
+    const [otpError, setOtpError] = useState<string | null>(null);
     const [status, setStatus] = useState<SubmissionStatus>("idle");
     const [registerStep, setRegisterStep] = useState<RegisterStep>("credentials");
     const [forgotStep, setForgotStep] = useState<ForgotStep>(initialForgotStep);
@@ -75,15 +76,16 @@ export function EmailAuthForm({
 
     const isActivationVerify = activationStep === "verify";
     const isEmailVerificationFlow = registerStep === "verify" || isActivationVerify;
-    const isVerifyOtp = isEmailVerificationFlow || forgotStep === "verify";
-    const isStaticAccount = isEmailVerificationFlow || forgotStep === "verify" || forgotStep === "reset";
+    const isVerifyOtp = isEmailVerificationFlow || forgotStep === "reset";
+    const isStaticAccount = isEmailVerificationFlow || forgotStep === "reset";
     const isSuccess = registerStep === "success" || forgotStep === "success" || activationStep === "success";
     const normalizedAccount = account.trim();
+    const isPhoneAccount = PHONE_INPUT_REGEX.test(normalizedAccount);
     const isNumericAccount =
         mode === "login" &&
         forgotStep === "none" &&
         activationStep === "none" &&
-        PHONE_INPUT_REGEX.test(normalizedAccount);
+        isPhoneAccount;
     const showPasswords =
         (mode === "login" && forgotStep === "none" && activationStep === "none") ||
         (mode === "register" && registerStep === "credentials") ||
@@ -124,6 +126,7 @@ export function EmailAuthForm({
     const shouldShowAccountError = Boolean(accountError) && touchedFields.account;
     const shouldShowPasswordError = Boolean(passwordError) && touchedFields.password;
     const shouldShowConfirmPasswordError = Boolean(confirmPasswordError) && touchedFields.confirmPassword;
+    const shouldShowOtpError = Boolean(otpError);
     const activeValidationFields = resolveActiveValidationFields({
         isStaticAccount,
         showPasswords,
@@ -134,6 +137,12 @@ export function EmailAuthForm({
         password: passwordError,
         confirmPassword: confirmPasswordError,
     };
+    const otpErrorId = "auth-otp-error";
+    const otpSlotClassName = cn(
+        "h-12 w-10 text-base sm:h-14 sm:w-12 sm:text-lg",
+        shouldShowOtpError &&
+        "border-destructive/20 data-[active=true]:border-destructive/40 data-[active=true]:ring-destructive/20 dark:data-[active=true]:ring-destructive/40",
+    );
 
     function touchField(field: FieldName) {
         setTouchedFields((current) => (current[field] ? current : {...current, [field]: true}));
@@ -151,6 +160,22 @@ export function EmailAuthForm({
         });
     }
 
+    function clearOtpState(options?: { clearValue?: boolean }) {
+        setOtpError(null);
+
+        if (options?.clearValue) {
+            setOtp("");
+        }
+    }
+
+    function handleOtpChange(nextOtp: string) {
+        setOtp(nextOtp);
+
+        if (otpError) {
+            setOtpError(null);
+        }
+    }
+
     async function handleResend() {
         if (countdown > 0 || status !== "idle") {
             return;
@@ -164,13 +189,14 @@ export function EmailAuthForm({
             } else {
                 await requestPasswordReset({
                     account: normalizedAccount,
-                    countryCode: isNumericAccount
+                    countryCode: isPhoneAccount
                         ? normalizeOptionalPhoneCountryCodeInput(countryCode)
                         : null,
                 });
             }
 
             setCountdown(60);
+            clearOtpState({clearValue: true});
             setStatus("idle");
             toast.success(t("form.resendSuccess"));
         } catch (error) {
@@ -217,7 +243,11 @@ export function EmailAuthForm({
             } catch (error) {
                 setStatus("idle");
                 const normalized = normalizeClientError(error, t("form.errors.verifyFailed"));
-                toast.error(normalized.message);
+                if (isOtpFieldError(normalized)) {
+                    setOtpError(normalized.message);
+                } else {
+                    toast.error(normalized.message);
+                }
             }
 
             return;
@@ -245,7 +275,7 @@ export function EmailAuthForm({
                 if (normalized.status === 401 && normalized.message === "账户未激活") {
                     try {
                         await resendActivationEmail({email: normalizedAccount});
-                        setOtp("");
+                        clearOtpState({clearValue: true});
                         setCountdown(60);
                         setActivationStep("verify");
                     } catch (resendError) {
@@ -277,24 +307,14 @@ export function EmailAuthForm({
                 });
 
                 setCountdown(60);
-                setForgotStep("verify");
+                clearOtpState({clearValue: true});
+                setForgotStep("reset");
                 setStatus("idle");
             } catch (error) {
                 setStatus("idle");
                 const normalized = normalizeClientError(error, t("form.errors.resetRequestFailed"));
                 toast.error(normalized.message);
             }
-
-            return;
-        }
-
-        if (forgotStep === "verify") {
-            setStatus("loading");
-
-            window.setTimeout(() => {
-                setForgotStep("reset");
-                setStatus("idle");
-            }, 600);
 
             return;
         }
@@ -317,7 +337,11 @@ export function EmailAuthForm({
         } catch (error) {
             setStatus("idle");
             const normalized = normalizeClientError(error, t("form.errors.resetFailed"));
-            toast.error(normalized.message);
+            if (isOtpFieldError(normalized)) {
+                setOtpError(normalized.message);
+            } else {
+                toast.error(normalized.message);
+            }
         }
     }
 
@@ -337,6 +361,7 @@ export function EmailAuthForm({
                 });
 
                 setCountdown(60);
+                clearOtpState({clearValue: true});
                 setRegisterStep("verify");
                 setStatus("idle");
             } catch (error) {
@@ -362,7 +387,11 @@ export function EmailAuthForm({
         } catch (error) {
             setStatus("idle");
             const normalized = normalizeClientError(error, t("form.errors.verifyFailed"));
-            toast.error(normalized.message);
+            if (isOtpFieldError(normalized)) {
+                setOtpError(normalized.message);
+            } else {
+                toast.error(normalized.message);
+            }
         }
     }
 
@@ -382,10 +411,8 @@ export function EmailAuthForm({
             isButtonDisabled = isButtonDisabled || !normalizedAccount || !password;
         } else if (forgotStep === "email") {
             isButtonDisabled = isButtonDisabled || !normalizedAccount;
-        } else if (forgotStep === "verify") {
-            isButtonDisabled = isButtonDisabled || otp.length < 6;
         } else if (forgotStep === "reset") {
-            isButtonDisabled = isButtonDisabled || !password || !confirmPassword;
+            isButtonDisabled = isButtonDisabled || otp.length < 6 || !password || !confirmPassword;
         }
     } else if (registerStep === "credentials") {
         isButtonDisabled = isButtonDisabled || !normalizedAccount || !password || !confirmPassword;
@@ -563,7 +590,7 @@ export function EmailAuthForm({
                                     required
                                     readOnly={isStaticAccount}
                                     tabIndex={isStaticAccount ? -1 : 0}
-                                    value={isStaticAccount && isNumericAccount ? `${countryCode} ${account}` : account}
+                                    value={isStaticAccount && isPhoneAccount ? `${countryCode} ${account}` : account}
                                     onChange={(event) => setAccount(event.target.value)}
                                     onBlur={() => touchField("account")}
                                     disabled={status !== "idle"}
@@ -631,6 +658,7 @@ export function EmailAuthForm({
                                                     <InputGroupAddon align="inline-end" className="pl-0 pr-4 cursor-default">
                                                         <button
                                                             type="button"
+                                                            tabIndex={-1}
                                                             onMouseDown={(event) => event.preventDefault()}
                                                             onClick={() => setIsPasswordVisible((current) => !current)}
                                                             disabled={status !== "idle"}
@@ -672,6 +700,7 @@ export function EmailAuthForm({
                                                         <InputGroupAddon align="inline-end" className="pl-0 pr-4 cursor-default">
                                                             <button
                                                                 type="button"
+                                                                tabIndex={-1}
                                                                 onMouseDown={(event) => event.preventDefault()}
                                                                 onClick={() => setIsConfirmPasswordVisible((current) => !current)}
                                                                 disabled={status !== "idle"}
@@ -707,16 +736,35 @@ export function EmailAuthForm({
                                         className="w-full overflow-hidden"
                                     >
                                         <div className="flex flex-col items-center justify-center gap-6 pt-2 pb-2">
-                                            <InputOTP maxLength={6} value={otp} onChange={setOtp} disabled={status !== "idle"}>
-                                                <InputOTPGroup>
-                                                    <InputOTPSlot index={0} className="h-12 w-10 text-base sm:h-14 sm:w-12 sm:text-lg"/>
-                                                    <InputOTPSlot index={1} className="h-12 w-10 text-base sm:h-14 sm:w-12 sm:text-lg"/>
-                                                    <InputOTPSlot index={2} className="h-12 w-10 text-base sm:h-14 sm:w-12 sm:text-lg"/>
-                                                    <InputOTPSlot index={3} className="h-12 w-10 text-base sm:h-14 sm:w-12 sm:text-lg"/>
-                                                    <InputOTPSlot index={4} className="h-12 w-10 text-base sm:h-14 sm:w-12 sm:text-lg"/>
-                                                    <InputOTPSlot index={5} className="h-12 w-10 text-base sm:h-14 sm:w-12 sm:text-lg"/>
-                                                </InputOTPGroup>
-                                            </InputOTP>
+                                            <div className="flex w-full max-w-80 flex-col gap-2 px-2">
+                                                <motion.div
+                                                    layout
+                                                    data-invalid={shouldShowOtpError ? "true" : undefined}
+                                                    className="mx-auto rounded-[calc(var(--radius)+2px)] transition-[box-shadow] duration-300 ease-out data-[invalid=true]:ring-3 data-[invalid=true]:ring-destructive/20 dark:data-[invalid=true]:ring-destructive/40"
+                                                >
+                                                    <InputOTP
+                                                        maxLength={6}
+                                                        value={otp}
+                                                        onChange={handleOtpChange}
+                                                        disabled={status !== "idle"}
+                                                        aria-invalid={shouldShowOtpError || undefined}
+                                                        aria-describedby={shouldShowOtpError ? otpErrorId : undefined}
+                                                        containerClassName="justify-center"
+                                                    >
+                                                        <InputOTPGroup aria-invalid={shouldShowOtpError || undefined}>
+                                                            {[0, 1, 2, 3, 4, 5].map((index) => (
+                                                                <InputOTPSlot key={index} index={index} className={otpSlotClassName}/>
+                                                            ))}
+                                                        </InputOTPGroup>
+                                                    </InputOTP>
+                                                </motion.div>
+
+                                                <AnimatedFieldError
+                                                    id={otpErrorId}
+                                                    message={shouldShowOtpError ? otpError : null}
+                                                    className="text-center"
+                                                />
+                                            </div>
 
                                             <div className="relative mt-2 flex h-6 w-full items-center justify-center overflow-hidden text-sm text-muted-foreground">
                                                 <AnimatePresence mode="wait" initial={false}>
@@ -806,10 +854,6 @@ function resolveButtonText({
             return translate("form.buttons.sendCode");
         }
 
-        if (forgotStep === "verify") {
-            return translate("form.buttons.verify");
-        }
-
         return translate("form.buttons.resetPassword");
     }
 
@@ -820,7 +864,15 @@ function resolveButtonText({
     return translate("form.buttons.verify");
 }
 
-function AnimatedFieldError({message}: { message: string | null }) {
+function AnimatedFieldError({
+                                message,
+                                id,
+                                className,
+                            }: {
+    message: string | null;
+    id?: string;
+    className?: string;
+}) {
     return (
         <AnimatePresence initial={false}>
             {message ? (
@@ -832,7 +884,7 @@ function AnimatedFieldError({message}: { message: string | null }) {
                     transition={{duration: 0.2, ease: "easeOut"}}
                     className="overflow-hidden"
                 >
-                    <p className="pt-0.5 text-xs text-destructive" aria-live="polite">
+                    <p id={id} className={cn("pt-0.5 text-xs text-destructive", className)} aria-live="polite">
                         {message}
                     </p>
                 </motion.div>
@@ -951,6 +1003,10 @@ function resolveConfirmPasswordError(
     return password === confirmPassword
         ? null
         : translate("form.validation.confirmPasswordMismatch");
+}
+
+function isOtpFieldError(error: NormalizedClientError): boolean {
+    return error.status === 422 || error.code === "UNPROCESSABLE_ENTITY";
 }
 
 function deriveIdentityFromEmail(email: string) {
