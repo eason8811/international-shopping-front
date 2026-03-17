@@ -643,12 +643,11 @@ function LogoutPopover({
                     <p className="text-sm text-muted-foreground">{description}</p>
                 </div>
                 <div className="flex items-center justify-end gap-2">
-                    <Button variant="outline" size="sm" onClick={onCancel} disabled={isPending}>
+                    <Button variant="outline" onClick={onCancel} disabled={isPending}>
                         {cancelLabel}
                     </Button>
                     <Button
                         variant="ghost"
-                        size="sm"
                         className="bg-[color-mix(in_oklab,var(--destructive)_10%,transparent)] text-destructive hover:bg-[color-mix(in_oklab,var(--destructive)_20%,transparent)] hover:text-destructive"
                         isLoading={isPending}
                         disabled={isPending}
