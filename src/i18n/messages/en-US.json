@@ -556,7 +556,17 @@
       "noPlaces": "No places found",
       "mapDisclaimer": "Map data ©2026 Google",
       "optional": "Optional",
-      "phonePlaceholder": "+1 234 567 8900",
+      "phonePlaceholder": "234 567 8900",
+      "placeholders": {
+        "country": "Enter country or region",
+        "state": "Enter state or province",
+        "city": "Enter city",
+        "zipcode": "Enter ZIP or postal code",
+        "line1": "Street address and number",
+        "line2": "Apartment, suite, floor, etc.",
+        "firstName": "Enter first name",
+        "lastName": "Enter last name"
+      },
       "setDefault": "Set as Default Address",
       "cancel": "Cancel",
       "save": "Save Address",
@@ -570,7 +580,8 @@
         "zipcode": "ZIP/Postal Code",
         "line1": "Address Line 1",
         "line2": "Address Line 2 (Apt, Suite, Floor)",
-        "name": "Contact Name",
+        "firstName": "First Name",
+        "lastName": "Last Name",
         "phone": "Phone Number"
       }
     }

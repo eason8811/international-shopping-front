@@ -779,9 +779,12 @@ function formatAddressLines(address: UserAddressView) {
 }
 
 function toAddressFormValue(value: UserAddressView): AddressFormValue {
+    const {firstName, lastName} = splitReceiverName(value.receiverName);
+
     return {
         id: value.id,
-        receiverName: value.receiverName,
+        firstName,
+        lastName,
         phone: value.phone.display ?? value.phone.e164 ?? "",
         phoneCountryCode: value.phone.countryCode ?? "",
         addressLine1: value.addressLine1,
@@ -804,7 +807,7 @@ function toAddressPayload(value: AddressFormValue) {
     }
 
     return {
-        receiverName: value.receiverName.trim(),
+        receiverName: composeReceiverName(value.firstName, value.lastName),
         phoneCountryCode: phone.phoneCountryCode,
         phoneNationalNumber: phone.phoneNationalNumber,
         countryCode: deriveCountryCode(value.country, value.countryCode),
@@ -822,6 +825,26 @@ function toAddressPayload(value: AddressFormValue) {
         placeResponse: null,
         isDefault: value.isDefault,
     };
+}
+
+function splitReceiverName(value: string) {
+    const segments = value.trim().split(/\s+/).filter(Boolean);
+
+    if (segments.length <= 1) {
+        return {
+            firstName: segments[0] ?? "",
+            lastName: "",
+        };
+    }
+
+    return {
+        firstName: segments.slice(0, -1).join(" "),
+        lastName: segments.at(-1) ?? "",
+    };
+}
+
+function composeReceiverName(firstName: string, lastName: string) {
+    return [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
 }
 
 function parsePhoneInput(phone: string, fallbackCountryCode: string) {

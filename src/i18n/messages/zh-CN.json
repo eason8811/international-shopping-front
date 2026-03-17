@@ -556,7 +556,17 @@
       "noPlaces": "未找到地点",
       "mapDisclaimer": "地图数据 ©2026 Google",
       "optional": "可选",
-      "phonePlaceholder": "+1 234 567 8900",
+      "phonePlaceholder": "138 0013 8000",
+      "placeholders": {
+        "country": "请输入国家或地区",
+        "state": "请输入州/省",
+        "city": "请输入城市",
+        "zipcode": "请输入邮编",
+        "line1": "请输入街道、门牌号",
+        "line2": "请输入公寓、楼层等信息",
+        "firstName": "请输入名字",
+        "lastName": "请输入姓氏"
+      },
       "setDefault": "设为默认地址",
       "cancel": "取消",
       "save": "保存地址",
@@ -570,7 +580,8 @@
         "zipcode": "邮编",
         "line1": "地址第一行",
         "line2": "地址第二行（公寓、楼层等）",
-        "name": "联系人",
+        "firstName": "名字",
+        "lastName": "姓氏",
         "phone": "电话号码"
       }
     }
