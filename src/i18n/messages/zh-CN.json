@@ -450,7 +450,9 @@
         "password": "••••••••"
       },
       "actions": {
-        "forgotPassword": "忘记密码？"
+        "forgotPassword": "忘记密码？",
+        "showPassword": "显示密码",
+        "hidePassword": "隐藏密码"
       },
       "buttons": {
         "signIn": "登录账户",

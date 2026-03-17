@@ -450,7 +450,9 @@
         "password": "••••••••"
       },
       "actions": {
-        "forgotPassword": "Forgot password?"
+        "forgotPassword": "Forgot password?",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password"
       },
       "buttons": {
         "signIn": "Sign in to your account",

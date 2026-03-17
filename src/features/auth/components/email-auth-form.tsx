@@ -1,7 +1,7 @@
 "use client";
 
 import {type ComponentProps, useEffect, useRef, useState} from "react";
-import {Check} from "lucide-react";
+import {Check, Eye, EyeClosed} from "lucide-react";
 import {useTranslations} from "next-intl";
 import {AnimatePresence, motion} from "motion/react";
 import {toast} from "sonner";
@@ -18,6 +18,7 @@ import {normalizeClientError} from "@/lib/api/normalize-client-error";
 import {normalizeOptionalPhoneCountryCodeInput} from "@/lib/format/phone";
 import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
+import {InputGroup, InputGroupAddon, InputGroupInput} from "@/components/ui/input-group";
 import {InputOTP, InputOTPGroup, InputOTPSlot} from "@/components/ui/input-otp";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
@@ -48,6 +49,8 @@ export function EmailAuthForm({
     const [account, setAccount] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
     const [otp, setOtp] = useState("");
     const [status, setStatus] = useState<SubmissionStatus>("idle");
     const [registerStep, setRegisterStep] = useState<RegisterStep>("credentials");
@@ -93,8 +96,21 @@ export function EmailAuthForm({
         "h-12 items-center bg-muted/40 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 data-[invalid=true]:ring-3 data-[invalid=true]:ring-destructive/20 dark:data-[invalid=true]:border-destructive/50 dark:data-[invalid=true]:ring-destructive/40";
     const animatedAccountInputClassName =
         "h-full w-full border-none bg-transparent shadow-none transition-all duration-500 ease-in-out focus-visible:ring-0 focus-visible:ring-offset-0 aria-invalid:ring-0 data-[invalid=true]:ring-0";
-    const animatedPasswordInputClassName =
-        "h-12 rounded-[var(--radius)] border-none bg-muted/40 px-4 shadow-none transition-all duration-500 ease-in-out";
+    const animatedPasswordFieldClassName =
+        "h-12 rounded-[var(--radius)] border-none bg-muted/40 shadow-none transition-all duration-500 ease-in-out has-[[data-slot=input-group-control]:focus-visible]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-3";
+
+    useEffect(() => {
+        if (!showPasswords) {
+            setIsPasswordVisible(false);
+        }
+    }, [showPasswords]);
+
+    useEffect(() => {
+        if (!showConfirmPassword) {
+            setIsConfirmPasswordVisible(false);
+        }
+    }, [showConfirmPassword]);
+
     const accountError = isStaticAccount
         ? null
         : resolveAccountError({
@@ -597,19 +613,38 @@ export function EmailAuthForm({
                                                         </button>
                                                     ) : null}
                                                 </div>
-                                                <Input
-                                                    id="auth-password"
-                                                    type="password"
-                                                    placeholder={t("form.placeholders.password")}
-                                                    required
-                                                    value={password}
-                                                    onChange={(event) => setPassword(event.target.value)}
-                                                    onBlur={() => touchField("password")}
-                                                    disabled={status !== "idle"}
-                                                    aria-invalid={shouldShowPasswordError || undefined}
+                                                <InputGroup
+                                                    className={animatedPasswordFieldClassName}
                                                     data-invalid={shouldShowPasswordError ? "true" : undefined}
-                                                    className={animatedPasswordInputClassName}
-                                                />
+                                                >
+                                                    <InputGroupInput
+                                                        id="auth-password"
+                                                        type={isPasswordVisible ? "text" : "password"}
+                                                        placeholder={t("form.placeholders.password")}
+                                                        required
+                                                        value={password}
+                                                        onChange={(event) => setPassword(event.target.value)}
+                                                        onBlur={() => touchField("password")}
+                                                        disabled={status !== "idle"}
+                                                        aria-invalid={shouldShowPasswordError || undefined}
+                                                        className="h-full pl-4 pr-2"
+                                                    />
+                                                    <InputGroupAddon align="inline-end" className="pl-0 pr-4 cursor-default">
+                                                        <button
+                                                            type="button"
+                                                            onMouseDown={(event) => event.preventDefault()}
+                                                            onClick={() => setIsPasswordVisible((current) => !current)}
+                                                            disabled={status !== "idle"}
+                                                            aria-label={isPasswordVisible
+                                                                ? t("form.actions.hidePassword")
+                                                                : t("form.actions.showPassword")}
+                                                            aria-pressed={isPasswordVisible}
+                                                            className="flex size-5 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none cursor-pointer"
+                                                        >
+                                                            <PasswordVisibilityIcon visible={isPasswordVisible}/>
+                                                        </button>
+                                                    </InputGroupAddon>
+                                                </InputGroup>
 
                                                 <AnimatedFieldError message={shouldShowPasswordError ? passwordError : null}/>
                                             </div>
@@ -619,19 +654,38 @@ export function EmailAuthForm({
                                                     <Label htmlFor="auth-confirm-password">
                                                         {t("form.labels.confirmPassword")}
                                                     </Label>
-                                                    <Input
-                                                        id="auth-confirm-password"
-                                                        type="password"
-                                                        placeholder={t("form.placeholders.password")}
-                                                        required
-                                                        value={confirmPassword}
-                                                        onChange={(event) => setConfirmPassword(event.target.value)}
-                                                        onBlur={() => touchField("confirmPassword")}
-                                                        disabled={status !== "idle"}
-                                                        aria-invalid={shouldShowConfirmPasswordError || undefined}
+                                                    <InputGroup
+                                                        className={animatedPasswordFieldClassName}
                                                         data-invalid={shouldShowConfirmPasswordError ? "true" : undefined}
-                                                        className={animatedPasswordInputClassName}
-                                                    />
+                                                    >
+                                                        <InputGroupInput
+                                                            id="auth-confirm-password"
+                                                            type={isConfirmPasswordVisible ? "text" : "password"}
+                                                            placeholder={t("form.placeholders.password")}
+                                                            required
+                                                            value={confirmPassword}
+                                                            onChange={(event) => setConfirmPassword(event.target.value)}
+                                                            onBlur={() => touchField("confirmPassword")}
+                                                            disabled={status !== "idle"}
+                                                            aria-invalid={shouldShowConfirmPasswordError || undefined}
+                                                            className="h-full pl-4 pr-2"
+                                                        />
+                                                        <InputGroupAddon align="inline-end" className="pl-0 pr-4 cursor-default">
+                                                            <button
+                                                                type="button"
+                                                                onMouseDown={(event) => event.preventDefault()}
+                                                                onClick={() => setIsConfirmPasswordVisible((current) => !current)}
+                                                                disabled={status !== "idle"}
+                                                                aria-label={isConfirmPasswordVisible
+                                                                    ? t("form.actions.hidePassword")
+                                                                    : t("form.actions.showPassword")}
+                                                                aria-pressed={isConfirmPasswordVisible}
+                                                                className="flex size-5 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none cursor-pointer"
+                                                            >
+                                                                <PasswordVisibilityIcon visible={isConfirmPasswordVisible}/>
+                                                            </button>
+                                                        </InputGroupAddon>
+                                                    </InputGroup>
 
                                                     <AnimatedFieldError
                                                         message={shouldShowConfirmPasswordError ? confirmPasswordError : null}
@@ -785,6 +839,38 @@ function AnimatedFieldError({message}: { message: string | null }) {
                 </motion.div>
             ) : null}
         </AnimatePresence>
+    );
+}
+
+function PasswordVisibilityIcon({visible}: {visible: boolean}) {
+    const Icon = visible ? Eye : EyeClosed;
+    const iconAnimation = visible
+        ? {
+            initial: {opacity: 0.5},
+            animate: {opacity: 1},
+            exit: {opacity: 0.5},
+        }
+        : {
+            initial: {opacity: 0.5, y: 2},
+            animate: {opacity: 1, y: 0},
+            exit: {opacity: 0.5, y: 2},
+        };
+
+    return (
+        <span aria-hidden="true" className="pointer-events-none relative size-5">
+            <AnimatePresence initial={false} mode="wait">
+                <motion.span
+                    key={visible ? "visible" : "hidden"}
+                    initial={iconAnimation.initial}
+                    animate={iconAnimation.animate}
+                    exit={iconAnimation.exit}
+                    transition={{duration: 0.18, ease: "easeInOut"}}
+                    className="absolute inset-0 flex items-center justify-center"
+                >
+                    <Icon className="size-5"/>
+                </motion.span>
+            </AnimatePresence>
+        </span>
     );
 }
 
