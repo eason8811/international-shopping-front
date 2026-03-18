@@ -524,7 +524,11 @@
       "defaultBadge": "Default",
       "phoneFallback": "No phone number",
       "empty": "No addresses found",
+      "expand": "Expand address book",
+      "collapse": "Collapse address book",
       "add": "Add New Address",
+      "loadingMore": "Loading more addresses",
+      "loadFailed": "Loading more addresses failed. Please try again.",
       "created": "Address added successfully.",
       "updated": "Address updated successfully."
     },

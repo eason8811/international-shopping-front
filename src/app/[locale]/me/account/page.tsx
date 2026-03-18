@@ -1,5 +1,5 @@
 import {TrackedErrorState} from "@/components/error/tracked-error-state";
-import {listCurrentUserAddresses} from "@/features/address";
+import {ACCOUNT_CENTER_ADDRESS_PAGE_SIZE, listCurrentUserAddresses} from "@/features/address";
 import {getCurrentUserAccount, getCurrentUserProfile} from "@/features/profile";
 import {AccountCenter} from "@/features/profile/components/account-center";
 import {normalizeClientError} from "@/lib/api/normalize-client-error";
@@ -54,7 +54,7 @@ async function loadAccountPageData(): Promise<AccountPageDataResult> {
         const [account, profile, addresses] = await Promise.all([
             getCurrentUserAccount(),
             getCurrentUserProfile(),
-            listCurrentUserAddresses({page: 1, size: 20}),
+            listCurrentUserAddresses({page: 1, size: ACCOUNT_CENTER_ADDRESS_PAGE_SIZE}),
         ]);
 
         return {account, profile, addresses};

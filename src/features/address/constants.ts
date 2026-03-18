@@ -1,0 +1,1 @@
+export const ACCOUNT_CENTER_ADDRESS_PAGE_SIZE = 6;

@@ -1,12 +1,14 @@
 "use client";
 
-import {type ReactNode, useState} from "react";
+import {startTransition, type ReactNode, useEffect, useEffectEvent, useRef, useState} from "react";
 import {
     AlertTriangle,
     CheckCircle2,
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
     HelpCircle,
+    Loader2,
     Lock,
     LogOut,
     MapPin,
@@ -21,10 +23,11 @@ import {
     Wallet,
 } from "lucide-react";
 import {useTranslations} from "next-intl";
-import {AnimatePresence, motion} from "motion/react";
+import {AnimatePresence, motion, useReducedMotion} from "motion/react";
 import {toast} from "sonner";
 
 import {
+    ACCOUNT_CENTER_ADDRESS_PAGE_SIZE,
     createCurrentUserAddress,
     listCurrentUserAddresses,
     setCurrentUserDefaultAddress,
@@ -36,6 +39,7 @@ import {type UserAccountView, type UserAddressListView, type UserAddressView, ty
 import {useRouter} from "@/i18n/navigation";
 import {normalizeClientError} from "@/lib/api/normalize-client-error";
 import {normalizePhoneCountryCodeInput} from "@/lib/format/phone";
+import {cn} from "@/lib/utils";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
@@ -54,7 +58,12 @@ interface AccountCenterProps {
 export function AccountCenter({initialAccount, initialProfile, initialAddresses}: AccountCenterProps) {
     const t = useTranslations("ProfilePage");
     const router = useRouter();
+    const prefersReducedMotion = useReducedMotion();
     const [addresses, setAddresses] = useState(initialAddresses.items);
+    const [addressPagination, setAddressPagination] = useState(initialAddresses.pagination);
+    const [loadedAddressPages, setLoadedAddressPages] = useState(Math.max(1, initialAddresses.pagination.page));
+    const [isAddressBookExpanded, setIsAddressBookExpanded] = useState(false);
+    const [isAddressListPending, setIsAddressListPending] = useState(false);
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
     const [logoutOpenPC, setLogoutOpenPC] = useState(false);
     const [logoutOpenMobile, setLogoutOpenMobile] = useState(false);
@@ -62,6 +71,8 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
     const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
     const [isAddressPending, setIsAddressPending] = useState(false);
     const [isSessionPending, setIsSessionPending] = useState(false);
+    const addressListRef = useRef<HTMLDivElement>(null);
+    const addressLoadTriggerRef = useRef<HTMLDivElement>(null);
 
     const displayName = resolveDisplayName(initialAccount, initialProfile);
     const initials = getInitials(displayName);
@@ -69,6 +80,9 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
     const editingAddress = editingAddressId
         ? addresses.find((item) => item.id === editingAddressId) ?? null
         : null;
+    const canExpandAddressBook = addressPagination.total > 0;
+    const shouldShowExpandedAddressList = isAddressBookExpanded && canExpandAddressBook;
+    const hasMoreAddresses = addressPagination.hasNext;
 
     const orderItems = [
         {icon: Wallet, label: t("orders.unpaid"), count: 1},
@@ -77,23 +91,89 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
         {icon: CheckCircle2, label: t("orders.delivered")},
         {icon: RefreshCcw, label: t("orders.returns")},
     ];
+    const containerStaggerDelay = prefersReducedMotion ? 0 : 0.08;
+    const fadeUpDistance = prefersReducedMotion ? 0 : 15;
+    const layoutTransition = prefersReducedMotion
+        ? {duration: 0}
+        : {type: "spring" as const, stiffness: 220, damping: 24, mass: 0.85};
+    const fadeUpTransition = prefersReducedMotion
+        ? {duration: 0}
+        : {duration: 0.4, ease: "easeOut" as const};
+    const sectionTransition = prefersReducedMotion
+        ? {duration: 0}
+        : {duration: 0.3, ease: "easeInOut" as const};
 
     const containerVariants = {
         hidden: {opacity: 0},
         visible: {
             opacity: 1,
-            transition: {staggerChildren: 0.08},
+            transition: {staggerChildren: containerStaggerDelay},
         },
-    } as const;
+    };
 
     const itemVariants = {
-        hidden: {opacity: 0, y: 15},
-        visible: {opacity: 1, y: 0, transition: {duration: 0.4, ease: "easeOut"}},
-    } as const;
+        hidden: {opacity: 0, y: fadeUpDistance},
+        visible: {opacity: 1, y: 0, transition: fadeUpTransition},
+    };
 
-    async function refreshAddresses() {
-        const next = await listCurrentUserAddresses({page: 1, size: 20});
-        setAddresses(next.items);
+    async function fetchAddressPages(pageCount: number) {
+        const nextItems: UserAddressView[] = [];
+        let lastPagination = initialAddresses.pagination;
+        let maxPageCount = Math.max(1, pageCount);
+
+        for (let page = 1; page <= maxPageCount; page += 1) {
+            const response = await listCurrentUserAddresses({
+                page,
+                size: ACCOUNT_CENTER_ADDRESS_PAGE_SIZE,
+            });
+
+            nextItems.push(...response.items);
+            lastPagination = response.pagination;
+            maxPageCount = Math.min(maxPageCount, response.pagination.totalPages);
+        }
+
+        return {
+            items: mergeAddressItems(nextItems),
+            loadedPageCount: Math.max(1, Math.min(maxPageCount, lastPagination.page)),
+            pagination: lastPagination,
+        };
+    }
+
+    async function refreshAddresses(pageCount = loadedAddressPages) {
+        const next = await fetchAddressPages(pageCount);
+
+        startTransition(() => {
+            setAddresses(next.items);
+            setAddressPagination(next.pagination);
+            setLoadedAddressPages(next.loadedPageCount);
+        });
+    }
+
+    async function loadMoreAddresses() {
+        if (isAddressListPending || !addressPagination.hasNext) {
+            return;
+        }
+
+        setIsAddressListPending(true);
+
+        try {
+            const nextPage = addressPagination.page + 1;
+            const next = await listCurrentUserAddresses({
+                page: nextPage,
+                size: ACCOUNT_CENTER_ADDRESS_PAGE_SIZE,
+            });
+
+            startTransition(() => {
+                setAddresses((current) => mergeAddressItems([...current, ...next.items]));
+                setAddressPagination(next.pagination);
+                setLoadedAddressPages(next.pagination.page);
+            });
+        } catch (error) {
+            const normalized = normalizeClientError(error, t("address.loadFailed"));
+            toast.error(normalized.message);
+        } finally {
+            setIsAddressListPending(false);
+        }
     }
 
     async function handleSaveAddress(value: AddressFormValue) {
@@ -162,6 +242,37 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
     function handleSoon() {
         toast.message(t("common.comingSoon"));
     }
+
+    const handleAddressLoadIntersection = useEffectEvent((entries: IntersectionObserverEntry[]) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+            void loadMoreAddresses();
+        }
+    });
+
+    useEffect(() => {
+        if (!shouldShowExpandedAddressList || !hasMoreAddresses) {
+            return;
+        }
+
+        const root = addressListRef.current;
+        const target = addressLoadTriggerRef.current;
+        if (!root || !target) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                handleAddressLoadIntersection(entries);
+            },
+            {
+                root,
+                rootMargin: "0px 0px 160px 0px",
+            },
+        );
+
+        observer.observe(target);
+        return () => observer.disconnect();
+    }, [hasMoreAddresses, shouldShowExpandedAddressList]);
 
     return (
         <div className="flex h-screen overflow-hidden bg-muted/30">
@@ -450,8 +561,15 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                             </Card>
                         </motion.div>
 
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 sm:gap-6 lg:gap-8">
-                            <motion.div variants={itemVariants} className="h-full">
+                        <motion.div
+                            layout
+                            transition={layoutTransition}
+                            className={cn(
+                                "grid grid-cols-1 gap-4 sm:gap-6 lg:gap-8",
+                                !isAddressBookExpanded && "md:grid-cols-2",
+                            )}
+                        >
+                            <motion.div layout transition={layoutTransition} variants={itemVariants} className="h-full">
                                 <Card className="flex h-full flex-col shadow-sm border-muted">
                                     <CardHeader className="pb-2 sm:pb-3">
                                         <div className="flex items-center gap-2.5">
@@ -463,14 +581,17 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                                             </CardTitle>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="flex flex-1 flex-col justify-between">
+                                    <CardContent className="flex flex-1 flex-col gap-3 sm:gap-4">
                                         {defaultAddress ? (
-                                            <div
+                                            <motion.button
+                                                layout
+                                                transition={layoutTransition}
+                                                type="button"
                                                 onClick={() => {
                                                     setEditingAddressId(defaultAddress.id);
                                                     setIsAddressDialogOpen(true);
                                                 }}
-                                                className="group relative mb-3 cursor-pointer overflow-hidden rounded-lg border border-muted/50 bg-muted/30 p-3 transition-all duration-200 hover:border-primary/50 hover:bg-muted/50 active:scale-[0.98] sm:mb-4 sm:p-4"
+                                                className="group relative cursor-pointer overflow-hidden rounded-xl border border-muted/50 bg-muted/30 p-3 text-left transition-all duration-300 hover:border-primary/50 hover:bg-muted/50 active:scale-[0.99] sm:p-4"
                                             >
                                                 <div className="absolute top-0 left-0 h-full w-1 bg-primary opacity-80 transition-opacity group-hover:opacity-100"/>
                                                 <div className="mb-1.5 flex flex-col gap-1 sm:mb-1 sm:flex-row sm:items-start sm:justify-between sm:gap-0">
@@ -496,28 +617,116 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                                                         </span>
                                                     ))}
                                                 </p>
-                                            </div>
+                                            </motion.button>
                                         ) : (
-                                            <div className="mb-4 flex flex-1 items-center justify-center text-sm text-muted-foreground">
+                                            <div className="flex min-h-30 flex-1 items-center justify-center rounded-xl border border-dashed border-muted/60 bg-muted/20 text-sm text-muted-foreground">
                                                 {t("address.empty")}
                                             </div>
                                         )}
-                                        <Button
-                                            variant="outline"
-                                            className="h-9 w-full gap-2 border-dashed bg-background text-xs shadow-sm sm:h-10 sm:text-sm"
-                                            onClick={() => {
-                                                setEditingAddressId(null);
-                                                setIsAddressDialogOpen(true);
-                                            }}
-                                        >
-                                            <Plus className="size-3.5 sm:size-4"/>
-                                            {t("address.add")}
-                                        </Button>
+
+                                        <div className="mt-auto space-y-3 sm:space-y-4">
+                                            <motion.div layout transition={layoutTransition} className="flex items-center gap-3">
+                                                <div className="h-px flex-1 bg-border/70"/>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-11 w-11 rounded-full border-dashed bg-background/90 shadow-sm transition-all duration-300 hover:border-primary/40 hover:bg-primary/5"
+                                                    disabled={!canExpandAddressBook}
+                                                    aria-expanded={isAddressBookExpanded}
+                                                    aria-label={isAddressBookExpanded ? t("address.collapse") : t("address.expand")}
+                                                    title={isAddressBookExpanded ? t("address.collapse") : t("address.expand")}
+                                                    onClick={() => setIsAddressBookExpanded((current) => !current)}
+                                                >
+                                                    <motion.span
+                                                        animate={{rotate: isAddressBookExpanded ? 180 : 0}}
+                                                        transition={sectionTransition}
+                                                        className="flex items-center justify-center"
+                                                    >
+                                                        <ChevronDown className="size-4"/>
+                                                    </motion.span>
+                                                </Button>
+                                                <div className="h-px flex-1 bg-border/70"/>
+                                            </motion.div>
+
+                                            <AnimatePresence initial={false}>
+                                                {shouldShowExpandedAddressList ? (
+                                                    <motion.div
+                                                        key="expanded-address-book"
+                                                        layout
+                                                        initial={{opacity: 0, y: prefersReducedMotion ? 0 : 16}}
+                                                        animate={{opacity: 1, y: 0}}
+                                                        exit={{opacity: 0, y: prefersReducedMotion ? 0 : -10}}
+                                                        transition={sectionTransition}
+                                                        className="overflow-hidden"
+                                                    >
+                                                        <div
+                                                            ref={addressListRef}
+                                                            className="max-h-[calc(8.75rem*3+1.5rem)] overflow-y-auto overscroll-contain pr-1"
+                                                        >
+                                                            <div className="space-y-3">
+                                                                <AnimatePresence initial={false}>
+                                                                    {addresses.map((address, index) => (
+                                                                        <AddressBookListItem
+                                                                            key={address.id}
+                                                                            address={address}
+                                                                            defaultBadgeLabel={t("address.defaultBadge")}
+                                                                            phoneFallback={t("address.phoneFallback")}
+                                                                            prefersReducedMotion={prefersReducedMotion}
+                                                                            index={index}
+                                                                            onClick={() => {
+                                                                                setEditingAddressId(address.id);
+                                                                                setIsAddressDialogOpen(true);
+                                                                            }}
+                                                                        />
+                                                                    ))}
+                                                                </AnimatePresence>
+
+                                                                <AnimatePresence initial={false}>
+                                                                    {isAddressListPending ? (
+                                                                        <motion.div
+                                                                            key="address-book-spinner"
+                                                                            initial={{opacity: 0}}
+                                                                            animate={{opacity: 1}}
+                                                                            exit={{opacity: 0}}
+                                                                            transition={sectionTransition}
+                                                                            className="flex items-center justify-center py-2 text-muted-foreground"
+                                                                        >
+                                                                            <Loader2 className="size-4 animate-spin"/>
+                                                                            <span className="sr-only">{t("address.loadingMore")}</span>
+                                                                        </motion.div>
+                                                                    ) : null}
+                                                                </AnimatePresence>
+
+                                                                {hasMoreAddresses ? (
+                                                                    <div
+                                                                        ref={addressLoadTriggerRef}
+                                                                        className="h-1 w-full"
+                                                                        aria-hidden="true"
+                                                                    />
+                                                                ) : null}
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                ) : null}
+                                            </AnimatePresence>
+
+                                            <Button
+                                                variant="outline"
+                                                className="h-9 w-full gap-2 border-dashed bg-background text-xs shadow-sm sm:h-10 sm:text-sm"
+                                                onClick={() => {
+                                                    setEditingAddressId(null);
+                                                    setIsAddressDialogOpen(true);
+                                                }}
+                                            >
+                                                <Plus className="size-3.5 sm:size-4"/>
+                                                {t("address.add")}
+                                            </Button>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </motion.div>
 
-                            <motion.div variants={itemVariants} className="h-full">
+                            <motion.div layout transition={layoutTransition} variants={itemVariants} className="h-full">
                                 <Card className="flex h-full flex-col border-muted shadow-sm">
                                     <CardHeader className="pb-2 sm:pb-3">
                                         <div className="flex items-center gap-2.5">
@@ -538,9 +747,9 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                                     </CardContent>
                                 </Card>
                             </motion.div>
-                        </div>
+                        </motion.div>
 
-                        <motion.div variants={itemVariants}>
+                        <motion.div layout transition={layoutTransition} variants={itemVariants}>
                             <Card className="shrink-0 border-muted shadow-sm">
                                 <CardHeader className="pb-2 sm:pb-3">
                                     <div className="flex items-center gap-2.5">
@@ -611,6 +820,71 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                 isPending={isAddressPending}
             />
         </div>
+    );
+}
+
+function AddressBookListItem({
+                                 address,
+                                 defaultBadgeLabel,
+                                 phoneFallback,
+                                 prefersReducedMotion,
+                                 index,
+                                 onClick,
+                             }: {
+    address: UserAddressView;
+    defaultBadgeLabel: string;
+    phoneFallback: string;
+    prefersReducedMotion: boolean;
+    index: number;
+    onClick: () => void;
+}) {
+    const addressSummary = formatAddressLines(address).join(", ");
+
+    return (
+        <motion.button
+            layout
+            type="button"
+            initial={{opacity: 0, y: prefersReducedMotion ? 0 : 18}}
+            animate={{
+                opacity: 1,
+                y: 0,
+                transition: prefersReducedMotion
+                    ? {duration: 0}
+                    : {duration: 0.28, delay: Math.min(index, 5) * 0.04, ease: "easeOut"},
+            }}
+            exit={{
+                opacity: 0,
+                y: prefersReducedMotion ? 0 : -12,
+                transition: prefersReducedMotion ? {duration: 0} : {duration: 0.18, ease: "easeIn"},
+            }}
+            className="group flex min-h-35 w-full flex-col justify-between rounded-xl border border-border/70 bg-background/90 p-3 text-left shadow-sm transition-colors duration-300 hover:border-primary/35 hover:bg-accent/20 sm:p-3.5"
+            onClick={onClick}
+        >
+            <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                        <span className="truncate text-sm font-semibold sm:text-[15px]">{address.receiverName}</span>
+                        {address.isDefault ? (
+                            <Badge
+                                variant="secondary"
+                                className="h-4 shrink-0 bg-primary/10 px-1.5 text-[9px] font-normal text-primary hover:bg-primary/20"
+                            >
+                                {defaultBadgeLabel}
+                            </Badge>
+                        ) : null}
+                    </div>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">
+                        {address.phone.display ?? address.phone.e164 ?? phoneFallback}
+                    </p>
+                </div>
+
+                <ChevronRight className="mt-0.5 size-4 shrink-0 text-muted-foreground/50 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-foreground"/>
+            </div>
+
+            <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                {addressSummary}
+            </p>
+        </motion.button>
     );
 }
 
@@ -767,6 +1041,10 @@ function resolveDisplayName(account: UserAccountView, profile: UserProfileView) 
 function getInitials(value: string) {
     const segments = value.trim().split(/\s+/).filter(Boolean);
     return segments.slice(0, 2).map((item) => item[0]?.toUpperCase() ?? "").join("") || "IS";
+}
+
+function mergeAddressItems(items: UserAddressView[]) {
+    return Array.from(new Map(items.map((item) => [item.id, item])).values());
 }
 
 function formatAddressLines(address: UserAddressView) {

@@ -524,7 +524,11 @@
       "defaultBadge": "默认地址",
       "phoneFallback": "暂无联系电话",
       "empty": "暂无地址",
+      "expand": "展开地址簿",
+      "collapse": "收起地址簿",
       "add": "新增地址",
+      "loadingMore": "正在加载更多地址",
+      "loadFailed": "加载更多地址失败，请稍后重试。",
       "created": "地址添加成功。",
       "updated": "地址更新成功。"
     },
