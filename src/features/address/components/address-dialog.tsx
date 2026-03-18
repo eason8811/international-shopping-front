@@ -218,13 +218,13 @@ function AddressDialogBody({
 
     return (
         <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden border-0 p-0 shadow-xl sm:max-w-125">
-            <ScrollArea className="max-h-[90vh] flex-1 overflow-y-auto">
                 <motion.form
                     initial={{opacity: 0, y: 10}}
                     animate={{opacity: 1, y: 0}}
                     exit={{opacity: 0, y: 10}}
                     transition={formTransition}
                     onSubmit={handleSubmit}
+                    className="flex-1 overflow-y-auto"
                 >
                     <motion.div layout className="space-y-4 p-6">
                         <DialogHeader className="mb-2">
@@ -494,7 +494,6 @@ function AddressDialogBody({
                         </DialogFooter>
                     </motion.div>
                 </motion.form>
-            </ScrollArea>
         </DialogContent>
     );
 }
