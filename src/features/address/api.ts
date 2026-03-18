@@ -89,19 +89,13 @@ export async function createCurrentUserAddress(
             receiverName: input.receiverName,
             phoneCountryCode: input.phoneCountryCode,
             phoneNationalNumber: input.phoneNationalNumber,
-            countryCode: input.countryCode,
             country: input.country,
-            province: input.province ?? null,
-            city: input.city ?? null,
-            district: input.district ?? null,
+            province: input.province,
+            city: input.city,
+            district: input.district,
             addressLine1: input.addressLine1,
             addressLine2: input.addressLine2 ?? null,
-            zipcode: input.zipcode ?? null,
-            languageCode: input.languageCode ?? null,
-            addressSource: input.addressSource ?? "MANUAL",
-            rawInput: input.rawInput ?? null,
-            googlePlaceId: input.googlePlaceId ?? null,
-            placeResponse: input.placeResponse ?? null,
+            zipcode: input.zipcode,
             isDefault: input.isDefault ?? false,
         },
     });
@@ -125,27 +119,25 @@ export async function updateCurrentUserAddress(
     id: number | string,
     input: UpdateAddressInput,
 ): Promise<UserAddressView> {
+    const body = Object.fromEntries(
+        Object.entries({
+            receiverName: input.receiverName,
+            phoneCountryCode: input.phoneCountryCode,
+            phoneNationalNumber: input.phoneNationalNumber,
+            country: input.country,
+            province: input.province,
+            city: input.city,
+            district: input.district,
+            addressLine1: input.addressLine1,
+            addressLine2: input.addressLine2,
+            zipcode: input.zipcode,
+            isDefault: input.isDefault,
+        }).filter(([, value]) => value !== undefined),
+    );
+
     const response = await requestBff(`/users/me/addresses/${id}`, {
         method: "PATCH",
-        body: {
-            receiverName: input.receiverName ?? null,
-            phoneCountryCode: input.phoneCountryCode ?? null,
-            phoneNationalNumber: input.phoneNationalNumber ?? null,
-            countryCode: input.countryCode ?? null,
-            country: input.country ?? null,
-            province: input.province ?? null,
-            city: input.city ?? null,
-            district: input.district ?? null,
-            addressLine1: input.addressLine1 ?? null,
-            addressLine2: input.addressLine2 ?? null,
-            zipcode: input.zipcode ?? null,
-            languageCode: input.languageCode ?? null,
-            addressSource: input.addressSource ?? null,
-            rawInput: input.rawInput ?? null,
-            googlePlaceId: input.googlePlaceId ?? null,
-            placeResponse: input.placeResponse ?? null,
-            isDefault: input.isDefault ?? null,
-        },
+        body,
     });
 
     return toUserAddressView(response.data);

@@ -12,16 +12,6 @@ export type UserAccountStatus = "ACTIVE" | "DISABLED";
 export type UserGender = "UNKNOWN" | "MALE" | "FEMALE";
 
 /**
- * 收货地址来源
- */
-export type UserAddressSource = "MANUAL" | "GOOGLE_AUTOCOMPLETE" | "GOOGLE_MAP_PICK";
-
-/**
- * 收货地址校验状态
- */
-export type UserAddressValidationStatus = "UNVALIDATED" | "ACCEPT" | "REVIEW" | "FIX" | "REJECT";
-
-/**
  * 激活邮件投递状态
  */
 export type UserEmailDeliveryStatus =
@@ -116,8 +106,6 @@ export interface UserAddressView {
     receiverName: string;
     /** 联系电话 */
     phone: UserPhoneView;
-    /** 国家编码 */
-    countryCode: string | null;
     /** 国家 */
     country: string | null;
     /** 省份 */
@@ -132,16 +120,8 @@ export interface UserAddressView {
     addressLine2: string | null;
     /** 邮编 */
     zipcode: string | null;
-    /** 语言编码 */
-    languageCode: string | null;
-    /** 地址来源 */
-    addressSource: UserAddressSource | null;
-    /** 地址校验状态 */
-    validationStatus: UserAddressValidationStatus | null;
     /** 是否默认地址 */
     isDefault: boolean;
-    /** 地址校验时间 */
-    validatedAt: string | null;
     /** 创建时间 */
     createdAt: string;
     /** 更新时间 */
@@ -344,32 +324,20 @@ export interface CreateAddressInput {
     phoneCountryCode: string;
     /** 电话本地号码 */
     phoneNationalNumber: string;
-    /** 国家编码 */
-    countryCode: string;
     /** 国家 */
     country: string;
     /** 省份 */
-    province?: string | null;
+    province: string;
     /** 城市 */
-    city?: string | null;
+    city: string;
     /** 区县 */
-    district?: string | null;
+    district: string;
     /** 地址第一行 */
     addressLine1: string;
     /** 地址第二行 */
     addressLine2?: string | null;
     /** 邮编 */
-    zipcode?: string | null;
-    /** 语言编码 */
-    languageCode?: string | null;
-    /** 地址来源, 默认 `MANUAL` */
-    addressSource?: UserAddressSource | null;
-    /** 原始输入 */
-    rawInput?: string | null;
-    /** Google Place ID */
-    googlePlaceId?: string | null;
-    /** Google place 响应 */
-    placeResponse?: Record<string, unknown> | null;
+    zipcode: string;
     /** 是否默认地址 */
     isDefault?: boolean;
 }
@@ -379,13 +347,11 @@ export interface CreateAddressInput {
  */
 export interface UpdateAddressInput {
     /** 收件人 */
-    receiverName?: string | null;
+    receiverName?: string;
     /** 电话国家码 */
     phoneCountryCode?: string | null;
     /** 电话本地号码 */
     phoneNationalNumber?: string | null;
-    /** 国家编码 */
-    countryCode?: string | null;
     /** 国家 */
     country?: string | null;
     /** 省份 */
@@ -395,21 +361,11 @@ export interface UpdateAddressInput {
     /** 区县 */
     district?: string | null;
     /** 地址第一行 */
-    addressLine1?: string | null;
+    addressLine1?: string;
     /** 地址第二行 */
     addressLine2?: string | null;
     /** 邮编 */
     zipcode?: string | null;
-    /** 语言编码 */
-    languageCode?: string | null;
-    /** 地址来源 */
-    addressSource?: UserAddressSource | null;
-    /** 原始输入 */
-    rawInput?: string | null;
-    /** Google Place ID */
-    googlePlaceId?: string | null;
-    /** Google place 响应 */
-    placeResponse?: Record<string, unknown> | null;
     /** 是否默认地址 */
-    isDefault?: boolean | null;
+    isDefault?: boolean;
 }

@@ -550,17 +550,18 @@
     "dialog": {
       "createTitle": "新增地址",
       "editTitle": "编辑地址",
-      "description": "搜索你的地址，或者在地图上拖动定位点来自动填写位置。",
+      "description": "请手动填写收货地址信息，确保联系人、电话和地址可用于配送。",
       "searchLabel": "搜索地址",
       "searchPlaceholder": "搜索地点...",
       "noPlaces": "未找到地点",
       "mapDisclaimer": "地图数据 ©2026 Google",
       "optional": "可选",
-      "phonePlaceholder": "138 0013 8000",
+      "phonePlaceholder": "13800138000",
       "placeholders": {
         "country": "请输入国家或地区",
         "state": "请输入州/省",
         "city": "请输入城市",
+        "district": "请输入区/县",
         "zipcode": "请输入邮编",
         "line1": "请输入街道、门牌号",
         "line2": "请输入公寓、楼层等信息",
@@ -571,12 +572,16 @@
       "cancel": "取消",
       "save": "保存地址",
       "validation": {
-        "required": "请至少填写联系人、电话、国家和地址第一行。"
+        "required": "请至少填写联系人、电话、国家和地址第一行。",
+        "requiredField": "请填写{field}。",
+        "invalidPhone": "电话号码只能包含数字。"
       },
       "fields": {
+        "recipientName": "收件人姓名",
         "country": "国家/地区",
         "state": "州/省",
         "city": "城市",
+        "district": "区/县",
         "zipcode": "邮编",
         "line1": "地址第一行",
         "line2": "地址第二行（公寓、楼层等）",

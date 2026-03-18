@@ -550,17 +550,18 @@
     "dialog": {
       "createTitle": "Add New Address",
       "editTitle": "Edit Address",
-      "description": "Search for your address or move the pin on the map to autofill your location.",
+      "description": "Enter the shipping details manually and make sure the contact and address can be used for delivery.",
       "searchLabel": "Search Address",
       "searchPlaceholder": "Search places...",
       "noPlaces": "No places found",
       "mapDisclaimer": "Map data ©2026 Google",
       "optional": "Optional",
-      "phonePlaceholder": "234 567 8900",
+      "phonePlaceholder": "2345678900",
       "placeholders": {
         "country": "Enter country or region",
         "state": "Enter state or province",
         "city": "Enter city",
+        "district": "Enter district or county",
         "zipcode": "Enter ZIP or postal code",
         "line1": "Street address and number",
         "line2": "Apartment, suite, floor, etc.",
@@ -571,12 +572,16 @@
       "cancel": "Cancel",
       "save": "Save Address",
       "validation": {
-        "required": "Please complete name, phone, country, and address line 1."
+        "required": "Please complete name, phone, country, and address line 1.",
+        "requiredField": "Please enter {field}.",
+        "invalidPhone": "Phone number can only contain digits."
       },
       "fields": {
+        "recipientName": "Recipient name",
         "country": "Country/Region",
         "state": "State/Province",
         "city": "City",
+        "district": "District/County",
         "zipcode": "ZIP/Postal Code",
         "line1": "Address Line 1",
         "line2": "Address Line 2 (Apt, Suite, Floor)",

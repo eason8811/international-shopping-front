@@ -13,8 +13,6 @@ export type {
     UserAccountStatus,
     UserAccountView,
     UserAddressListView,
-    UserAddressSource,
-    UserAddressValidationStatus,
     UserAddressView,
     UserCsrfToken,
     UserEmailDeliveryStatus,

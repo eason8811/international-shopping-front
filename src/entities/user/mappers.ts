@@ -3,8 +3,6 @@ import type {BffSuccessResponse} from "@/lib/api/bff-client";
 import type {
     UserAccountStatus,
     UserAccountView,
-    UserAddressSource,
-    UserAddressValidationStatus,
     UserAddressView,
     UserCsrfToken,
     UserEmailDeliveryStatus,
@@ -98,7 +96,6 @@ export function toUserAddressView(value: unknown): UserAddressView {
         id: readRequiredNumber(record, ["id"], "user address.id"),
         receiverName: readRequiredString(record, ["receiverName", "receiver_name"], "user address.receiverName"),
         phone: toPhoneView(phoneCountryCode, phoneNationalNumber),
-        countryCode: readOptionalString(record, ["countryCode", "country_code"]),
         country,
         province,
         city,
@@ -106,11 +103,7 @@ export function toUserAddressView(value: unknown): UserAddressView {
         addressLine1,
         addressLine2,
         zipcode,
-        languageCode: readOptionalString(record, ["languageCode", "language_code"]),
-        addressSource: readOptionalEnum<UserAddressSource>(record, ["addressSource", "address_source"]),
-        validationStatus: readOptionalEnum<UserAddressValidationStatus>(record, ["validationStatus", "validation_status"]),
         isDefault: readBoolean(record, ["isDefault", "is_default"]),
-        validatedAt: readOptionalString(record, ["validatedAt", "validated_at"]),
         createdAt: readRequiredString(record, ["createdAt", "created_at"], "user address.createdAt"),
         updatedAt: readRequiredString(record, ["updatedAt", "updated_at"], "user address.updatedAt"),
         locationLabel,
@@ -173,7 +166,10 @@ export function toUserMutationNotice(response: BffSuccessResponse): UserMutation
  * @param rawNationalNumber 原始本地号码
  * @returns 手机号对象
  */
-function toPhoneView(rawCountryCode: string | null, rawNationalNumber: string | null): UserPhoneView {
+function toPhoneView(
+    rawCountryCode: string | null,
+    rawNationalNumber: string | null,
+): UserPhoneView {
     const countryCode = normalizePhonePart(rawCountryCode);
     const nationalNumber = normalizePhonePart(rawNationalNumber);
     const e164 = countryCode && nationalNumber ? `+${countryCode}${nationalNumber}` : null;

@@ -793,7 +793,6 @@ function toAddressFormValue(value: UserAddressView): AddressFormValue {
         province: value.province ?? "",
         district: value.district ?? "",
         country: value.country ?? "",
-        countryCode: value.countryCode ?? "",
         zipcode: value.zipcode ?? "",
         isDefault: value.isDefault,
     };
@@ -810,21 +809,36 @@ function toAddressPayload(value: AddressFormValue) {
         receiverName: composeReceiverName(value.firstName, value.lastName),
         phoneCountryCode: phone.phoneCountryCode,
         phoneNationalNumber: phone.phoneNationalNumber,
-        countryCode: deriveCountryCode(value.country, value.countryCode),
+        countryCode: deriveCountryCode(value.country, ""),
         country: value.country.trim(),
-        province: normalizeOptionalString(value.province),
-        city: normalizeOptionalString(value.city),
-        district: normalizeOptionalString(value.district),
+        province: value.province.trim(),
+        city: value.city.trim(),
+        district: value.district.trim(),
         addressLine1: value.addressLine1.trim(),
         addressLine2: normalizeOptionalString(value.addressLine2),
-        zipcode: normalizeOptionalString(value.zipcode),
+        zipcode: value.zipcode.trim(),
         languageCode: null,
         addressSource: "MANUAL" as const,
-        rawInput: null,
+        rawInput: buildAddressRawInput(value),
         googlePlaceId: null,
         placeResponse: null,
         isDefault: value.isDefault,
     };
+}
+
+function buildAddressRawInput(value: AddressFormValue) {
+    return [
+        composeReceiverName(value.firstName, value.lastName),
+        value.phoneCountryCode.trim(),
+        value.phone.trim(),
+        value.country.trim(),
+        value.province.trim(),
+        value.city.trim(),
+        value.district.trim(),
+        value.addressLine1.trim(),
+        value.addressLine2.trim(),
+        value.zipcode.trim(),
+    ].filter(Boolean).join(", ");
 }
 
 function splitReceiverName(value: string) {
