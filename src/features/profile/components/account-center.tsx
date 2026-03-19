@@ -661,7 +661,7 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                                                             ref={addressListRef}
                                                             className="max-h-[calc(8.75rem*3+1.5rem)] overflow-y-auto overscroll-contain pr-1"
                                                         >
-                                                            <div className="space-y-3">
+                                                            <div className="space-y-3 flex flex-col">
                                                                 <AnimatePresence initial={false}>
                                                                     {addresses.map((address, index) => (
                                                                         <AddressBookListItem
@@ -683,13 +683,13 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                                                                     {isAddressListPending ? (
                                                                         <motion.div
                                                                             key="address-book-spinner"
-                                                                            initial={{opacity: 0}}
-                                                                            animate={{opacity: 1}}
-                                                                            exit={{opacity: 0}}
+                                                                            initial={{opacity: 0, y: 5}}
+                                                                            animate={{opacity: 1, y: 0}}
+                                                                            exit={{opacity: 0, y: 5}}
                                                                             transition={sectionTransition}
                                                                             className="flex items-center justify-center py-2 text-muted-foreground"
                                                                         >
-                                                                            <Loader2 className="size-4 animate-spin"/>
+                                                                            <Loader2 className="size-5 animate-spin"/>
                                                                             <span className="sr-only">{t("address.loadingMore")}</span>
                                                                         </motion.div>
                                                                     ) : null}
@@ -836,51 +836,48 @@ function AddressBookListItem({
     index: number;
     onClick: () => void;
 }) {
-    const addressSummary = formatAddressLines(address).join(", ");
-
     return (
         <motion.button
             layout
-            type="button"
             initial={{opacity: 0, y: prefersReducedMotion ? 0 : 18}}
             animate={{
                 opacity: 1,
                 y: 0,
                 transition: prefersReducedMotion
                     ? {duration: 0}
-                    : {duration: 0.28, delay: Math.min(index, 5) * 0.04, ease: "easeOut"},
+                    : {duration: 0.3, delay: Math.min(index, 5) * 0.05, ease: "easeOut"},
             }}
             exit={{
                 opacity: 0,
                 y: prefersReducedMotion ? 0 : -12,
-                transition: prefersReducedMotion ? {duration: 0} : {duration: 0.18, ease: "easeIn"},
+                transition: prefersReducedMotion ? {duration: 0} : {duration: 0.3, ease: "easeIn"},
             }}
-            className="group flex min-h-35 w-full flex-col justify-between rounded-xl border border-border/70 bg-background/90 p-3 text-left shadow-sm transition-colors duration-300 hover:border-primary/35 hover:bg-accent/20 sm:p-3.5"
+            type="button"
             onClick={onClick}
+            className="group relative cursor-pointer overflow-hidden rounded-xl border border-muted/50 bg-muted/30 p-3 text-left transition-all duration-300 hover:border-primary/50 hover:bg-muted/50 active:scale-[0.99] sm:p-4"
         >
-            <div className="flex items-start gap-3">
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                        <span className="truncate text-sm font-semibold sm:text-[15px]">{address.receiverName}</span>
-                        {address.isDefault ? (
-                            <Badge
-                                variant="secondary"
-                                className="h-4 shrink-0 bg-primary/10 px-1.5 text-[9px] font-normal text-primary hover:bg-primary/20"
-                            >
-                                {defaultBadgeLabel}
-                            </Badge>
-                        ) : null}
-                    </div>
-                    <p className="mt-1 truncate text-xs text-muted-foreground">
-                        {address.phone.display ?? address.phone.e164 ?? phoneFallback}
-                    </p>
-                </div>
-
-                <ChevronRight className="mt-0.5 size-4 shrink-0 text-muted-foreground/50 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-foreground"/>
+            <div className="mb-1.5 flex flex-col gap-1 sm:mb-1 sm:flex-row sm:items-start sm:justify-between sm:gap-0">
+                <span className="flex items-center gap-2 text-sm font-semibold sm:text-base">
+                    {address.receiverName}
+                    {address.isDefault ? (
+                        <Badge
+                            variant="secondary"
+                            className="h-3.5 bg-primary/10 px-1.5 text-[9px] font-normal text-primary hover:bg-primary/20 sm:h-4 sm:text-[10px]"
+                        >
+                            {defaultBadgeLabel}
+                        </Badge>
+                    ) : null}
+                </span>
+                <span className="text-xs text-muted-foreground sm:text-sm">
+                    {address.phone.display ?? address.phone.e164 ?? phoneFallback}
+                </span>
             </div>
-
-            <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                {addressSummary}
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                {formatAddressLines(address).map((line) => (
+                    <span key={line} className="block">
+                        {line}
+                    </span>
+                ))}
             </p>
         </motion.button>
     );
