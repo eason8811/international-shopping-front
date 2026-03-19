@@ -629,7 +629,7 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 rounded-full bg-background transition-all duration-300"
+                                                    className="h-8 w-8 rounded-full bg-background transition-all duration-300 cursor-pointer"
                                                     disabled={!canExpandAddressBook}
                                                     aria-expanded={isAddressBookExpanded}
                                                     aria-label={isAddressBookExpanded ? t("address.collapse") : t("address.expand")}
