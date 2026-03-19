@@ -624,13 +624,12 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                                             </div>
                                         )}
 
-                                        <div className="mt-auto space-y-3 sm:space-y-4">
-                                            <motion.div layout transition={layoutTransition} className="flex items-center gap-3">
-                                                <div className="h-px flex-1 bg-border/70"/>
+                                        <div className="mt-auto space-y-2 sm:space-y-3">
+                                            <motion.div layout transition={layoutTransition} className="flex justify-center gap-2">
                                                 <Button
-                                                    variant="outline"
+                                                    variant="ghost"
                                                     size="icon"
-                                                    className="h-11 w-11 rounded-full border-dashed bg-background/90 shadow-sm transition-all duration-300 hover:border-primary/40 hover:bg-primary/5"
+                                                    className="h-8 w-8 rounded-full bg-background transition-all duration-300"
                                                     disabled={!canExpandAddressBook}
                                                     aria-expanded={isAddressBookExpanded}
                                                     aria-label={isAddressBookExpanded ? t("address.collapse") : t("address.expand")}
@@ -645,7 +644,6 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                                                         <ChevronDown className="size-4"/>
                                                     </motion.span>
                                                 </Button>
-                                                <div className="h-px flex-1 bg-border/70"/>
                                             </motion.div>
 
                                             <AnimatePresence initial={false}>
@@ -671,7 +669,7 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                                                                             address={address}
                                                                             defaultBadgeLabel={t("address.defaultBadge")}
                                                                             phoneFallback={t("address.phoneFallback")}
-                                                                            prefersReducedMotion={prefersReducedMotion}
+                                                                            prefersReducedMotion={prefersReducedMotion != null ? prefersReducedMotion : false}
                                                                             index={index}
                                                                             onClick={() => {
                                                                                 setEditingAddressId(address.id);
@@ -712,7 +710,7 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
 
                                             <Button
                                                 variant="outline"
-                                                className="h-9 w-full gap-2 border-dashed bg-background text-xs shadow-sm sm:h-10 sm:text-sm"
+                                                className="h-9 w-full gap-2 border bg-background text-xs shadow-sm sm:h-10 sm:text-sm"
                                                 onClick={() => {
                                                     setEditingAddressId(null);
                                                     setIsAddressDialogOpen(true);
