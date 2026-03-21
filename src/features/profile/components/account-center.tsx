@@ -593,7 +593,9 @@ export function AccountCenter({initialAccount, initialProfile, initialAddresses}
                                                 }}
                                                 className="group relative cursor-pointer overflow-hidden rounded-xl border border-muted/50 bg-muted/30 p-3 text-left transition-all duration-300 hover:border-primary/50 hover:bg-muted/50 active:scale-[0.99] sm:p-4"
                                             >
-                                                <div className="absolute top-0 left-0 h-full w-1 bg-primary opacity-80 transition-opacity group-hover:opacity-100"/>
+                                                {defaultAddress.isDefault ? (
+                                                    <div className="absolute top-0 left-0 h-full w-1 bg-primary opacity-80 transition-opacity group-hover:opacity-100"/>
+                                                ) : null}
                                                 <div className="mb-1.5 flex flex-col gap-1 sm:mb-1 sm:flex-row sm:items-start sm:justify-between sm:gap-0">
                                                     <span className="flex items-center gap-2 text-sm font-semibold sm:text-base">
                                                         {defaultAddress.receiverName}
