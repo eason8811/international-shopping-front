@@ -1,9 +1,6 @@
 "use client";
 
-import {useTranslations} from "next-intl";
 import {useEffect} from "react";
-
-import {TrackedErrorState} from "@/components/error/tracked-error-state";
 
 /**
  * locale 错误页入参, 由 Next.js 错误边界在运行时注入
@@ -22,24 +19,38 @@ interface LocaleErrorPageProps {
  * @returns 错误页视图
  */
 export default function LocaleErrorPage({error, reset}: LocaleErrorPageProps) {
-    const t = useTranslations("UnhandledError");
-
     useEffect(() => {
-        console.error(t("logPrefix"), error);
-    }, [error, t]);
+        console.error("Unhandled locale error", error);
+    }, [error]);
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-6 py-16">
-            <main className="w-full max-w-3xl">
-                <TrackedErrorState
-                    error={{
-                        status: 500,
-                        code: "INTERNAL_SERVER_ERROR",
-                        message: error.message || t("fallbackMessage"),
-                        traceId: error.digest,
-                    }}
-                    onRetry={reset}
-                />
+        <div className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
+            <main className="w-full max-w-2xl rounded-3xl border border-border bg-card p-8 shadow-sm">
+                <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    System state
+                </p>
+                <h1 className="mt-4 text-3xl font-semibold text-foreground">
+                    Frontend is being rebuilt on the new design system.
+                </h1>
+                <p className="mt-4 text-sm leading-6 text-muted-foreground">
+                    Runtime UI has been intentionally stripped back. Existing BFF and downstream request flows remain
+                    available during the rewrite.
+                </p>
+                {error.message ? (
+                    <pre className="mt-6 overflow-x-auto rounded-2xl bg-muted px-4 py-3 text-xs leading-6 text-foreground">
+                        {error.message}
+                    </pre>
+                ) : null}
+                {error.digest ? (
+                    <p className="mt-4 text-xs text-muted-foreground">Trace: {error.digest}</p>
+                ) : null}
+                <button
+                    type="button"
+                    onClick={reset}
+                    className="mt-6 inline-flex h-10 items-center justify-center rounded-full border border-border px-5 text-sm font-medium text-foreground transition hover:bg-muted"
+                >
+                    Retry
+                </button>
             </main>
         </div>
     );

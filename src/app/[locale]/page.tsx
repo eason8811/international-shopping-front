@@ -1,5 +1,3 @@
-import {getTranslations} from "next-intl/server";
-
 import {Link} from "@/i18n/navigation";
 
 /**
@@ -18,48 +16,49 @@ interface HomePageProps {
  */
 export default async function HomePage({params}: HomePageProps) {
     const {locale} = await params;
-    const t = await getTranslations({locale, namespace: "HomePage"});
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
             <main className="w-full max-w-3xl rounded-4xl border border-border bg-card p-10 shadow-sm">
                 <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                    {t("eyebrow")}
+                    Transitional shell
                 </p>
                 <h1 className="mb-4 font-serif text-4xl leading-tight text-foreground">
-                    {t("title")}
+                    Frontend pages are being rebuilt on the new design system.
                 </h1>
                 <p className="mb-8 max-w-2xl text-base leading-7 text-muted-foreground">
-                    {t("description")}
+                    The previous UI layer has been intentionally cleared. Locale routing, i18n infrastructure, BFF
+                    routes, and feature request modules remain so the new implementation can be developed on a clean
+                    base.
                 </p>
                 <div className="mb-8 flex flex-col gap-3 sm:flex-row">
                     <Link
                         href="/login"
                         className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
                     >
-                        {t("actions.openLogin")}
+                        Login route
                     </Link>
                     <Link
                         href="/register"
                         className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-medium text-foreground transition hover:bg-muted"
                     >
-                        {t("actions.openRegister")}
+                        Register route
                     </Link>
                     <Link
                         href="/me/account"
                         className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-medium text-foreground transition hover:bg-muted"
                     >
-                        {t("actions.openAccount")}
+                        Account route
                     </Link>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span>{t("language")}:</span>
+                    <span>Locale:</span>
                     <Link
                         href="/"
                         locale="en-US"
                         className={locale === "en-US" ? "font-semibold text-foreground" : "hover:text-foreground"}
                     >
-                        {t("languageOptions.en-US")}
+                        en-US
                     </Link>
                     <span>/</span>
                     <Link
@@ -67,7 +66,7 @@ export default async function HomePage({params}: HomePageProps) {
                         locale="zh-CN"
                         className={locale === "zh-CN" ? "font-semibold text-foreground" : "hover:text-foreground"}
                     >
-                        {t("languageOptions.zh-CN")}
+                        zh-CN
                     </Link>
                 </div>
             </main>

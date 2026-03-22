@@ -1,66 +1,37 @@
-import {TrackedErrorState} from "@/components/error/tracked-error-state";
-import {ACCOUNT_CENTER_ADDRESS_PAGE_SIZE, listCurrentUserAddresses} from "@/features/address";
-import {getCurrentUserAccount, getCurrentUserProfile} from "@/features/profile";
-import {AccountCenter} from "@/features/profile/components/account-center";
-import {normalizeClientError} from "@/lib/api/normalize-client-error";
-
-/**
- * 个人中心首屏数据结果
- */
-type AccountPageDataResult =
-    | {
-    account: Awaited<ReturnType<typeof getCurrentUserAccount>>;
-    profile: Awaited<ReturnType<typeof getCurrentUserProfile>>;
-    addresses: Awaited<ReturnType<typeof listCurrentUserAddresses>>;
-}
-    | {
-    error: ReturnType<typeof normalizeClientError>;
-};
+import {Link} from "@/i18n/navigation";
 
 /**
  * 个人中心页, 服务端首屏读取账户, 资料, 地址三类数据
  *
  * @returns 个人中心页面
  */
-export default async function MeAccountPage() {
-    const result = await loadAccountPageData();
-
-    if ("error" in result) {
-        return (
-            <div className="flex min-h-screen items-center justify-center px-6 py-16">
-                <main className="w-full max-w-3xl">
-                    <TrackedErrorState error={result.error}/>
-                </main>
-            </div>
-        );
-    }
-
+export default function MeAccountPage() {
     return (
-        <AccountCenter
-            initialAccount={result.account}
-            initialProfile={result.profile}
-            initialAddresses={result.addresses}
-        />
+        <main className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
+            <section className="w-full max-w-2xl rounded-3xl border border-border bg-card p-8 shadow-sm">
+                <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    Route placeholder
+                </p>
+                <h1 className="mt-4 text-3xl font-semibold text-foreground">Account center UI removed</h1>
+                <p className="mt-4 text-sm leading-6 text-muted-foreground">
+                    The account, profile, and address request modules remain in place. This page is intentionally
+                    reduced so the next implementation can be rebuilt cleanly on the updated design system.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                    <Link
+                        href="/"
+                        className="inline-flex h-10 items-center justify-center rounded-full border border-border px-5 text-sm font-medium text-foreground transition hover:bg-muted"
+                    >
+                        Back home
+                    </Link>
+                    <Link
+                        href="/login"
+                        className="inline-flex h-10 items-center justify-center rounded-full border border-border px-5 text-sm font-medium text-foreground transition hover:bg-muted"
+                    >
+                        Login route
+                    </Link>
+                </div>
+            </section>
+        </main>
     );
-}
-
-/**
- * 服务端读取个人中心首屏数据, 失败时返回统一错误模型
- *
- * @returns 成功数据或错误对象
- */
-async function loadAccountPageData(): Promise<AccountPageDataResult> {
-    try {
-        const [account, profile, addresses] = await Promise.all([
-            getCurrentUserAccount(),
-            getCurrentUserProfile(),
-            listCurrentUserAddresses({page: 1, size: ACCOUNT_CENTER_ADDRESS_PAGE_SIZE}),
-        ]);
-
-        return {account, profile, addresses};
-    } catch (error) {
-        return {
-            error: normalizeClientError(error, "Failed to load account page"),
-        };
-    }
 }
