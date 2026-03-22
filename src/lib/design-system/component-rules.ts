@@ -51,6 +51,7 @@ export type DsPopoverVariant = keyof typeof popoverRules.variants;
 export type DsDialogVariant = keyof typeof dialogRules.variants;
 export type DsSheetVariant = keyof typeof sheetRules.variants;
 export type DsSidebarVariant = keyof typeof sidebarRules.variants;
+export type DsFeedbackPatternName = keyof typeof feedbackRules;
 
 export interface ComponentBaseRule {
   description: string;
@@ -160,6 +161,10 @@ export const buttonRules = {
       typography: "titleMd",
     },
   },
+  labelBehavior: {
+    multiline: false,
+    truncate: true,
+  },
   states: {
     rest: "Maintain intended variant tone with no extra chrome.",
     hover: "Prefer tonal lift or subtle contrast adjustment over aggressive color shift.",
@@ -204,6 +209,10 @@ export const buttonRules = {
       typography: DsTypographyRole;
     }
   >;
+  labelBehavior: {
+    multiline: boolean;
+    truncate: boolean;
+  };
   states: Record<Exclude<DsInteractiveState, "error">, string>;
 };
 
@@ -279,6 +288,11 @@ export const inputRules = {
       typography: "bodyMd",
     },
   },
+  copyBehavior: {
+    labelWrap: true,
+    helperWrap: true,
+    errorWrap: true,
+  },
   states: {
     rest: {
       surface: "section",
@@ -343,6 +357,11 @@ export const inputRules = {
       typography: DsTypographyRole;
     }
   >;
+  copyBehavior: {
+    labelWrap: boolean;
+    helperWrap: boolean;
+    errorWrap: boolean;
+  };
   states: Record<
     Extract<DsInteractiveState, "rest" | "hover" | "focus" | "error" | "disabled">,
     {
@@ -436,6 +455,10 @@ export const badgeRules = {
     tone: "neutral",
     radius: "full",
   },
+  labelBehavior: {
+    multiline: false,
+    truncate: true,
+  },
   tones: {
     neutral: {
       description: "Default low-key chip for neutral metadata.",
@@ -496,16 +519,10 @@ export const badgeRules = {
 
 export const popoverRules = {
   component: "popover",
+  defaults: {
+    variant: "neutral",
+  },
   variants: {
-    default: {
-      description: "Standard floating menu or lightweight details panel.",
-      allowedRealms: ["user", "admin"],
-      density: ["balanced", "compact"],
-      background: "--ds-glass-fill-strong",
-      border: "--ds-glass-border",
-      shadow: "ambientSm",
-      blur: "--ds-glass-blur-sm",
-    },
     neutral: {
       description: "Non-glass fallback for stricter clarity needs.",
       allowedRealms: ["user", "admin"],
@@ -514,6 +531,15 @@ export const popoverRules = {
       border: "--ds-ghost-border",
       shadow: "ambientSm",
       blur: null,
+    },
+    premium: {
+      description: "Premium glass floating menu reserved for patterns that explicitly allow glass.",
+      allowedRealms: ["user"],
+      density: ["airy", "balanced"],
+      background: "--ds-glass-fill-strong",
+      border: "--ds-glass-border",
+      shadow: "ambientSm",
+      blur: "--ds-glass-blur-sm",
     },
   },
 } as const;
@@ -613,6 +639,7 @@ export const commerceComponentRules = {
     preferredRadius: "lg",
     defaultPadding: 6,
     actionsAlignment: "trailing",
+    multilineValueFields: ["contact", "address"] as const,
     notes: [
       "Default address should be signaled by a chip, not a loud colored panel.",
       "Edit/delete actions must not dominate the composition.",
@@ -625,6 +652,7 @@ export const commerceComponentRules = {
     preferredRadius: "lg",
     defaultPadding: 6,
     useNestedTimelineSurface: true,
+    multilineValueFields: ["itemSummary", "shipmentTimeline"] as const,
     notes: [
       "Timeline and logistics regions should rely on grouping, not divider stacks.",
     ],
@@ -650,6 +678,30 @@ export const commerceComponentRules = {
   }
 >;
 
+export const feedbackRules = {
+  emptyState: {
+    description: "Calm empty-state anatomy with one recovery action and restrained editorial tone.",
+    requiredBlocks: ["title", "description", "primaryAction"] as const,
+    optionalBlocks: ["eyebrow", "secondaryAction"] as const,
+    titleTypography: "headlineMd",
+    descriptionTypography: "bodyLg",
+    requiresRecoveryAction: true,
+  },
+  loadingState: {
+    description: "Skeleton-first loading state that mirrors the expected final layout footprint.",
+    prefersSkeleton: true,
+    allowsSpinnerOnlyWhenShapeUnknown: true,
+  },
+  errorState: {
+    description: "Structured error presentation with destructive messaging and an explicit recovery action.",
+    requiredBlocks: ["title", "description", "recoveryAction"] as const,
+    optionalBlocks: ["traceId", "backendMessage"] as const,
+    titleTypography: "headlineMd",
+    descriptionTypography: "bodyMd",
+    requiresRecoveryAction: true,
+  },
+} as const;
+
 export const componentRulesRegistry = {
   button: buttonRules,
   input: inputRules,
@@ -660,6 +712,7 @@ export const componentRulesRegistry = {
   sheet: sheetRules,
   sidebar: sidebarRules,
   commerce: commerceComponentRules,
+  feedback: feedbackRules,
 } as const;
 
 export function getButtonVariantRule(variant: DsButtonVariant) {
@@ -676,4 +729,16 @@ export function getCardVariantRule(variant: DsCardVariant) {
 
 export function getBadgeToneRule(tone: DsBadgeTone) {
   return badgeRules.tones[tone];
+}
+
+export function getPopoverVariantRule(variant: DsPopoverVariant) {
+  return popoverRules.variants[variant];
+}
+
+export function getDialogVariantRule(variant: DsDialogVariant) {
+  return dialogRules.variants[variant];
+}
+
+export function getSheetVariantRule(variant: DsSheetVariant) {
+  return sheetRules.variants[variant];
 }

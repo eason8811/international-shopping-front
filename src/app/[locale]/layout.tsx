@@ -11,12 +11,36 @@ import "../globals.css";
 const manrope = localFont({
     src: [
         {
-            path: "../../../public/fonts/manrope/Manrope-VariableFont_wght.ttf", // 按你的文件名改
+            path: "../../../public/fonts/manrope/Manrope-VariableFont_wght.ttf",
             weight: "100 900",
             style: "normal",
         },
     ],
     variable: "--font-sans",
+    display: "swap",
+});
+
+const newsreader = localFont({
+    src: [
+        {
+            path: "../../../public/fonts/newsreader/Newsreader-Variable.ttf",
+            weight: "200 800",
+            style: "normal",
+        },
+    ],
+    variable: "--font-serif",
+    display: "swap",
+});
+
+const jetBrainsMono = localFont({
+    src: [
+        {
+            path: "../../../public/fonts/jetbrains-mono/JetBrainsMono-Variable.ttf",
+            weight: "100 800",
+            style: "normal",
+        },
+    ],
+    variable: "--font-mono",
     display: "swap",
 });
 
@@ -78,7 +102,9 @@ export default async function LocaleLayout({
 
     return (
         <html lang={locale}>
-        <body className={`${manrope.variable} font-sans antialiased`}>
+        <body
+            className={`${manrope.variable} ${newsreader.variable} ${jetBrainsMono.variable} font-sans antialiased`}
+        >
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
         </body>
         </html>

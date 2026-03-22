@@ -10,7 +10,8 @@
     "actions": {
       "openLogin": "打开登录页",
       "openRegister": "打开注册页",
-      "openAccount": "打开个人中心"
+      "openAccount": "打开个人中心",
+      "openAddresses": "打开地址簿"
     },
     "language": "语言",
     "languageOptions": {
@@ -326,6 +327,7 @@
       "title": "地址簿",
       "description": "管理收货地址, 默认地址会优先用于下单预览和结算。",
       "defaultBadge": "默认地址",
+      "emptyPhone": "未设置手机号",
       "emptyTitle": "还没有可用地址",
       "emptyDescription": "先补一条完整收货地址, 后续下单时可以直接带入。",
       "createTitle": "地址已创建",
@@ -394,6 +396,26 @@
       "addressDefaultFailed": "默认地址切换失败, 请稍后重试。",
       "addressDeleteFailed": "地址删除失败, 请稍后重试。",
       "logoutFailed": "退出登录失败, 请稍后重试。"
+    },
+    "feedback": {
+      "dismiss": "关闭提示",
+      "updated": "已更新"
+    }
+  },
+  "AddressManagementPage": {
+    "eyebrow": "配送资料",
+    "title": "把每个收货目的地维护得清楚, 可编辑, 并随时可用于下单",
+    "description": "这个页面专门服务地址管理, 针对长文案, 多语言地址和默认地址切换做了更稳定的层级控制。",
+    "summary": {
+      "count": "地址数量",
+      "default": "默认地址",
+      "defaultMissing": "还没有默认地址",
+      "ready": "可直接使用",
+      "pending": "仍需补齐"
+    },
+    "feedback": {
+      "dismiss": "关闭提示",
+      "updated": "已更新"
     }
   },
   "AuthUi": {

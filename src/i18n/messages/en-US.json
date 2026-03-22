@@ -10,7 +10,8 @@
     "actions": {
       "openLogin": "Open Login",
       "openRegister": "Open Register",
-      "openAccount": "Open Account Center"
+      "openAccount": "Open Account Center",
+      "openAddresses": "Open Address Book"
     },
     "language": "Language",
     "languageOptions": {
@@ -326,6 +327,7 @@
       "title": "Address book",
       "description": "Manage shipping addresses here. The default one will be preferred in later order flows.",
       "defaultBadge": "Default",
+      "emptyPhone": "No phone number",
       "emptyTitle": "No address yet",
       "emptyDescription": "Add a complete shipping address now so future checkout screens can prefill it.",
       "createTitle": "Address created",
@@ -394,6 +396,26 @@
       "addressDefaultFailed": "Changing the default address failed. Please retry.",
       "addressDeleteFailed": "Deleting the address failed. Please retry.",
       "logoutFailed": "Signing out failed. Please retry."
+    },
+    "feedback": {
+      "dismiss": "Dismiss",
+      "updated": "Updated"
+    }
+  },
+  "AddressManagementPage": {
+    "eyebrow": "Shipping profile",
+    "title": "Keep every delivery destination clear, editable, and ready for checkout",
+    "description": "This address-focused page is tuned for long multilingual copy, calm scanability, and quick default-address changes.",
+    "summary": {
+      "count": "Saved addresses",
+      "default": "Default address",
+      "defaultMissing": "No default address yet",
+      "ready": "Ready to ship",
+      "pending": "Needs work"
+    },
+    "feedback": {
+      "dismiss": "Dismiss",
+      "updated": "Updated"
     }
   },
   "AuthUi": {

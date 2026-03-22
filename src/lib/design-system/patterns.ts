@@ -65,6 +65,12 @@ export interface DsPatternDefinition {
   allowEditorialImagery: boolean;
   allowTables: boolean;
   preferCardsOverTables: boolean;
+  supportsLongCopy: boolean;
+  feedback: {
+    emptyRequiresPrimaryAction: boolean;
+    loadingMirrorsLayout: boolean;
+    errorRequiresRecoveryAction: boolean;
+  };
   requiredBlocks: readonly DsPatternBlockKey[];
   optionalBlocks?: readonly DsPatternBlockKey[];
   primaryComponents: readonly string[];
@@ -87,6 +93,12 @@ export const pagePatterns = {
     allowEditorialImagery: true,
     allowTables: false,
     preferCardsOverTables: true,
+    supportsLongCopy: true,
+    feedback: {
+      emptyRequiresPrimaryAction: true,
+      loadingMirrorsLayout: true,
+      errorRequiresRecoveryAction: true,
+    },
     requiredBlocks: [
       "eyebrow",
       "displayHeadline",
@@ -120,6 +132,12 @@ export const pagePatterns = {
     allowEditorialImagery: true,
     allowTables: false,
     preferCardsOverTables: true,
+    supportsLongCopy: true,
+    feedback: {
+      emptyRequiresPrimaryAction: true,
+      loadingMirrorsLayout: true,
+      errorRequiresRecoveryAction: true,
+    },
     requiredBlocks: [
       "welcomeHeader",
       "profileSummary",
@@ -160,6 +178,12 @@ export const pagePatterns = {
     allowEditorialImagery: false,
     allowTables: false,
     preferCardsOverTables: true,
+    supportsLongCopy: true,
+    feedback: {
+      emptyRequiresPrimaryAction: true,
+      loadingMirrorsLayout: true,
+      errorRequiresRecoveryAction: true,
+    },
     requiredBlocks: ["sectionHeader", "primaryAction", "addressList", "emptyState"],
     primaryComponents: ["AddressCard", "Button", "Dialog", "Sheet", "Badge"],
     notes: [
@@ -186,6 +210,12 @@ export const pagePatterns = {
     allowEditorialImagery: true,
     allowTables: false,
     preferCardsOverTables: true,
+    supportsLongCopy: true,
+    feedback: {
+      emptyRequiresPrimaryAction: true,
+      loadingMirrorsLayout: true,
+      errorRequiresRecoveryAction: true,
+    },
     requiredBlocks: ["filters", "productGrid"],
     optionalBlocks: ["sectionHeader", "primaryAction"],
     primaryComponents: ["ProductCard", "Sheet", "Button", "Input", "Badge"],
@@ -213,6 +243,12 @@ export const pagePatterns = {
     allowEditorialImagery: true,
     allowTables: false,
     preferCardsOverTables: true,
+    supportsLongCopy: true,
+    feedback: {
+      emptyRequiresPrimaryAction: true,
+      loadingMirrorsLayout: true,
+      errorRequiresRecoveryAction: true,
+    },
     requiredBlocks: [
       "mediaGallery",
       "purchasePanel",
@@ -246,6 +282,12 @@ export const pagePatterns = {
     allowEditorialImagery: false,
     allowTables: false,
     preferCardsOverTables: true,
+    supportsLongCopy: true,
+    feedback: {
+      emptyRequiresPrimaryAction: true,
+      loadingMirrorsLayout: true,
+      errorRequiresRecoveryAction: true,
+    },
     requiredBlocks: [
       "addressSection",
       "shippingSection",
@@ -278,6 +320,12 @@ export const pagePatterns = {
     allowEditorialImagery: false,
     allowTables: false,
     preferCardsOverTables: true,
+    supportsLongCopy: true,
+    feedback: {
+      emptyRequiresPrimaryAction: true,
+      loadingMirrorsLayout: true,
+      errorRequiresRecoveryAction: true,
+    },
     requiredBlocks: ["statusControls", "orderList"],
     optionalBlocks: ["filters", "emptyState"],
     primaryComponents: ["OrderSummaryCard", "Badge", "Input", "Button", "Sheet"],
@@ -305,6 +353,12 @@ export const pagePatterns = {
     allowEditorialImagery: false,
     allowTables: false,
     preferCardsOverTables: true,
+    supportsLongCopy: true,
+    feedback: {
+      emptyRequiresPrimaryAction: true,
+      loadingMirrorsLayout: true,
+      errorRequiresRecoveryAction: true,
+    },
     requiredBlocks: [
       "orderHeader",
       "itemList",
@@ -337,6 +391,12 @@ export const pagePatterns = {
     allowEditorialImagery: false,
     allowTables: true,
     preferCardsOverTables: false,
+    supportsLongCopy: true,
+    feedback: {
+      emptyRequiresPrimaryAction: true,
+      loadingMirrorsLayout: true,
+      errorRequiresRecoveryAction: true,
+    },
     requiredBlocks: ["filters", "summaryMetrics", "charts", "table"],
     primaryComponents: ["Card", "Table", "Chart", "Sidebar", "Input", "Button"],
     notes: [
@@ -374,4 +434,8 @@ export function getPatternsByRealm(realm: DsRealm): DsPatternDefinition[] {
 
 export function getPatternsByDensity(density: DsDensityMode): DsPatternDefinition[] {
   return Object.values(pagePatterns).filter((pattern) => pattern.density === density);
+}
+
+export function patternAllowsGlass(name: DsPagePatternName): boolean {
+  return pagePatterns[name].allowGlass;
 }

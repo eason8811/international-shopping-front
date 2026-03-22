@@ -1,21 +1,29 @@
+import { Button, DesignSystemPageShell, EmptyState } from "@/components/design-system";
+import { Link } from "@/i18n/navigation";
+
 /**
- * 找回密码页, 提供验证码申请与密码重置流程
+ * 找回密码页占位壳, 后续会在 design-system 基础上重写
  *
  * @returns 找回密码页面
  */
 export default function ForgotPasswordPage() {
     return (
-        <main className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
-            <section className="w-full max-w-2xl rounded-3xl border border-border bg-card p-8 shadow-sm">
-                <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                    Route placeholder
-                </p>
-                <h1 className="mt-4 text-3xl font-semibold text-foreground">Forgot password UI removed</h1>
-                <p className="mt-4 text-sm leading-6 text-muted-foreground">
-                    This route is reserved for the upcoming rewrite on the new design system. Request logic is still
-                    preserved in the auth feature and BFF routes.
-                </p>
-            </section>
-        </main>
+        <DesignSystemPageShell patternName="editorialMasthead">
+            <EmptyState
+                eyebrow="Route placeholder"
+                title="Password recovery UI is scheduled for the next rebuild wave"
+                description="The route remains active so the request chain stays intact, but the interactive recovery flow will be rebuilt after the account and address validation surfaces."
+                action={
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                        <Button asChild>
+                            <Link href="/">Back home</Link>
+                        </Button>
+                        <Button asChild variant="secondary">
+                            <Link href="/login">Login route</Link>
+                        </Button>
+                    </div>
+                }
+            />
+        </DesignSystemPageShell>
     );
 }
