@@ -39,14 +39,26 @@ This document defines production-ready component behavior and visual rules. It b
 - Hover: lift to `surface-container-low`
 - Border: none
 
-### 2.4 Destructive Button
+### 2.4 Contrast Button
+**Use for:** inverse actions placed on dark editorial cards, premium tracking modules, or other high-contrast surfaces.
+
+- Background: `surface-container-lowest`
+- Foreground: `on-surface-strong`
+- Border: none by default
+- Radius: `radius-md` or `radius-lg`
+
+**Rules**
+- Use this instead of `primary` when a dark container already carries the emphasis.
+- Keep it visually simple; do not add extra outline or glow treatments.
+
+### 2.5 Destructive Button
 **Use for:** delete, remove, unlink critical identity, cancel irreversible actions.
 
-- Background: `destructive`
-- Foreground: `destructive-foreground`
+- Background: `surface-container-lowest`
+- Foreground: `destructive`
 
 **Rule**
-Do not mix destructive semantics with neutral hierarchy. If it deletes or irreversibly changes something, it should look like it means it.
+Do not mix destructive semantics with neutral hierarchy. Even with a calm white surface, the destructive foreground must remain unmistakable.
 
 ## 3. Inputs
 

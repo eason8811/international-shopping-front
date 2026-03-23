@@ -36,14 +36,18 @@ This document defines reusable product-level layout patterns. It is the layer th
 
 ### 3.2 Suggested Structure
 - welcome / profile intro area
+- profile summary and status controls
 - order tracking or key action card
-- address book and preferences group
+- preferences group
 - security, notifications, help, and support as secondary groups
 
 ### 3.3 Rules
 - avoid mini-dashboard tile overload
 - use surface hierarchy and spacing instead of dividers
 - cards should feel grouped, not randomly scattered
+- one dark editorial tracking card is allowed as the visual anchor
+- keep block naming and information hierarchy consistent across breakpoints
+- on mobile, collapse navigation into a hamburger entry instead of a bottom tab bar
 
 ## 4. Address Management
 

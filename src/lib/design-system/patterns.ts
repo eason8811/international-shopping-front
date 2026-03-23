@@ -121,7 +121,7 @@ export const pagePatterns = {
   userProfileDashboard: {
     name: "User Profile Dashboard",
     description:
-      "Account overview pattern that balances premium atmosphere with fast confidence-building scanability.",
+      "Account overview pattern that balances premium atmosphere with fast confidence-building scanability across desktop, tablet, and mobile.",
     realm: "user",
     density: "balanced",
     recommendedSectionGap: 12,
@@ -141,8 +141,8 @@ export const pagePatterns = {
     requiredBlocks: [
       "welcomeHeader",
       "profileSummary",
+      "statusControls",
       "orderTrackingCard",
-      "addressBookCard",
       "preferencesCard",
       "supportCard",
     ],
@@ -157,11 +157,14 @@ export const pagePatterns = {
     notes: [
       "Use grouped cards rather than tile overload.",
       "Tonal hierarchy and spacing should do more work than dividers.",
-      "This page is an ideal validation surface for new design-system primitives.",
+      "A single dark editorial tracking card may anchor the composition.",
+      "Responsive changes may alter placement, but not naming or semantic hierarchy.",
+      "Mobile navigation should collapse into a hamburger entry rather than a bottom tab bar.",
     ],
     doNots: [
       "Do not make the screen look like an admin dashboard.",
       "Do not fragment related settings into too many tiny panels.",
+      "Do not let each breakpoint invent a separate naming system or page identity.",
     ],
   },
   addressManagement: {

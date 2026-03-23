@@ -23,6 +23,13 @@ describe("design-system primitive contracts", () => {
     expect(Object.keys(buttonSizeClassMap)).toEqual(Object.keys(buttonRules.sizes));
   });
 
+  it("keeps contrast and destructive button visual contracts aligned with the editorial DS", () => {
+    expect(buttonVariantClassMap.contrast).toContain("bg-card");
+    expect(buttonVariantClassMap.contrast).toContain("text-[var(--ds-on-surface-strong)]");
+    expect(buttonVariantClassMap.destructive).toContain("bg-card");
+    expect(buttonVariantClassMap.destructive).toContain("text-[var(--ds-destructive)]");
+  });
+
   it("keeps input variants and density aligned with component rules", () => {
     expect(Object.keys(inputVariantClassMap)).toEqual(Object.keys(inputRules.variants));
     expect(Object.keys(inputDensityClassMap)).toEqual(Object.keys(inputRules.densities));

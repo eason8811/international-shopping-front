@@ -11,10 +11,12 @@ export const buttonVariantClassMap = {
     "border-transparent bg-primary text-primary-foreground hover:opacity-95 focus-visible:ring-[color:var(--ds-primary)]/25",
   secondary:
     "border-[color:var(--ds-ghost-border)] bg-card text-[var(--ds-on-surface-strong)] hover:bg-[var(--ds-surface-container-low)]",
+  contrast:
+    "border-transparent bg-card text-[var(--ds-on-surface-strong)] hover:opacity-95 focus-visible:ring-[color:var(--ds-primary)]/25",
   ghost:
     "border-transparent bg-transparent text-[var(--ds-primary-dim)] hover:bg-[var(--ds-surface-container-low)] hover:text-[var(--ds-on-surface)]",
   destructive:
-    "border-transparent bg-destructive text-destructive-foreground hover:opacity-95 focus-visible:ring-[color:var(--ds-destructive)]/20",
+    "border-transparent bg-card text-[var(--ds-destructive)] hover:opacity-95 focus-visible:ring-[color:var(--ds-destructive)]/20",
 } as const satisfies Record<DsButtonVariant, string>;
 
 export const buttonSizeClassMap = {
