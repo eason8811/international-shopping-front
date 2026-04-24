@@ -42,14 +42,14 @@ export function AuthPageShell({
             )}
             {...props}
         >
-            <div className="pointer-events-none absolute top-[-108px] left-[-64px] h-96 w-80 rounded-full bg-auth-blur-cool opacity-40 blur-[60px] lg:h-[614px] lg:w-[512px]" />
-            <div className="pointer-events-none absolute right-[-64px] bottom-[-72px] h-[321px] w-[281px] rounded-full bg-auth-blur-warm opacity-40 blur-[50px] lg:h-[512px] lg:w-[448px]" />
+            <div className="pointer-events-none absolute -top-27 -left-16 h-96 w-80 rounded-full bg-auth-blur-cool opacity-40 blur-[60px] lg:h-153.5 lg:w-lg" />
+            <div className="pointer-events-none absolute -right-16 -bottom-18 h-80.25 w-70.25 rounded-full bg-auth-blur-warm opacity-40 blur-[50px] lg:h-128 lg:w-md" />
 
             <div className="relative z-10 flex min-h-dvh flex-col">
                 <AuthNavbar copy={copy} />
                 <div className="flex flex-1 items-stretch justify-center overflow-hidden">
-                    <section className="flex min-h-[calc(100dvh-60px)] w-full justify-center px-8 py-12 lg:min-h-[calc(100dvh-76px)] lg:max-w-[616px] lg:px-16 lg:py-16">
-                        <div className="flex w-full max-w-[488px] flex-col items-center justify-center gap-12">
+                    <section className="flex min-h-[calc(100dvh-60px)] w-full justify-center px-8 py-12 lg:min-h-[calc(100dvh-76px)] lg:max-w-154 lg:px-16 lg:py-16">
+                        <div className="flex w-full max-w-122 flex-col items-center justify-center gap-12">
                             {children}
                         </div>
                     </section>
@@ -80,7 +80,7 @@ export function AuthHeroText({
 
 function AuthNavbar({ copy }: { copy: AuthShellCopy }) {
     return (
-        <header className="flex h-[60px] shrink-0 items-center bg-white/20 px-6 py-4 backdrop-blur-[6px] lg:h-[76px]">
+        <header className="flex h-15 shrink-0 items-center bg-white/20 px-6 py-4 backdrop-blur-[6px] lg:h-19">
             <div className="hidden w-full items-center justify-between lg:flex">
                 <div className="flex items-center gap-8">
                     <AuthBrand brand={copy.brand} />
@@ -157,7 +157,7 @@ function AuthPicturePanel({
                 className
             )}
         >
-            <div className="flex w-full flex-col items-end justify-center rounded-2xl bg-auth-ink/20 px-9 py-6 text-white backdrop-blur-[8px]">
+            <div className="flex w-full flex-col items-end justify-center rounded-2xl bg-auth-ink/20 px-9 py-6 text-white backdrop-blur-sm">
                 <blockquote className="min-w-full font-serif text-2xl leading-9 font-medium tracking-[1px] italic">
                     {copy.quote}
                 </blockquote>
