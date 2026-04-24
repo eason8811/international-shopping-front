@@ -16,7 +16,7 @@
     "language": "Language",
     "languageOptions": {
       "en-US": "English",
-      "zh-CN": "Simplified Chinese"
+      "es-ES": "Spanish"
     }
   },
   "AuthShell": {
@@ -419,10 +419,22 @@
     }
   },
   "AuthUi": {
+    "shell": {
+      "brand": "Curator Profile",
+      "nav": {
+        "collections": "Collections",
+        "newArrivals": "New Arrivals",
+        "support": "Support"
+      },
+      "searchPlaceholder": "Search the Collection",
+      "menuLabel": "Open navigation",
+      "searchLabel": "Search",
+      "cartLabel": "Shopping bag"
+    },
     "layout": {
       "imageAlt": "Abstract minimal background",
-      "quote": "\"Experience seamless cross-border shopping with a curated selection of global fashion and lifestyle products, delivered straight to your door.\"",
-      "quoteAuthor": "GlobalLink Commerce"
+      "quote": "“Experience seamless cross-border shopping with a curated selection of global fashion and lifestyle products, delivered straight to your door.”",
+      "quoteAuthor": "— GlobalLink Commerce"
     },
     "social": {
       "google": "Continue with Google",
@@ -432,19 +444,19 @@
     },
     "login": {
       "title": "Welcome back",
-      "subtitle": "Log in to your account to continue shopping.",
-      "divider": "Or",
+      "subtitle": "Access your boutique journey",
+      "divider": "or",
       "continueWithEmail": "Continue with Email",
-      "footerPrompt": "Don't have an account?",
-      "footerAction": "Sign up"
+      "footerPrompt": "New here?",
+      "footerAction": "Request Access"
     },
     "register": {
-      "title": "Create an account",
-      "subtitle": "Join GlobalLink and start your cross-border journey.",
-      "divider": "Or",
+      "title": "Join as a Member",
+      "subtitle": "Access your boutique journey",
+      "divider": "or",
       "continueWithEmail": "Continue with Email",
       "footerPrompt": "Already have an account?",
-      "footerAction": "Log in",
+      "footerAction": "Sign In",
       "legalPrefix": "By clicking continue, you agree to our",
       "legalTerms": "Terms of Service",
       "legalMiddle": "and",
@@ -461,27 +473,29 @@
         "account": "Account",
         "email": "Email address",
         "verificationSentTo": "Verification code sent to",
-        "password": "Password",
+        "password": "Secret Key",
         "newPassword": "New Password",
-        "confirmPassword": "Confirm Password"
+        "confirmPassword": "Confirm Secret Key"
       },
       "placeholders": {
-        "account": "Email or phone number",
+        "account": "Email address or phone number",
         "email": "name@example.com",
         "phone": "Phone number",
         "password": "••••••••"
       },
       "actions": {
-        "forgotPassword": "Forgot password?",
+        "forgotPassword": "Forgot Password",
         "showPassword": "Show password",
         "hidePassword": "Hide password"
       },
       "buttons": {
-        "signIn": "Sign in to your account",
+        "signIn": "Sign In",
+        "signUp": "Sign Up",
         "sendCode": "Send email verification code",
         "verify": "Verify",
         "resetPassword": "Reset Password"
       },
+      "demoEmail": "leilaleilaleilaleila@gmail.com",
       "resendPrompt": "Didn't receive the code?",
       "resendAction": "Resend",
       "sentCountdown": "Sent. Resend in {seconds}s",

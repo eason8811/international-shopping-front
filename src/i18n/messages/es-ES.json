@@ -1,0 +1,121 @@
+{
+  "Metadata": {
+    "title": "Plataforma internacional de compras",
+    "description": "Experiencia de comercio transfronterizo con autenticacion localizada."
+  },
+  "HomePage": {
+    "language": "Idioma",
+    "languageOptions": {
+      "en-US": "Ingles",
+      "es-ES": "Espanol"
+    }
+  },
+  "AuthUi": {
+    "shell": {
+      "brand": "Curator Profile",
+      "nav": {
+        "collections": "Colecciones",
+        "newArrivals": "Novedades",
+        "support": "Soporte"
+      },
+      "searchPlaceholder": "Buscar en la coleccion",
+      "menuLabel": "Abrir navegacion",
+      "searchLabel": "Buscar",
+      "cartLabel": "Bolsa de compras"
+    },
+    "layout": {
+      "imageAlt": "Fondo abstracto minimalista",
+      "quote": "“Compra moda y estilo de vida global con una experiencia transfronteriza fluida, directa hasta tu puerta.”",
+      "quoteAuthor": "— GlobalLink Commerce"
+    },
+    "social": {
+      "google": "Continuar con Google",
+      "tiktok": "Continuar con TikTok",
+      "x": "Continuar con X",
+      "comingSoon": "El inicio social aun no esta disponible."
+    },
+    "login": {
+      "title": "Bienvenido",
+      "subtitle": "Accede a tu ruta boutique",
+      "divider": "o",
+      "continueWithEmail": "Continuar con Email",
+      "footerPrompt": "Nuevo aqui?",
+      "footerAction": "Solicitar acceso"
+    },
+    "register": {
+      "title": "Unete",
+      "subtitle": "Accede a tu ruta boutique",
+      "divider": "o",
+      "continueWithEmail": "Continuar con Email",
+      "footerPrompt": "Ya eres miembro?",
+      "footerAction": "Iniciar sesion",
+      "legalPrefix": "Al continuar, aceptas nuestros",
+      "legalTerms": "Terminos de servicio",
+      "legalMiddle": "y",
+      "legalPrivacy": "Politica de privacidad"
+    },
+    "forgot": {
+      "title": "Restablecer acceso",
+      "subtitle": "Verifica el correo y define una nueva clave.",
+      "footerPrompt": "Recordaste la clave?",
+      "footerAction": "Volver al inicio"
+    },
+    "form": {
+      "labels": {
+        "account": "Cuenta",
+        "email": "Correo electronico",
+        "verificationSentTo": "Codigo enviado a",
+        "password": "Clave secreta",
+        "newPassword": "Nueva clave",
+        "confirmPassword": "Confirmar clave"
+      },
+      "placeholders": {
+        "account": "Correo electronico o telefono",
+        "email": "nombre@ejemplo.com",
+        "phone": "Telefono",
+        "password": "••••••••"
+      },
+      "actions": {
+        "forgotPassword": "Olvidaste la clave",
+        "showPassword": "Mostrar clave",
+        "hidePassword": "Ocultar clave"
+      },
+      "buttons": {
+        "signIn": "Entrar",
+        "signUp": "Registrarse",
+        "sendCode": "Enviar codigo",
+        "verify": "Verificar",
+        "resetPassword": "Restablecer clave"
+      },
+      "demoEmail": "leilaleilaleilaleila@gmail.com",
+      "resendPrompt": "No recibiste el codigo?",
+      "resendAction": "Reenviar",
+      "sentCountdown": "Enviado. Reenvio en {seconds}s",
+      "resendSuccess": "Se envio un nuevo codigo.",
+      "errors": {
+        "passwordMismatch": "Las claves no coinciden.",
+        "loginFailed": "No se pudo iniciar sesion. Intentalo de nuevo.",
+        "registerFailed": "No se pudo registrar la cuenta. Intentalo de nuevo.",
+        "verifyFailed": "La verificacion fallo. Revisa el codigo.",
+        "resetRequestFailed": "No se pudo solicitar el restablecimiento.",
+        "resetFailed": "No se pudo restablecer la clave.",
+        "resendFailed": "No se pudo reenviar el codigo."
+      },
+      "validation": {
+        "accountRequired": "Ingresa un correo o telefono.",
+        "accountInvalid": "Ingresa un correo o telefono valido.",
+        "emailRequired": "Ingresa un correo.",
+        "emailInvalid": "Ingresa un correo valido.",
+        "phoneInvalid": "Ingresa un telefono de 6 a 20 digitos.",
+        "passwordRequired": "Ingresa una clave.",
+        "passwordInvalid": "La clave debe tener al menos 8 caracteres.",
+        "confirmPasswordRequired": "Confirma la clave.",
+        "confirmPasswordMismatch": "Las claves no coinciden."
+      }
+    },
+    "success": {
+      "verifyTitle": "Verificacion completa",
+      "verifyDescription": "Tu cuenta esta verificada y lista para usar. Redirigiendo..."
+    }
+  }
+}

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { motion } from "motion/react"
-import { ArrowRight, Check, Eye, Mail } from "lucide-react"
+import { ArrowRight, Check, EyeOff, Mail } from "lucide-react"
 import { FcGoogle } from "react-icons/fc"
 import { SiTiktok, SiX } from "react-icons/si"
 
@@ -34,9 +34,9 @@ export interface AuthProviderAction {
 }
 
 export const defaultAuthProviders: AuthProviderAction[] = [
-    { provider: "google", label: "Continue With Google" },
-    { provider: "tiktok", label: "Continue With TikTok" },
-    { provider: "x", label: "Continue With X" },
+    { provider: "google", label: "Continue with Google" },
+    { provider: "tiktok", label: "Continue with TikTok" },
+    { provider: "x", label: "Continue with X" },
 ]
 
 export interface AuthBlockProps extends React.ComponentProps<"section"> {
@@ -64,12 +64,31 @@ export interface AuthEmailFormProps
     forgotPasswordLabel?: string
     submitLabel?: string
     showPasswordField?: boolean
+    showSubmitIcon?: boolean
+}
+
+export interface AuthRegisterFormProps
+    extends Omit<React.ComponentProps<"form">, "children"> {
+    accountLabel?: string
+    accountPlaceholder?: string
+    accountInvalid?: boolean
+    accountError?: React.ReactNode
+    passwordLabel?: string
+    passwordPlaceholder?: string
+    passwordInvalid?: boolean
+    passwordError?: React.ReactNode
+    confirmPasswordLabel?: string
+    confirmPasswordPlaceholder?: string
+    confirmPasswordInvalid?: boolean
+    confirmPasswordError?: React.ReactNode
+    submitLabel?: string
 }
 
 export interface AuthVerifyFormProps
     extends Omit<React.ComponentProps<"form">, "children"> {
     email: string
     codeLength?: number
+    sentToLabel?: string
     resendLabel?: string
     resendActionLabel?: string
     submitLabel?: string
@@ -94,14 +113,14 @@ function AuthProviderIcon({ provider }: { provider: AuthProvider }) {
 
 function getAuthProviderLabel(provider: AuthProvider) {
     if (provider === "google") {
-        return "Continue With Google"
+        return "Continue with Google"
     }
 
     if (provider === "tiktok") {
-        return "Continue With TikTok"
+        return "Continue with TikTok"
     }
 
-    return "Continue With X"
+    return "Continue with X"
 }
 
 export function AuthProviderButton({
@@ -124,7 +143,7 @@ export function AuthProviderButton({
 }
 
 export function AuthEmailButton({
-                                    label = "Continue With Email",
+                                    label = "Continue with Email",
                                     className,
                                     ...props
                                 }: AuthEmailButtonProps) {
@@ -195,6 +214,7 @@ export function AuthFooterLink({
         <p
             className={cn(
                 "text-center text-xs leading-4 font-medium tracking-[0.6px] text-auth-muted",
+                "font-normal tracking-[0.3px]",
                 className
             )}
             {...props}
@@ -217,17 +237,18 @@ export function AuthFooterLink({
 }
 
 export function AuthEmailForm({
-                                  emailLabel = "Email Address",
-                                  emailPlaceholder = "Enter your email",
+                                  emailLabel = "Account",
+                                  emailPlaceholder = "Email address or phone number",
                                   emailInvalid,
                                   emailError,
                                   passwordLabel = "Secret Key",
-                                  passwordPlaceholder = "Enter your password",
+                                  passwordPlaceholder = "••••••••",
                                   passwordInvalid,
                                   passwordError,
                                   forgotPasswordLabel = "Forgot Password",
                                   submitLabel = "Sign In",
                                   showPasswordField = true,
+                                  showSubmitIcon = true,
                                   className,
                                   ...props
                               }: AuthEmailFormProps) {
@@ -241,8 +262,8 @@ export function AuthEmailForm({
                     <FieldLabel htmlFor={emailId}>{emailLabel}</FieldLabel>
                     <Input
                         id={emailId}
-                        type="email"
-                        autoComplete="email"
+                        type="text"
+                        autoComplete="username"
                         aria-invalid={emailInvalid || undefined}
                         placeholder={emailPlaceholder}
                     />
@@ -263,6 +284,71 @@ export function AuthEmailForm({
 
             <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]">
                 {submitLabel}
+                {showSubmitIcon ? <ArrowRight data-icon="inline-end" /> : null}
+            </Button>
+        </form>
+    )
+}
+
+export function AuthRegisterForm({
+                                     accountLabel = "Account",
+                                     accountPlaceholder = "Email address or phone number",
+                                     accountInvalid,
+                                     accountError,
+                                     passwordLabel = "Secret Key",
+                                     passwordPlaceholder = "••••••••",
+                                     passwordInvalid,
+                                     passwordError,
+                                     confirmPasswordLabel = "Confirm Secret Key",
+                                     confirmPasswordPlaceholder = "••••••••",
+                                     confirmPasswordInvalid,
+                                     confirmPasswordError,
+                                     submitLabel = "Sign Up",
+                                     className,
+                                     ...props
+                                 }: AuthRegisterFormProps) {
+    const accountId = React.useId()
+    const passwordId = React.useId()
+    const confirmPasswordId = React.useId()
+
+    return (
+        <form className={cn("flex w-full flex-col gap-8", className)} {...props}>
+            <FieldGroup className="gap-2.5">
+                <Field data-invalid={accountInvalid || undefined}>
+                    <FieldLabel htmlFor={accountId}>{accountLabel}</FieldLabel>
+                    <Input
+                        id={accountId}
+                        type="text"
+                        autoComplete="username"
+                        aria-invalid={accountInvalid || undefined}
+                        placeholder={accountPlaceholder}
+                    />
+                    {accountError ? <FieldError>{accountError}</FieldError> : null}
+                </Field>
+
+                <AuthPasswordField
+                    id={passwordId}
+                    label={passwordLabel}
+                    placeholder={passwordPlaceholder}
+                    invalid={passwordInvalid}
+                    error={passwordError}
+                    action={null}
+                    autoComplete="new-password"
+                />
+
+                <AuthPasswordField
+                    id={confirmPasswordId}
+                    label={confirmPasswordLabel}
+                    placeholder={confirmPasswordPlaceholder}
+                    invalid={confirmPasswordInvalid}
+                    error={confirmPasswordError}
+                    action={null}
+                    autoComplete="new-password"
+                />
+            </FieldGroup>
+
+            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]">
+                {submitLabel}
                 <ArrowRight data-icon="inline-end" />
             </Button>
         </form>
@@ -272,10 +358,11 @@ export function AuthEmailForm({
 export function AuthPasswordField({
                                       id,
                                       label = "Secret Key",
-                                      placeholder = "Enter your password",
+                                      placeholder = "••••••••",
                                       invalid,
                                       error,
                                       action = "Forgot Password",
+                                      autoComplete = "current-password",
                                   }: {
     id?: string
     label?: string
@@ -283,6 +370,7 @@ export function AuthPasswordField({
     invalid?: boolean
     error?: React.ReactNode
     action?: React.ReactNode
+    autoComplete?: React.ComponentProps<"input">["autoComplete"]
 }) {
     const fallbackId = React.useId()
     const passwordId = id ?? fallbackId
@@ -291,18 +379,20 @@ export function AuthPasswordField({
         <Field data-invalid={invalid || undefined}>
             <div className="flex items-center justify-between gap-3">
                 <FieldLabel htmlFor={passwordId}>{label}</FieldLabel>
-                <button
-                    type="button"
-                    className="text-[10px] leading-3.75 font-semibold tracking-[0.5px] text-auth-muted uppercase transition-colors hover:text-auth-ink"
-                >
-                    {action}
-                </button>
+                {action ? (
+                    <button
+                        type="button"
+                        className="text-[10px] leading-3.75 font-semibold tracking-[0.5px] text-auth-muted uppercase transition-colors hover:text-auth-ink"
+                    >
+                        {action}
+                    </button>
+                ) : null}
             </div>
             <div className="relative">
                 <Input
                     id={passwordId}
                     type="password"
-                    autoComplete="current-password"
+                    autoComplete={autoComplete}
                     aria-invalid={invalid || undefined}
                     placeholder={placeholder}
                     className="pr-8"
@@ -312,7 +402,7 @@ export function AuthPasswordField({
                     aria-label="Show password"
                     className="absolute top-1/2 right-0 flex size-6 -translate-y-1/2 items-center justify-center text-auth-muted transition-colors hover:text-auth-ink"
                 >
-                    <Eye className="size-4" />
+                    <EyeOff className="size-4" />
                 </button>
             </div>
             {error ? <FieldError>{error}</FieldError> : null}
@@ -323,6 +413,7 @@ export function AuthPasswordField({
 export function AuthVerifyForm({
                                    email,
                                    codeLength = 6,
+                                   sentToLabel = "Verification code sent to",
                                    resendLabel = "Didn't receive the code?",
                                    resendActionLabel = "Resend",
                                    submitLabel = "Verify",
@@ -334,11 +425,16 @@ export function AuthVerifyForm({
 
     return (
         <form className={cn("flex w-full flex-col gap-8", className)} {...props}>
-            <FieldDescription className="text-center">
-                Verification code sent to <span className="text-auth-ink">{email}</span>
-            </FieldDescription>
+            <div className="flex w-full flex-col items-center justify-center gap-2 overflow-hidden text-center">
+                <FieldDescription className="text-center capitalize">
+                    {sentToLabel}
+                </FieldDescription>
+                <p className="text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink">
+                    {email}
+                </p>
+            </div>
 
-            <InputOTP maxLength={codeLength}>
+            <InputOTP maxLength={codeLength} aria-label={`Verification code for ${email}`}>
                 <div className="flex w-full items-center justify-center gap-3">
                     <InputOTPGroup>
                         {slots.slice(0, midpoint).map((slot) => (
@@ -366,7 +462,6 @@ export function AuthVerifyForm({
 
             <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]">
                 {submitLabel}
-                <ArrowRight data-icon="inline-end" />
             </Button>
         </form>
     )
@@ -394,7 +489,7 @@ export function AuthSuccess({
                 </div>
             </motion.div>
 
-            <div className="flex max-w-70 flex-col gap-3">
+            <div className="flex max-w-70 flex-col gap-2">
                 <h3 className="text-2xl leading-8 font-semibold tracking-[-0.6px] text-auth-ink">
                     {title}
                 </h3>

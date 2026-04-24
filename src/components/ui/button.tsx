@@ -25,9 +25,9 @@ const buttonVariants = cva(
                 default:
                     "h-[52px] gap-2 px-6 py-4 has-data-[icon=inline-end]:pr-6 has-data-[icon=inline-start]:pl-6",
                 social:
-                    "h-[52px] gap-2 px-6 py-4 has-data-[icon=inline-end]:pr-6 has-data-[icon=inline-start]:pl-6",
+                    "h-[52px] gap-2.5 px-6 py-4 has-data-[icon=inline-end]:pr-6 has-data-[icon=inline-start]:pl-6",
                 email:
-                    "h-[52px] gap-2 px-6 py-4 has-data-[icon=inline-end]:pr-6 has-data-[icon=inline-start]:pl-6",
+                    "h-[52px] gap-2.5 px-6 py-4 has-data-[icon=inline-end]:pr-6 has-data-[icon=inline-start]:pl-6",
                 xs: "h-8 gap-1 rounded-[10px] px-2.5 text-xs tracking-[0.3px] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3",
                 sm: "h-10 gap-1.5 rounded-[10px] px-3 text-[0.8rem] tracking-[0.4px] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&_svg:not([class*='size-'])]:size-3.5",
                 lg: "h-[52px] gap-2 px-6 py-4 has-data-[icon=inline-end]:pr-6 has-data-[icon=inline-start]:pl-6",

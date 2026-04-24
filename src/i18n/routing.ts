@@ -8,6 +8,6 @@ import {defineRouting} from "next-intl/routing";
  * - 未命中时回退到 `defaultLocale`
  */
 export const routing = defineRouting({
-    locales: ["en-US", "zh-CN"],
+    locales: ["en-US", "es-ES"],
     defaultLocale: "en-US",
 });

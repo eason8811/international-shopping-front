@@ -1,5 +1,6 @@
 export * from "./address-card";
 export * from "./auth-block";
+export * from "./auth-shell";
 export * from "./financial-summary";
 export * from "./header-hero";
 export * from "./order-card";

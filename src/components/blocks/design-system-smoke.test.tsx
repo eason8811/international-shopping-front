@@ -35,8 +35,8 @@ describe("design system blocks", () => {
             </AuthBlock>
         );
 
-        expect(screen.getByText("Continue With Google")).toBeInTheDocument();
-        expect(screen.getByLabelText("Email Address")).toBeInTheDocument();
+        expect(screen.getByText("Continue with Google")).toBeInTheDocument();
+        expect(screen.getByLabelText("Account")).toBeInTheDocument();
         expect(screen.getByText("Sign In")).toBeInTheDocument();
     });
 
@@ -49,7 +49,7 @@ describe("design system blocks", () => {
             </>
         );
 
-        expect(screen.getByText("Continue With Email")).toBeInTheDocument();
+        expect(screen.getByText("Continue with Email")).toBeInTheDocument();
         expect(screen.getByRole("button", {name: "Request Access"})).toBeInTheDocument();
         expect(screen.getByText("member@example.com")).toBeInTheDocument();
         expect(screen.getByText("Verify")).toBeInTheDocument();
@@ -66,7 +66,7 @@ describe("design system blocks", () => {
         );
         const form = within(container);
 
-        expect(form.getByLabelText("Email Address")).toHaveAttribute("aria-invalid", "true");
+        expect(form.getByLabelText("Account")).toHaveAttribute("aria-invalid", "true");
         expect(form.getByLabelText("Secret Key")).toHaveAttribute("aria-invalid", "true");
         expect(form.getByText("Enter a valid email address.")).toBeInTheDocument();
     });
