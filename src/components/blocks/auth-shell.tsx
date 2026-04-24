@@ -37,12 +37,12 @@ export function AuthPageShell({
             <div className="relative z-10 flex min-h-dvh flex-col">
                 <AuthNavbar copy={copy} />
                 <div className="flex flex-1 items-stretch justify-center overflow-hidden">
-                    <section className="flex min-h-[calc(100dvh-60px)] w-full justify-center px-8 py-12 xl:min-h-[calc(100dvh-76px)] xl:min-w-154 xl:basis-1/3 xl:shrink xl:px-16 xl:py-16">
+                    <section className="flex min-h-[calc(100dvh-60px)] w-full justify-center px-8 py-12 xl:min-h-[calc(100dvh-76px)] xl:min-w-154 xl:basis-2/5 xl:shrink xl:px-16 xl:py-16">
                         <div className="flex w-full max-w-122 flex-col items-center justify-center gap-12">
                             {children}
                         </div>
                     </section>
-                    <AuthPicturePanel copy={copy} className="hidden xl:flex xl:min-w-0 xl:basis-2/3 xl:grow" />
+                    <AuthPicturePanel copy={copy} className="hidden xl:flex xl:min-w-0 xl:basis-3/5 xl:grow" />
                 </div>
             </div>
         </main>

@@ -22,6 +22,11 @@ export interface AuthNavbarProps extends React.ComponentProps<"header"> {
     brandHref?: string
 }
 
+export interface AuthNavbarSearchInputProps
+    extends Omit<React.ComponentProps<"input">, "type" | "size"> {
+    inputClassName?: string
+}
+
 export function AuthNavbar({
                                copy,
                                brandHref = "#",
@@ -53,12 +58,10 @@ export function AuthNavbar({
                 </div>
 
                 <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2 rounded-full bg-zinc-100/50 px-4 py-1 text-auth-muted">
-                        <Search className="size-4" aria-hidden="true" />
-                        <span className="w-48 px-3 py-2 text-sm leading-none font-normal">
-                            {copy.searchPlaceholder}
-                        </span>
-                    </div>
+                    <AuthNavbarSearchInput
+                        aria-label={copy.searchLabel}
+                        placeholder={copy.searchPlaceholder}
+                    />
                     <Button type="button" variant="ghost" size="icon-sm" aria-label={copy.cartLabel}>
                         <ShoppingBag />
                     </Button>
@@ -82,6 +85,34 @@ export function AuthNavbar({
                 </div>
             </div>
         </header>
+    )
+}
+
+export function AuthNavbarSearchInput({
+                                          className,
+                                          inputClassName,
+                                          placeholder,
+                                          ...props
+                                      }: AuthNavbarSearchInputProps) {
+    return (
+        <label
+            className={cn(
+                "flex h-10.75 w-62 items-center gap-2 rounded-full bg-zinc-100/50 px-4 py-1 text-auth-muted transition-colors focus-within:bg-zinc-100/70 focus-within:ring-2 focus-within:ring-ring/35",
+                className
+            )}
+        >
+            <Search className="size-4 shrink-0" aria-hidden="true" />
+            <input
+                type="search"
+                data-slot="auth-navbar-search-input"
+                className={cn(
+                    "h-8.75 w-48 min-w-0 bg-transparent px-3 py-2 text-sm leading-none font-normal text-auth-ink outline-none placeholder:text-auth-muted",
+                    inputClassName
+                )}
+                placeholder={placeholder}
+                {...props}
+            />
+        </label>
     )
 }
 

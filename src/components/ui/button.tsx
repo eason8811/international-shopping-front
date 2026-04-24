@@ -12,9 +12,9 @@ const buttonVariants = cva(
                 default:
                     "border-auth-control-border bg-auth-ink text-white hover:bg-auth-ink/90 active:bg-auth-ink/85 dark:text-auth-background",
                 outline:
-                    "border-auth-control-border bg-white text-auth-ink hover:bg-white/80 active:bg-white/70 aria-expanded:bg-white/80 dark:bg-white dark:text-[#1c1917]",
+                    "border-auth-control-border bg-white text-auth-ink hover:bg-auth-ink/5 active:bg-auth-ink/10 aria-expanded:bg-auth-ink/5 dark:bg-white dark:text-[#1c1917]",
                 secondary:
-                    "border-auth-control-border bg-white text-auth-ink hover:bg-white/80 active:bg-white/70 aria-expanded:bg-white/80 dark:bg-white dark:text-[#1c1917]",
+                    "border-auth-control-border bg-white text-auth-ink hover:bg-auth-ink/5 active:bg-auth-ink/10 aria-expanded:bg-auth-ink/5 dark:bg-white dark:text-[#1c1917]",
                 ghost:
                     "text-auth-ink hover:bg-auth-ink/5 active:bg-auth-ink/10 aria-expanded:bg-auth-ink/5",
                 destructive:
