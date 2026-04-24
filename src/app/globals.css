@@ -38,6 +38,20 @@
     --color-action-accent: oklch(0.4819 0 89.8756);
     --color-action-accent-foreground: oklch(1 0 0);
 
+    --color-auth-background: #f9f9f9;
+    --color-auth-ink: #1c1917;
+    --color-auth-muted: #71717a;
+    --color-auth-placeholder: rgb(172 179 180 / 0.6);
+    --color-auth-input-border: rgb(172 179 180 / 0.3);
+    --color-auth-control-border: rgb(198 198 198 / 0.2);
+    --color-auth-otp-border: rgb(198 198 198 / 0.35);
+    --color-auth-divider: rgb(113 113 122 / 0.1);
+    --color-auth-divider-label: rgb(113 113 122 / 0.6);
+    --color-auth-blur-cool: #dde4e5;
+    --color-auth-blur-warm: #e4e2e1;
+    --color-auth-success: #00bc7d;
+    --color-auth-success-surface: rgb(0 188 125 / 0.1);
+
     --color-status-success: oklch(0.627 0.166 145);
     --color-status-success-surface: oklch(0.955 0.04 145);
     --color-status-success-foreground: oklch(0.372 0.095 145);
@@ -194,6 +208,20 @@
     --color-status-info-surface: oklch(0.31 0.035 250);
     --color-status-info-foreground: oklch(0.88 0.06 250);
 
+    --color-auth-background: #1c1917;
+    --color-auth-ink: #f9f9f9;
+    --color-auth-muted: rgb(249 249 249 / 0.7);
+    --color-auth-placeholder: rgb(249 249 249 / 0.45);
+    --color-auth-input-border: rgb(249 249 249 / 0.18);
+    --color-auth-control-border: rgb(249 249 249 / 0.14);
+    --color-auth-otp-border: rgb(249 249 249 / 0.22);
+    --color-auth-divider: rgb(249 249 249 / 0.12);
+    --color-auth-divider-label: rgb(249 249 249 / 0.55);
+    --color-auth-blur-cool: #2f3839;
+    --color-auth-blur-warm: #383433;
+    --color-auth-success: #00bc7d;
+    --color-auth-success-surface: rgb(0 188 125 / 0.16);
+
     --shadow-popover: 0 12px 32px -14px oklch(0 0 0 / 0.28);
     --shadow-dialog: 0 18px 48px -18px oklch(0 0 0 / 0.32);
     --shadow-hover: 0 8px 24px -12px oklch(0 0 0 / 0.22);
@@ -262,6 +290,19 @@
     --color-action-secondary-foreground: var(--color-action-secondary-foreground);
     --color-action-accent: var(--color-action-accent);
     --color-action-accent-foreground: var(--color-action-accent-foreground);
+    --color-auth-background: var(--color-auth-background);
+    --color-auth-ink: var(--color-auth-ink);
+    --color-auth-muted: var(--color-auth-muted);
+    --color-auth-placeholder: var(--color-auth-placeholder);
+    --color-auth-input-border: var(--color-auth-input-border);
+    --color-auth-control-border: var(--color-auth-control-border);
+    --color-auth-otp-border: var(--color-auth-otp-border);
+    --color-auth-divider: var(--color-auth-divider);
+    --color-auth-divider-label: var(--color-auth-divider-label);
+    --color-auth-blur-cool: var(--color-auth-blur-cool);
+    --color-auth-blur-warm: var(--color-auth-blur-warm);
+    --color-auth-success: var(--color-auth-success);
+    --color-auth-success-surface: var(--color-auth-success-surface);
     --color-status-success: var(--color-status-success);
     --color-status-success-surface: var(--color-status-success-surface);
     --color-status-success-foreground: var(--color-status-success-foreground);

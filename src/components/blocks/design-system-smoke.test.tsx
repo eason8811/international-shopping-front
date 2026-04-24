@@ -1,7 +1,7 @@
-import {render, screen} from "@testing-library/react";
+import {render, screen, within} from "@testing-library/react";
 import {describe, expect, it} from "vitest";
 
-import {AuthBlock} from "./auth-block";
+import {AuthBlock, AuthEmailButton, AuthEmailForm, AuthFooterLink, AuthVerifyForm} from "./auth-block";
 import {FinancialSummary} from "./financial-summary";
 import {StatusBadge} from "./status-badge";
 
@@ -30,13 +30,44 @@ describe("design system blocks", () => {
 
     it("renders an auth block with accessible form content", () => {
         render(
-            <AuthBlock title="Sign in" description="Access your account">
-                <label htmlFor="email">Email</label>
-                <input id="email" />
+            <AuthBlock>
+                <AuthEmailForm submitLabel="Sign In" />
             </AuthBlock>
         );
 
-        expect(screen.getByText("Sign in")).toBeInTheDocument();
-        expect(screen.getByLabelText("Email")).toBeInTheDocument();
+        expect(screen.getByText("Continue With Google")).toBeInTheDocument();
+        expect(screen.getByLabelText("Email Address")).toBeInTheDocument();
+        expect(screen.getByText("Sign In")).toBeInTheDocument();
+    });
+
+    it("renders auth email and verification flows", () => {
+        render(
+            <>
+                <AuthEmailButton />
+                <AuthFooterLink label="New here?" action="Request Access" />
+                <AuthVerifyForm email="member@example.com" />
+            </>
+        );
+
+        expect(screen.getByText("Continue With Email")).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Request Access"})).toBeInTheDocument();
+        expect(screen.getByText("member@example.com")).toBeInTheDocument();
+        expect(screen.getByText("Verify")).toBeInTheDocument();
+    });
+
+    it("renders auth input invalid states", () => {
+        const {container} = render(
+            <AuthEmailForm
+                emailInvalid
+                emailError="Enter a valid email address."
+                passwordInvalid
+                passwordError="Secret key must contain at least 8 characters."
+            />
+        );
+        const form = within(container);
+
+        expect(form.getByLabelText("Email Address")).toHaveAttribute("aria-invalid", "true");
+        expect(form.getByLabelText("Secret Key")).toHaveAttribute("aria-invalid", "true");
+        expect(form.getByText("Enter a valid email address.")).toBeInTheDocument();
     });
 });

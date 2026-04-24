@@ -21,4 +21,17 @@ Object.defineProperty(window, "scrollTo", {
   value: vi.fn(),
 });
 
+class ResizeObserverMock {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+
+Object.defineProperty(window, "ResizeObserver", {
+  writable: true,
+  value: ResizeObserverMock,
+});
+
+globalThis.ResizeObserver = ResizeObserverMock;
+
 Element.prototype.scrollIntoView = vi.fn();
