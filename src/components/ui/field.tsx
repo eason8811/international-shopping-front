@@ -106,7 +106,7 @@ function FieldLabel({
         <Label
             data-slot="field-label"
             className={cn(
-                "group/field-label peer/field-label flex w-fit items-center gap-2 text-[10px] leading-3.75 font-bold tracking-[0.5px] text-auth-muted uppercase group-data-[disabled=true]/field:opacity-50 group-data-[invalid=true]/field:text-status-danger has-data-checked:border-auth-control-border has-data-checked:bg-auth-ink/5 has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border *:data-[slot=field]:p-2.5",
+                "group/field-label peer/field-label flex w-fit items-center gap-2 text-[10px] leading-3.75 font-bold tracking-[0.5px] text-auth-muted uppercase group-data-[disabled=true]/field:opacity-50 has-data-checked:border-auth-control-border has-data-checked:bg-auth-ink/5 has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border *:data-[slot=field]:p-2.5",
                 "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
                 className
             )}
@@ -216,7 +216,7 @@ function FieldError({
         <div
             role="alert"
             data-slot="field-error"
-            className={cn("text-sm font-normal text-status-danger", className)}
+            className={cn("text-xs leading-[normal] font-normal text-status-danger", className)}
             {...props}
         >
             {content}
