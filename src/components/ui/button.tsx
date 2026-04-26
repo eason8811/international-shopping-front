@@ -17,6 +17,8 @@ const buttonVariants = cva(
                     "border-auth-control-border bg-white text-auth-ink hover:bg-auth-ink/5 active:bg-auth-ink/10 aria-expanded:bg-auth-ink/5 dark:bg-white dark:text-[#1c1917]",
                 ghost:
                     "text-auth-ink hover:bg-auth-ink/5 active:bg-auth-ink/10 aria-expanded:bg-auth-ink/5",
+                "ghost-bare":
+                    "border-0 bg-transparent text-auth-muted shadow-none hover:cursor-pointer hover:bg-transparent hover:text-auth-ink active:bg-transparent active:text-auth-ink aria-expanded:text-auth-ink",
                 destructive:
                     "border-status-danger/20 bg-status-danger/10 text-status-danger hover:bg-status-danger/15 focus-visible:border-status-danger/40 focus-visible:ring-status-danger/20",
                 link: "h-auto rounded-none border-0 px-0 py-0 text-auth-ink underline-offset-4 hover:underline",
@@ -38,6 +40,11 @@ const buttonVariants = cva(
                 "icon-sm":
                     "size-10 rounded-[10px] in-data-[slot=button-group]:rounded-lg",
                 "icon-lg": "size-[52px] rounded-[12px]",
+                bare: "h-auto gap-1 rounded-none px-0 py-0",
+                "icon-bare":
+                    "size-10 rounded-none p-0 [&_svg:not([class*='size-'])]:size-6",
+                "icon-bare-sm":
+                    "size-6 rounded-none p-0 [&_svg:not([class*='size-'])]:size-4",
             },
         },
         defaultVariants: {

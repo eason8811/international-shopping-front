@@ -1,7 +1,7 @@
-import {render, screen, within} from "@testing-library/react";
-import {describe, expect, it} from "vitest";
+import {fireEvent, render, screen, within} from "@testing-library/react";
+import {describe, expect, it, vi} from "vitest";
 
-import {AuthBlock, AuthEmailButton, AuthEmailForm, AuthFooterLink, AuthVerifyForm} from "./auth-block";
+import {AuthBlock, AuthEmailButton, AuthEmailForm, AuthFooterLink, AuthResetPasswordForm, AuthVerifyForm} from "./auth-block";
 import {FinancialSummary} from "./financial-summary";
 import {StatusBadge} from "./status-badge";
 
@@ -69,5 +69,55 @@ describe("design system blocks", () => {
         expect(form.getByLabelText("Account")).toHaveAttribute("aria-invalid", "true");
         expect(form.getByLabelText("Secret Key")).toHaveAttribute("aria-invalid", "true");
         expect(form.getByText("Enter a valid email address.")).toBeInTheDocument();
+    });
+
+    it("supports controlled auth inputs and password visibility", () => {
+        const onEmailValueChange = vi.fn();
+        const onPasswordValueChange = vi.fn();
+
+        const {container} = render(
+            <AuthEmailForm
+                emailValue="member@example.com"
+                onEmailValueChange={onEmailValueChange}
+                passwordValue="Passw0rd!"
+                onPasswordValueChange={onPasswordValueChange}
+                showPasswordLabel="Show password"
+                hidePasswordLabel="Hide password"
+            />
+        );
+        const form = within(container);
+
+        fireEvent.change(form.getByLabelText("Account"), {
+            target: {value: "next@example.com"},
+        });
+        fireEvent.change(form.getByLabelText("Secret Key"), {
+            target: {value: "NextPassw0rd!"},
+        });
+        fireEvent.click(form.getByRole("button", {name: "Show password"}));
+
+        expect(onEmailValueChange).toHaveBeenCalledWith("next@example.com");
+        expect(onPasswordValueChange).toHaveBeenCalledWith("NextPassw0rd!");
+        expect(form.getByRole("button", {name: "Hide password"})).toBeInTheDocument();
+    });
+
+    it("renders reset password fields with errors", () => {
+        const {container} = render(
+            <AuthResetPasswordForm
+                account="member@example.com"
+                codeValue="123"
+                codeInvalid
+                codeError="Enter the verification code."
+                newPasswordInvalid
+                newPasswordError="Enter a new password."
+                confirmPasswordInvalid
+                confirmPasswordError="Passwords do not match."
+            />
+        );
+        const form = within(container);
+
+        expect(form.getByText("member@example.com")).toBeInTheDocument();
+        expect(form.getByText("Enter the verification code.")).toBeInTheDocument();
+        expect(form.getByText("Enter a new password.")).toBeInTheDocument();
+        expect(form.getByText("Passwords do not match.")).toBeInTheDocument();
     });
 });

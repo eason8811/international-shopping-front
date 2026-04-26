@@ -104,18 +104,29 @@
       "validation": {
         "accountRequired": "Ingresa un correo o telefono.",
         "accountInvalid": "Ingresa un correo o telefono valido.",
+        "codeRequired": "Ingresa el codigo de verificacion.",
         "emailRequired": "Ingresa un correo.",
         "emailInvalid": "Ingresa un correo valido.",
         "phoneInvalid": "Ingresa un telefono de 6 a 20 digitos.",
         "passwordRequired": "Ingresa una clave.",
-        "passwordInvalid": "La clave debe tener al menos 8 caracteres.",
+        "passwordInvalid": "La clave debe tener al menos 8 caracteres e incluir un numero, una minuscula y una mayuscula.",
         "confirmPasswordRequired": "Confirma la clave.",
         "confirmPasswordMismatch": "Las claves no coinciden."
       }
     },
+    "reset": {
+      "accountLabel": "Cuenta en recuperacion",
+      "codeLabel": "Codigo de verificacion"
+    },
     "success": {
+      "loginTitle": "Sesion iniciada",
+      "loginDescription": "Tu sesion esta activa. Redirigiendo...",
       "verifyTitle": "Verificacion completa",
-      "verifyDescription": "Tu cuenta esta verificada y lista para usar. Redirigiendo..."
+      "verifyDescription": "Tu cuenta esta verificada y lista para usar. Redirigiendo...",
+      "resetTitle": "Clave restablecida",
+      "resetDescription": "La nueva clave esta activa. Redirigiendo...",
+      "oauthTitle": "Inicio social completo",
+      "oauthDescription": "La sesion del proveedor esta conectada. Redirigiendo..."
     }
   }
 }

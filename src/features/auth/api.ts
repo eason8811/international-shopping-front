@@ -26,9 +26,7 @@ export async function registerUser(input: RegisterInput): Promise<UserMutationNo
     const response = await requestBff<void>("/auth/register", {
         method: "POST",
         body: {
-            username: input.username,
             password: input.password,
-            nickname: input.nickname,
             email: input.email,
             phoneCountryCode: input.phoneCountryCode ?? null,
             phoneNationalNumber: input.phoneNationalNumber ?? null,

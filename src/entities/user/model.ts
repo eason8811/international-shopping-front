@@ -198,14 +198,14 @@ export interface CreateUserAddressResult extends UserMutationNotice {
  * 注册输入
  */
 export interface RegisterInput {
-    /** 用户名 */
-    username: string;
     /** 密码 */
     password: string;
-    /** 昵称 */
-    nickname: string;
     /** 邮箱 */
     email: string;
+    /** 用户名，注册后置补齐时使用 */
+    username?: string | null;
+    /** 昵称，注册后置补齐时使用 */
+    nickname?: string | null;
     /** 手机国家码 */
     phoneCountryCode?: string | null;
     /** 手机本地号码 */

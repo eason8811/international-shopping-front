@@ -36,7 +36,7 @@ export function AuthNavbar({
     return (
         <header
             className={cn(
-                "flex h-15 shrink-0 items-center bg-white/20 px-6 py-4 backdrop-blur-[6px] xl:h-19",
+                "flex h-15 shrink-0 items-center bg-white/20 px-6 py-4 backdrop-blur-[12px] xl:h-19",
                 className
             )}
             {...props}
@@ -45,15 +45,15 @@ export function AuthNavbar({
                 <div className="flex items-center gap-8">
                     <AuthBrand brand={copy.brand} href={brandHref} />
                     <nav aria-label="Primary" className="flex items-center gap-10">
-                        <a className="text-base leading-6 font-medium text-auth-muted" href="#">
-                            {copy.nav.collections}
-                        </a>
-                        <a className="text-base leading-6 font-medium text-auth-muted" href="#">
-                            {copy.nav.newArrivals}
-                        </a>
-                        <a className="text-base leading-6 font-medium text-auth-muted" href="#">
-                            {copy.nav.support}
-                        </a>
+                        <Button asChild variant="ghost-bare" size="bare" className="text-base leading-6 font-medium">
+                            <a href="#">{copy.nav.collections}</a>
+                        </Button>
+                        <Button asChild variant="ghost-bare" size="bare" className="text-base leading-6 font-medium">
+                            <a href="#">{copy.nav.newArrivals}</a>
+                        </Button>
+                        <Button asChild variant="ghost-bare" size="bare" className="text-base leading-6 font-medium">
+                            <a href="#">{copy.nav.support}</a>
+                        </Button>
                     </nav>
                 </div>
 
@@ -62,25 +62,25 @@ export function AuthNavbar({
                         aria-label={copy.searchLabel}
                         placeholder={copy.searchPlaceholder}
                     />
-                    <Button type="button" variant="ghost" size="icon-sm" aria-label={copy.cartLabel}>
-                        <ShoppingBag />
+                    <Button type="button" variant="ghost-bare" size="icon-bare" aria-label={copy.cartLabel}>
+                        <ShoppingBag data-icon="inline-start" aria-hidden="true" />
                     </Button>
                 </div>
             </div>
 
             <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center xl:hidden">
                 <div className="flex items-center gap-6 justify-self-start">
-                    <Button type="button" variant="ghost" size="icon-sm" aria-label={copy.menuLabel}>
-                        <Menu />
+                    <Button type="button" variant="ghost-bare" size="icon-bare" aria-label={copy.menuLabel}>
+                        <Menu data-icon="inline-start" aria-hidden="true" />
                     </Button>
                 </div>
                 <AuthBrand brand={copy.brand} href={brandHref} />
                 <div className="flex items-center gap-4 justify-self-end">
-                    <Button type="button" variant="ghost" size="icon-sm" aria-label={copy.searchLabel}>
-                        <Search />
+                    <Button type="button" variant="ghost-bare" size="icon-bare" aria-label={copy.searchLabel}>
+                        <Search data-icon="inline-start" aria-hidden="true" />
                     </Button>
-                    <Button type="button" variant="ghost" size="icon-sm" aria-label={copy.cartLabel}>
-                        <ShoppingBag />
+                    <Button type="button" variant="ghost-bare" size="icon-bare" aria-label={copy.cartLabel}>
+                        <ShoppingBag data-icon="inline-start" aria-hidden="true" />
                     </Button>
                 </div>
             </div>

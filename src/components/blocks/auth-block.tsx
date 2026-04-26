@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { motion } from "motion/react"
-import { ArrowRight, Check, EyeOff, Mail } from "lucide-react"
+import { ArrowRight, Check, Eye, EyeClosed, Mail } from "lucide-react"
 import { FcGoogle } from "react-icons/fc"
 import { SiTiktok, SiX } from "react-icons/si"
 
@@ -23,8 +23,32 @@ import {
     InputOTPSeparator,
     InputOTPSlot,
 } from "@/components/ui/input-otp"
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 export type AuthProvider = "google" | "tiktok" | "x"
+
+export interface AuthPhoneCountryOption {
+    value: string
+    label: string
+}
+
+export const defaultAuthPhoneCountryOptions: AuthPhoneCountryOption[] = [
+    { value: "86", label: "+86 (CN)" },
+    { value: "1", label: "+1 (US)" },
+    { value: "44", label: "+44 (UK)" },
+    { value: "81", label: "+81 (JP)" },
+    { value: "82", label: "+82 (KR)" },
+    { value: "49", label: "+49 (DE)" },
+    { value: "33", label: "+33 (FR)" },
+    { value: "34", label: "+34 (ES)" },
+]
 
 export interface AuthProviderAction {
     provider: AuthProvider
@@ -53,45 +77,108 @@ export interface AuthEmailButtonProps
 
 export interface AuthEmailFormProps
     extends Omit<React.ComponentProps<"form">, "children"> {
+    emailValue?: string
+    onEmailValueChange?: (value: string) => void
     emailLabel?: string
     emailPlaceholder?: string
     emailInvalid?: boolean
     emailError?: React.ReactNode
+    onEmailBlur?: React.FocusEventHandler<HTMLInputElement>
+    phoneCountryCodeValue?: string
+    onPhoneCountryCodeValueChange?: (value: string) => void
+    phoneCountryCodeLabel?: string
+    phoneCountryOptions?: AuthPhoneCountryOption[]
+    passwordValue?: string
+    onPasswordValueChange?: (value: string) => void
+    onPasswordBlur?: React.FocusEventHandler<HTMLInputElement>
     passwordLabel?: string
     passwordPlaceholder?: string
     passwordInvalid?: boolean
     passwordError?: React.ReactNode
     forgotPasswordLabel?: string
+    forgotPasswordActionProps?: React.ComponentProps<typeof Button>
     submitLabel?: string
     showPasswordField?: boolean
     showSubmitIcon?: boolean
+    showPasswordLabel?: string
+    hidePasswordLabel?: string
+    disabled?: boolean
 }
 
 export interface AuthRegisterFormProps
     extends Omit<React.ComponentProps<"form">, "children"> {
+    accountValue?: string
+    onAccountValueChange?: (value: string) => void
     accountLabel?: string
     accountPlaceholder?: string
     accountInvalid?: boolean
     accountError?: React.ReactNode
+    onAccountBlur?: React.FocusEventHandler<HTMLInputElement>
+    passwordValue?: string
+    onPasswordValueChange?: (value: string) => void
+    onPasswordBlur?: React.FocusEventHandler<HTMLInputElement>
     passwordLabel?: string
     passwordPlaceholder?: string
     passwordInvalid?: boolean
     passwordError?: React.ReactNode
+    confirmPasswordValue?: string
+    onConfirmPasswordValueChange?: (value: string) => void
+    onConfirmPasswordBlur?: React.FocusEventHandler<HTMLInputElement>
     confirmPasswordLabel?: string
     confirmPasswordPlaceholder?: string
     confirmPasswordInvalid?: boolean
     confirmPasswordError?: React.ReactNode
     submitLabel?: string
+    showPasswordLabel?: string
+    hidePasswordLabel?: string
+    disabled?: boolean
 }
 
 export interface AuthVerifyFormProps
     extends Omit<React.ComponentProps<"form">, "children"> {
     email: string
+    codeValue?: string
+    onCodeValueChange?: (value: string) => void
     codeLength?: number
+    codeInvalid?: boolean
+    codeError?: React.ReactNode
     sentToLabel?: string
     resendLabel?: string
     resendActionLabel?: string
+    resendActionProps?: React.ComponentProps<"button">
+    resendStatus?: React.ReactNode
     submitLabel?: string
+    disabled?: boolean
+}
+
+export interface AuthResetPasswordFormProps
+    extends Omit<React.ComponentProps<"form">, "children"> {
+    account: string
+    codeValue?: string
+    onCodeValueChange?: (value: string) => void
+    codeLength?: number
+    codeLabel?: string
+    codeInvalid?: boolean
+    codeError?: React.ReactNode
+    accountLabel?: string
+    newPasswordValue?: string
+    onNewPasswordValueChange?: (value: string) => void
+    onNewPasswordBlur?: React.FocusEventHandler<HTMLInputElement>
+    newPasswordLabel?: string
+    newPasswordPlaceholder?: string
+    newPasswordInvalid?: boolean
+    newPasswordError?: React.ReactNode
+    confirmPasswordValue?: string
+    onConfirmPasswordValueChange?: (value: string) => void
+    onConfirmPasswordBlur?: React.FocusEventHandler<HTMLInputElement>
+    confirmPasswordLabel?: string
+    confirmPasswordPlaceholder?: string
+    confirmPasswordInvalid?: boolean
+    confirmPasswordError?: React.ReactNode
+    submitLabel?: string
+    showPasswordLabel?: string
+    hidePasswordLabel?: string
+    disabled?: boolean
 }
 
 export interface AuthSuccessProps extends React.ComponentProps<"div"> {
@@ -237,38 +324,67 @@ export function AuthFooterLink({
 }
 
 export function AuthEmailForm({
+                                  emailValue,
+                                  onEmailValueChange,
                                   emailLabel = "Account",
                                   emailPlaceholder = "Email address or phone number",
                                   emailInvalid,
                                   emailError,
+                                  onEmailBlur,
+                                  phoneCountryCodeValue,
+                                  onPhoneCountryCodeValueChange,
+                                  phoneCountryCodeLabel = "Phone country code",
+                                  phoneCountryOptions = defaultAuthPhoneCountryOptions,
+                                  passwordValue,
+                                  onPasswordValueChange,
+                                  onPasswordBlur,
                                   passwordLabel = "Secret Key",
                                   passwordPlaceholder = "••••••••",
                                   passwordInvalid,
                                   passwordError,
                                   forgotPasswordLabel = "Forgot Password",
+                                  forgotPasswordActionProps,
                                   submitLabel = "Sign In",
                                   showPasswordField = true,
                                   showSubmitIcon = true,
+                                  showPasswordLabel,
+                                  hidePasswordLabel,
+                                  disabled,
                                   className,
                                   ...props
                               }: AuthEmailFormProps) {
     const emailId = React.useId()
     const passwordId = React.useId()
+    const [internalPhoneCountryCode, setInternalPhoneCountryCode] = React.useState(
+        phoneCountryOptions[0]?.value ?? "86"
+    )
+    const isPhoneVariant = isNumericAccountValue(emailValue)
+    const resolvedPhoneCountryCodeValue = phoneCountryCodeValue ?? internalPhoneCountryCode
+
+    function handlePhoneCountryCodeValueChange(value: string) {
+        setInternalPhoneCountryCode(value)
+        onPhoneCountryCodeValueChange?.(value)
+    }
 
     return (
-        <form className={cn("flex w-full flex-col gap-8", className)} {...props}>
+        <form noValidate className={cn("flex w-full flex-col gap-8", className)} {...props}>
             <FieldGroup className="gap-5">
-                <Field data-invalid={emailInvalid || undefined}>
-                    <FieldLabel htmlFor={emailId}>{emailLabel}</FieldLabel>
-                    <Input
-                        id={emailId}
-                        type="text"
-                        autoComplete="username"
-                        aria-invalid={emailInvalid || undefined}
-                        placeholder={emailPlaceholder}
-                    />
-                    {emailError ? <FieldError>{emailError}</FieldError> : null}
-                </Field>
+                <AuthAccountField
+                    id={emailId}
+                    label={emailLabel}
+                    placeholder={emailPlaceholder}
+                    value={emailValue}
+                    onValueChange={onEmailValueChange}
+                    onBlur={onEmailBlur}
+                    invalid={emailInvalid}
+                    error={emailError}
+                    disabled={disabled}
+                    phoneCountryCodeValue={resolvedPhoneCountryCodeValue}
+                    onPhoneCountryCodeValueChange={handlePhoneCountryCodeValueChange}
+                    phoneCountryCodeLabel={phoneCountryCodeLabel}
+                    phoneCountryOptions={phoneCountryOptions}
+                    phoneVariant={isPhoneVariant}
+                />
 
                 {showPasswordField ? (
                     <AuthPasswordField
@@ -278,11 +394,18 @@ export function AuthEmailForm({
                         invalid={passwordInvalid}
                         error={passwordError}
                         action={forgotPasswordLabel}
+                        actionProps={forgotPasswordActionProps}
+                        value={passwordValue}
+                        onValueChange={onPasswordValueChange}
+                        onBlur={onPasswordBlur}
+                        showPasswordLabel={showPasswordLabel}
+                        hidePasswordLabel={hidePasswordLabel}
+                        disabled={disabled}
                     />
                 ) : null}
             </FieldGroup>
 
-            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]">
+            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]" disabled={disabled}>
                 {submitLabel}
                 {showSubmitIcon ? <ArrowRight data-icon="inline-end" /> : null}
             </Button>
@@ -290,20 +413,153 @@ export function AuthEmailForm({
     )
 }
 
+function AuthAccountField({
+                              id,
+                              label,
+                              placeholder,
+                              value,
+                              onValueChange,
+                              onBlur,
+                              invalid,
+                              error,
+                              disabled,
+                              phoneCountryCodeValue,
+                              onPhoneCountryCodeValueChange,
+                              phoneCountryCodeLabel,
+                              phoneCountryOptions,
+                              phoneVariant,
+                          }: {
+    id: string
+    label: string
+    placeholder: string
+    value?: string
+    onValueChange?: (value: string) => void
+    onBlur?: React.FocusEventHandler<HTMLInputElement>
+    invalid?: boolean
+    error?: React.ReactNode
+    disabled?: boolean
+    phoneCountryCodeValue: string
+    onPhoneCountryCodeValueChange?: (value: string) => void
+    phoneCountryCodeLabel: string
+    phoneCountryOptions: AuthPhoneCountryOption[]
+    phoneVariant: boolean
+}) {
+    return (
+        <Field
+            data-invalid={invalid || undefined}
+            data-disabled={disabled || undefined}
+            data-account-variant={phoneVariant ? "phone" : "email"}
+        >
+            <FieldLabel htmlFor={id}>{label}</FieldLabel>
+            <div
+                className={cn(
+                    "flex w-full items-center justify-center overflow-hidden border-b border-auth-input-border pt-3.25 pb-3.5 transition-colors focus-within:border-auth-ink",
+                    invalid && "border-status-danger/30 focus-within:border-status-danger",
+                    phoneVariant && "gap-3"
+                )}
+            >
+                {phoneVariant ? (
+                    <>
+                        <AuthPhoneCountrySelect
+                            value={phoneCountryCodeValue}
+                            onValueChange={onPhoneCountryCodeValueChange}
+                            label={phoneCountryCodeLabel}
+                            options={phoneCountryOptions}
+                            disabled={disabled}
+                        />
+                        <div className="w-px self-stretch bg-auth-muted/10" aria-hidden="true" />
+                    </>
+                ) : null}
+                <Input
+                    id={id}
+                    type="text"
+                    autoComplete="username"
+                    inputMode={phoneVariant ? "numeric" : "email"}
+                    value={value}
+                    onChange={(event) => onValueChange?.(event.target.value)}
+                    onBlur={onBlur}
+                    aria-invalid={invalid || undefined}
+                    placeholder={placeholder}
+                    disabled={disabled}
+                    className="h-6 border-b-0 px-0 pt-0 pb-0 leading-6 focus-visible:border-transparent"
+                />
+            </div>
+            {error ? <FieldError>{error}</FieldError> : null}
+        </Field>
+    )
+}
+
+function AuthPhoneCountrySelect({
+                                    value,
+                                    onValueChange,
+                                    label,
+                                    options,
+                                    disabled,
+                                }: {
+    value: string
+    onValueChange?: (value: string) => void
+    label: string
+    options: AuthPhoneCountryOption[]
+    disabled?: boolean
+}) {
+    const selectedOption = options.find((option) => option.value === value)
+
+    return (
+        <Select
+            value={value}
+            onValueChange={onValueChange}
+            disabled={disabled}
+        >
+            <SelectTrigger
+                size="sm"
+                aria-label={label}
+                className="h-6 w-fit gap-2 rounded-none border-0 bg-transparent px-0 py-0 text-base leading-6 font-normal text-auth-placeholder shadow-none hover:cursor-pointer focus-visible:border-transparent focus-visible:ring-0 data-[size=sm]:h-6 disabled:cursor-not-allowed [&_svg]:text-auth-placeholder"
+            >
+                <SelectValue placeholder={selectedOption?.label} />
+            </SelectTrigger>
+            <SelectContent align="start" className="min-w-36">
+                <SelectGroup>
+                    {options.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </SelectContent>
+        </Select>
+    )
+}
+
+function isNumericAccountValue(value: string | undefined) {
+    return /^\d+$/.test(value ?? "")
+}
+
 export function AuthRegisterForm({
+                                     accountValue,
+                                     onAccountValueChange,
                                      accountLabel = "Account",
                                      accountPlaceholder = "Email address or phone number",
                                      accountInvalid,
                                      accountError,
+                                     onAccountBlur,
+                                     passwordValue,
+                                     onPasswordValueChange,
+                                     onPasswordBlur,
                                      passwordLabel = "Secret Key",
                                      passwordPlaceholder = "••••••••",
                                      passwordInvalid,
                                      passwordError,
+                                     confirmPasswordValue,
+                                     onConfirmPasswordValueChange,
+                                     onConfirmPasswordBlur,
                                      confirmPasswordLabel = "Confirm Secret Key",
                                      confirmPasswordPlaceholder = "••••••••",
                                      confirmPasswordInvalid,
                                      confirmPasswordError,
                                      submitLabel = "Sign Up",
+                                     showPasswordLabel,
+                                     hidePasswordLabel,
+                                     disabled,
                                      className,
                                      ...props
                                  }: AuthRegisterFormProps) {
@@ -312,16 +568,20 @@ export function AuthRegisterForm({
     const confirmPasswordId = React.useId()
 
     return (
-        <form className={cn("flex w-full flex-col gap-8", className)} {...props}>
+        <form noValidate className={cn("flex w-full flex-col gap-8", className)} {...props}>
             <FieldGroup className="gap-2.5">
                 <Field data-invalid={accountInvalid || undefined}>
                     <FieldLabel htmlFor={accountId}>{accountLabel}</FieldLabel>
                     <Input
                         id={accountId}
-                        type="text"
-                        autoComplete="username"
+                        type="email"
+                        autoComplete="email"
+                        value={accountValue}
+                        onChange={(event) => onAccountValueChange?.(event.target.value)}
+                        onBlur={onAccountBlur}
                         aria-invalid={accountInvalid || undefined}
                         placeholder={accountPlaceholder}
+                        disabled={disabled}
                     />
                     {accountError ? <FieldError>{accountError}</FieldError> : null}
                 </Field>
@@ -333,7 +593,13 @@ export function AuthRegisterForm({
                     invalid={passwordInvalid}
                     error={passwordError}
                     action={null}
+                    value={passwordValue}
+                    onValueChange={onPasswordValueChange}
+                    onBlur={onPasswordBlur}
                     autoComplete="new-password"
+                    showPasswordLabel={showPasswordLabel}
+                    hidePasswordLabel={hidePasswordLabel}
+                    disabled={disabled}
                 />
 
                 <AuthPasswordField
@@ -343,11 +609,17 @@ export function AuthRegisterForm({
                     invalid={confirmPasswordInvalid}
                     error={confirmPasswordError}
                     action={null}
+                    value={confirmPasswordValue}
+                    onValueChange={onConfirmPasswordValueChange}
+                    onBlur={onConfirmPasswordBlur}
                     autoComplete="new-password"
+                    showPasswordLabel={showPasswordLabel}
+                    hidePasswordLabel={hidePasswordLabel}
+                    disabled={disabled}
                 />
             </FieldGroup>
 
-            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]">
+            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]" disabled={disabled}>
                 {submitLabel}
                 <ArrowRight data-icon="inline-end" />
             </Button>
@@ -362,7 +634,14 @@ export function AuthPasswordField({
                                       invalid,
                                       error,
                                       action = "Forgot Password",
+                                      actionProps,
+                                      value,
+                                      onValueChange,
+                                      onBlur,
                                       autoComplete = "current-password",
+                                      showPasswordLabel = "Show password",
+                                      hidePasswordLabel = "Hide password",
+                                      disabled,
                                   }: {
     id?: string
     label?: string
@@ -370,40 +649,73 @@ export function AuthPasswordField({
     invalid?: boolean
     error?: React.ReactNode
     action?: React.ReactNode
+    actionProps?: React.ComponentProps<typeof Button>
+    value?: string
+    onValueChange?: (value: string) => void
+    onBlur?: React.FocusEventHandler<HTMLInputElement>
     autoComplete?: React.ComponentProps<"input">["autoComplete"]
+    showPasswordLabel?: string
+    hidePasswordLabel?: string
+    disabled?: boolean
 }) {
     const fallbackId = React.useId()
     const passwordId = id ?? fallbackId
+    const [isVisible, setIsVisible] = React.useState(false)
+    const {
+        className: actionClassName,
+        disabled: actionDisabled,
+        ...resolvedActionProps
+    } = actionProps ?? {}
+    const toggleLabel = isVisible ? hidePasswordLabel : showPasswordLabel
 
     return (
-        <Field data-invalid={invalid || undefined}>
+        <Field data-invalid={invalid || undefined} data-disabled={disabled || undefined}>
             <div className="flex items-center justify-between gap-3">
                 <FieldLabel htmlFor={passwordId}>{label}</FieldLabel>
                 {action ? (
-                    <button
+                    <Button
                         type="button"
-                        className="text-[10px] leading-3.75 font-semibold tracking-[0.5px] text-auth-muted uppercase transition-colors hover:text-auth-ink"
+                        variant="ghost-bare"
+                        size="bare"
+                        className={cn(
+                            "text-[10px] leading-3.75 font-semibold tracking-[0.5px] uppercase",
+                            actionClassName
+                        )}
+                        disabled={disabled || actionDisabled}
+                        {...resolvedActionProps}
                     >
                         {action}
-                    </button>
+                    </Button>
                 ) : null}
             </div>
             <div className="relative">
                 <Input
                     id={passwordId}
-                    type="password"
+                    type={isVisible ? "text" : "password"}
                     autoComplete={autoComplete}
+                    value={value}
+                    onChange={(event) => onValueChange?.(event.target.value)}
+                    onBlur={onBlur}
                     aria-invalid={invalid || undefined}
                     placeholder={placeholder}
                     className="pr-8"
+                    disabled={disabled}
                 />
-                <button
+                <Button
                     type="button"
-                    aria-label="Show password"
-                    className="absolute top-1/2 right-0 flex size-6 -translate-y-1/2 items-center justify-center text-auth-muted transition-colors hover:text-auth-ink"
+                    variant="ghost-bare"
+                    size="icon-bare-sm"
+                    aria-label={toggleLabel}
+                    className="absolute top-1/2 right-0 -translate-y-1/2"
+                    onClick={() => setIsVisible((current) => !current)}
+                    disabled={disabled}
                 >
-                    <EyeOff className="size-4" />
-                </button>
+                    {isVisible ? (
+                        <Eye data-icon="inline-start" aria-hidden="true" />
+                    ) : (
+                        <EyeClosed data-icon="inline-start" aria-hidden="true" />
+                    )}
+                </Button>
             </div>
             {error ? <FieldError>{error}</FieldError> : null}
         </Field>
@@ -412,19 +724,23 @@ export function AuthPasswordField({
 
 export function AuthVerifyForm({
                                    email,
+                                   codeValue,
+                                   onCodeValueChange,
                                    codeLength = 6,
+                                   codeInvalid,
+                                   codeError,
                                    sentToLabel = "Verification code sent to",
                                    resendLabel = "Didn't receive the code?",
                                    resendActionLabel = "Resend",
+                                   resendActionProps,
+                                   resendStatus,
                                    submitLabel = "Verify",
+                                   disabled,
                                    className,
                                    ...props
                                }: AuthVerifyFormProps) {
-    const midpoint = Math.ceil(codeLength / 2)
-    const slots = Array.from({ length: codeLength }, (_, index) => index)
-
     return (
-        <form className={cn("flex w-full flex-col gap-8", className)} {...props}>
+        <form noValidate className={cn("flex w-full flex-col gap-8", className)} {...props}>
             <div className="flex w-full flex-col items-center justify-center gap-2 overflow-hidden text-center">
                 <FieldDescription className="text-center capitalize">
                     {sentToLabel}
@@ -434,36 +750,180 @@ export function AuthVerifyForm({
                 </p>
             </div>
 
-            <InputOTP maxLength={codeLength} aria-label={`Verification code for ${email}`}>
+            <AuthCodeField
+                value={codeValue}
+                onValueChange={onCodeValueChange}
+                codeLength={codeLength}
+                ariaLabel={`Verification code for ${email}`}
+                invalid={codeInvalid}
+                error={codeError}
+                disabled={disabled}
+            />
+
+            <p className="text-center text-sm leading-5 font-medium tracking-[0.7px] text-auth-muted">
+                {resendLabel}{" "}
+                <button
+                    type="button"
+                    className="border-b border-dashed border-auth-ink px-0.5 pb-px text-auth-ink disabled:pointer-events-none disabled:opacity-50"
+                    disabled={disabled}
+                    {...resendActionProps}
+                >
+                    {resendActionLabel}
+                </button>
+            </p>
+
+            {resendStatus ? (
+                <FieldDescription className="text-center text-xs leading-4">
+                    {resendStatus}
+                </FieldDescription>
+            ) : null}
+
+            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]" disabled={disabled}>
+                {submitLabel}
+            </Button>
+        </form>
+    )
+}
+
+export function AuthResetPasswordForm({
+                                          account,
+                                          codeValue,
+                                          onCodeValueChange,
+                                          codeLength = 6,
+                                          codeLabel = "Verification code",
+                                          codeInvalid,
+                                          codeError,
+                                          accountLabel = "Account in recovery",
+                                          newPasswordValue,
+                                          onNewPasswordValueChange,
+                                          onNewPasswordBlur,
+                                          newPasswordLabel = "New Password",
+                                          newPasswordPlaceholder = "••••••••",
+                                          newPasswordInvalid,
+                                          newPasswordError,
+                                          confirmPasswordValue,
+                                          onConfirmPasswordValueChange,
+                                          onConfirmPasswordBlur,
+                                          confirmPasswordLabel = "Confirm Secret Key",
+                                          confirmPasswordPlaceholder = "••••••••",
+                                          confirmPasswordInvalid,
+                                          confirmPasswordError,
+                                          submitLabel = "Reset Password",
+                                          showPasswordLabel,
+                                          hidePasswordLabel,
+                                          disabled,
+                                          className,
+                                          ...props
+                                      }: AuthResetPasswordFormProps) {
+    return (
+        <form noValidate className={cn("flex w-full flex-col gap-8", className)} {...props}>
+            <div className="flex w-full flex-col items-center justify-center gap-2 overflow-hidden text-center">
+                <FieldDescription className="text-center capitalize">
+                    {accountLabel}
+                </FieldDescription>
+                <p className="text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink">
+                    {account}
+                </p>
+            </div>
+
+            <FieldGroup className="gap-5">
+                <AuthCodeField
+                    label={codeLabel}
+                    value={codeValue}
+                    onValueChange={onCodeValueChange}
+                    codeLength={codeLength}
+                    ariaLabel={codeLabel}
+                    invalid={codeInvalid}
+                    error={codeError}
+                    disabled={disabled}
+                />
+
+                <AuthPasswordField
+                    label={newPasswordLabel}
+                    placeholder={newPasswordPlaceholder}
+                    invalid={newPasswordInvalid}
+                    error={newPasswordError}
+                    action={null}
+                    value={newPasswordValue}
+                    onValueChange={onNewPasswordValueChange}
+                    onBlur={onNewPasswordBlur}
+                    autoComplete="new-password"
+                    showPasswordLabel={showPasswordLabel}
+                    hidePasswordLabel={hidePasswordLabel}
+                    disabled={disabled}
+                />
+
+                <AuthPasswordField
+                    label={confirmPasswordLabel}
+                    placeholder={confirmPasswordPlaceholder}
+                    invalid={confirmPasswordInvalid}
+                    error={confirmPasswordError}
+                    action={null}
+                    value={confirmPasswordValue}
+                    onValueChange={onConfirmPasswordValueChange}
+                    onBlur={onConfirmPasswordBlur}
+                    autoComplete="new-password"
+                    showPasswordLabel={showPasswordLabel}
+                    hidePasswordLabel={hidePasswordLabel}
+                    disabled={disabled}
+                />
+            </FieldGroup>
+
+            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]" disabled={disabled}>
+                {submitLabel}
+            </Button>
+        </form>
+    )
+}
+
+function AuthCodeField({
+                           label,
+                           value,
+                           onValueChange,
+                           codeLength,
+                           ariaLabel,
+                           invalid,
+                           error,
+                           disabled,
+                       }: {
+    label?: React.ReactNode
+    value?: string
+    onValueChange?: (value: string) => void
+    codeLength: number
+    ariaLabel: string
+    invalid?: boolean
+    error?: React.ReactNode
+    disabled?: boolean
+}) {
+    const midpoint = Math.ceil(codeLength / 2)
+    const slots = Array.from({ length: codeLength }, (_, index) => index)
+
+    return (
+        <Field data-invalid={invalid || undefined} data-disabled={disabled || undefined}>
+            {label ? <FieldLabel>{label}</FieldLabel> : null}
+            <InputOTP
+                maxLength={codeLength}
+                aria-label={ariaLabel}
+                value={value}
+                onChange={onValueChange}
+                disabled={disabled}
+            >
                 <div className="flex w-full items-center justify-center gap-3">
-                    <InputOTPGroup>
+                    <InputOTPGroup aria-invalid={invalid || undefined}>
                         {slots.slice(0, midpoint).map((slot) => (
                             <InputOTPSlot key={slot} index={slot} />
                         ))}
                     </InputOTPGroup>
                     <InputOTPSeparator />
-                    <InputOTPGroup>
+                    <InputOTPGroup aria-invalid={invalid || undefined}>
                         {slots.slice(midpoint).map((slot) => (
                             <InputOTPSlot key={slot} index={slot} />
                         ))}
                     </InputOTPGroup>
                 </div>
             </InputOTP>
-
-            <p className="text-center text-sm leading-5 font-medium tracking-[0.7px] text-auth-muted">
-                {resendLabel}{" "}
-                <button
-                    type="button"
-                    className="border-b border-dashed border-auth-ink px-0.5 pb-px text-auth-ink"
-                >
-                    {resendActionLabel}
-                </button>
-            </p>
-
-            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]">
-                {submitLabel}
-            </Button>
-        </form>
+            {error ? <FieldError>{error}</FieldError> : null}
+        </Field>
     )
 }
 
