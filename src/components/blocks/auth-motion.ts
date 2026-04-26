@@ -1,22 +1,14 @@
 import type { Variants } from "motion/react"
 
-const authEaseEmphasized = [0.16, 1, 0.3, 1] as const
-const authEaseStandard = [0.2, 0.8, 0.2, 1] as const
-
 const authStaggerContainerVariants: Variants = {
     hidden: {},
     visible: {
         transition: {
-            delayChildren: 0.06,
-            staggerChildren: 0.065,
+            delayChildren: 0,
+            staggerChildren: 0.12,
         },
     },
-    exit: {
-        transition: {
-            staggerChildren: 0.035,
-            staggerDirection: -1,
-        },
-    },
+    exit: {},
 }
 
 const authReducedStaggerContainerVariants: Variants = {
@@ -33,24 +25,17 @@ const authReducedStaggerContainerVariants: Variants = {
 const authFadeUpItemVariants: Variants = {
     hidden: {
         opacity: 0,
-        y: 16,
+        y: 20,
     },
     visible: {
         opacity: 1,
         y: 0,
         transition: {
             duration: 0.5,
-            ease: authEaseEmphasized,
+            ease: "easeOut",
         },
     },
-    exit: {
-        opacity: 0,
-        y: -8,
-        transition: {
-            duration: 0.24,
-            ease: authEaseStandard,
-        },
-    },
+    exit: {},
 }
 
 const authReducedFadeItemVariants: Variants = {
@@ -61,14 +46,14 @@ const authReducedFadeItemVariants: Variants = {
         opacity: 1,
         transition: {
             duration: 0.16,
-            ease: authEaseStandard,
+            ease: "easeOut",
         },
     },
     exit: {
         opacity: 0,
         transition: {
             duration: 0.12,
-            ease: authEaseStandard,
+            ease: "easeOut",
         },
     },
 }
@@ -84,8 +69,6 @@ function getAuthFadeItemVariants(reducedMotion: boolean) {
 }
 
 export {
-    authEaseEmphasized,
-    authEaseStandard,
     getAuthFadeItemVariants,
     getAuthStaggerContainerVariants,
 }
