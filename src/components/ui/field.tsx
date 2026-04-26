@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
@@ -178,9 +179,10 @@ function FieldError({
                         children,
                         errors,
                         ...props
-                    }: React.ComponentProps<"div"> & {
+                    }: React.ComponentProps<typeof motion.div> & {
     errors?: Array<{ message?: string } | undefined>
 }) {
+    const shouldReduceMotion = useReducedMotion()
     const content = useMemo(() => {
         if (children) {
             return children
@@ -208,19 +210,42 @@ function FieldError({
         )
     }, [children, errors])
 
-    if (!content) {
-        return null
-    }
-
     return (
-        <div
-            role="alert"
-            data-slot="field-error"
-            className={cn("text-xs leading-[normal] font-normal text-status-danger", className)}
-            {...props}
-        >
-            {content}
-        </div>
+        <AnimatePresence initial={false}>
+            {content ? (
+                <motion.div
+                    key="field-error"
+                    role="alert"
+                    data-slot="field-error"
+                    className={cn(
+                        "overflow-hidden text-xs leading-[normal] font-normal text-status-danger",
+                        className
+                    )}
+                    initial={
+                        shouldReduceMotion
+                            ? { opacity: 0 }
+                            : { opacity: 0, height: 0, y: -4 }
+                    }
+                    animate={
+                        shouldReduceMotion
+                            ? { opacity: 1 }
+                            : { opacity: 1, height: "auto", y: 0 }
+                    }
+                    exit={
+                        shouldReduceMotion
+                            ? { opacity: 0 }
+                            : { opacity: 0, height: 0, y: -4 }
+                    }
+                    transition={{
+                        duration: shouldReduceMotion ? 0.1 : 0.2,
+                        ease: [0.2, 0.8, 0.2, 1],
+                    }}
+                    {...props}
+                >
+                    {content}
+                </motion.div>
+            ) : null}
+        </AnimatePresence>
     )
 }
 

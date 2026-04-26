@@ -1,6 +1,13 @@
+"use client"
+
 import type * as React from "react"
+import { motion, useReducedMotion } from "motion/react"
 
 import { AuthNavbar, type AuthNavbarCopy } from "@/components/blocks/auth-navbar"
+import {
+    getAuthFadeItemVariants,
+    getAuthStaggerContainerVariants,
+} from "@/components/blocks/auth-motion"
 import { cn } from "@/lib/utils"
 
 export interface AuthShellCopy extends AuthNavbarCopy {
@@ -12,7 +19,7 @@ export interface AuthPageShellProps extends React.ComponentProps<"main"> {
     copy: AuthShellCopy
 }
 
-export interface AuthHeroTextProps extends Omit<React.ComponentProps<"div">, "title"> {
+export interface AuthHeroTextProps extends Omit<React.ComponentProps<typeof motion.div>, "title"> {
     title: React.ReactNode
     subtitle: React.ReactNode
 }
@@ -23,6 +30,8 @@ export function AuthPageShell({
                                   className,
                                   ...props
                               }: AuthPageShellProps) {
+    const shouldReduceMotion = useReducedMotion()
+
     return (
         <main
             className={cn(
@@ -38,9 +47,14 @@ export function AuthPageShell({
                 <AuthNavbar copy={copy} />
                 <div className="flex flex-1 items-stretch justify-center overflow-hidden">
                     <section className="flex min-h-[calc(100dvh-60px)] w-full justify-center px-8 py-12 xl:min-h-[calc(100dvh-76px)] xl:min-w-154 xl:basis-2/5 xl:shrink xl:px-16 xl:py-16">
-                        <div className="flex w-full max-w-122 flex-col items-center justify-center gap-12">
+                        <motion.div
+                            className="flex w-full max-w-122 flex-col items-center justify-center gap-12"
+                            initial={shouldReduceMotion ? false : "hidden"}
+                            animate="visible"
+                            variants={getAuthStaggerContainerVariants(!!shouldReduceMotion)}
+                        >
                             {children}
-                        </div>
+                        </motion.div>
                     </section>
                     <AuthPicturePanel copy={copy} className="hidden xl:flex xl:min-w-0 xl:basis-3/5 xl:grow" />
                 </div>
@@ -55,15 +69,21 @@ export function AuthHeroText({
                                  className,
                                  ...props
                              }: AuthHeroTextProps) {
+    const shouldReduceMotion = useReducedMotion()
+
     return (
-        <div className={cn("flex w-full flex-col items-center gap-3 text-center", className)} {...props}>
+        <motion.div
+            className={cn("flex w-full flex-col items-center gap-3 text-center", className)}
+            variants={getAuthFadeItemVariants(!!shouldReduceMotion)}
+            {...props}
+        >
             <h1 className="font-serif text-[48px] leading-12 font-normal tracking-normal text-auth-ink italic">
                 {title}
             </h1>
             <p className="text-[15px] leading-6 font-normal tracking-[0.4px] text-auth-muted">
                 {subtitle}
             </p>
-        </div>
+        </motion.div>
     )
 }
 
@@ -74,21 +94,30 @@ function AuthPicturePanel({
     copy: AuthShellCopy
     className?: string
 }) {
+    const shouldReduceMotion = useReducedMotion()
+    const itemVariants = getAuthFadeItemVariants(!!shouldReduceMotion)
+
     return (
-        <aside
+        <motion.aside
             className={cn(
                 "auth-picture-checkerboard relative flex-1 flex-col items-center justify-end overflow-hidden px-16 py-12",
                 className
             )}
+            initial={shouldReduceMotion ? false : "hidden"}
+            animate="visible"
+            variants={getAuthStaggerContainerVariants(!!shouldReduceMotion)}
         >
-            <div className="flex w-full flex-col items-end justify-center rounded-2xl bg-auth-ink/20 px-9 py-6 text-white backdrop-blur-sm">
+            <motion.div
+                className="flex w-full flex-col items-end justify-center rounded-2xl bg-auth-ink/20 px-9 py-6 text-white backdrop-blur-sm"
+                variants={itemVariants}
+            >
                 <blockquote className="min-w-full font-serif text-2xl leading-9 font-medium tracking-[1px] italic">
                     {copy.quote}
                 </blockquote>
                 <p className="text-base leading-9 font-medium tracking-[1px] text-[#9c9c9c]">
                     {copy.quoteAuthor}
                 </p>
-            </div>
-        </aside>
+            </motion.div>
+        </motion.aside>
     )
 }

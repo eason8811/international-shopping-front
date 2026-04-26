@@ -1,11 +1,16 @@
-import {fireEvent, render, screen, within} from "@testing-library/react";
-import {describe, expect, it, vi} from "vitest";
+import {cleanup, fireEvent, render, screen, within} from "@testing-library/react";
+import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {AuthBlock, AuthEmailButton, AuthEmailForm, AuthFooterLink, AuthResetPasswordForm, AuthVerifyForm} from "./auth-block";
 import {FinancialSummary} from "./financial-summary";
 import {StatusBadge} from "./status-badge";
+import {Button} from "@/components/ui/button";
 
 describe("design system blocks", () => {
+    afterEach(() => {
+        cleanup();
+    });
+
     it("renders a status badge from the shared status map", () => {
         render(<StatusBadge domain="order" status="PAID" />);
 
@@ -53,6 +58,23 @@ describe("design system blocks", () => {
         expect(screen.getByRole("button", {name: "Request Access"})).toBeInTheDocument();
         expect(screen.getByText("member@example.com")).toBeInTheDocument();
         expect(screen.getByText("Verify")).toBeInTheDocument();
+    });
+
+    it("renders button loading and success states", () => {
+        const {container, rerender} = render(
+            <Button status="loading">Submit</Button>
+        );
+
+        expect(screen.getByRole("button")).toHaveAttribute("aria-busy", "true");
+        expect(screen.getByRole("status", {name: "Loading"})).toBeInTheDocument();
+        expect(screen.queryByText("Loading")).not.toBeInTheDocument();
+
+        rerender(<Button status="success">Submit</Button>);
+
+        expect(screen.getByRole("button")).toHaveAttribute("data-status", "success");
+        expect(screen.getByRole("status", {name: "Done"})).toBeInTheDocument();
+        expect(screen.queryByText("Done")).not.toBeInTheDocument();
+        expect(container.querySelector(".lucide-check")).toBeInTheDocument();
     });
 
     it("renders auth input invalid states", () => {

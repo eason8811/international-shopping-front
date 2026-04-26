@@ -1,13 +1,17 @@
 "use client"
 
 import * as React from "react"
-import { motion } from "motion/react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { ArrowRight, Check, Eye, EyeClosed, Mail } from "lucide-react"
 import { FcGoogle } from "react-icons/fc"
 import { SiTiktok, SiX } from "react-icons/si"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import {
+    getAuthFadeItemVariants,
+    getAuthStaggerContainerVariants,
+} from "@/components/blocks/auth-motion"
+import { Button, type ButtonStatus } from "@/components/ui/button"
 import {
     Field,
     FieldDescription,
@@ -55,6 +59,7 @@ export interface AuthProviderAction {
     label?: string
     disabled?: boolean
     onClick?: React.MouseEventHandler<HTMLButtonElement>
+    status?: ButtonStatus
 }
 
 export const defaultAuthProviders: AuthProviderAction[] = [
@@ -63,7 +68,7 @@ export const defaultAuthProviders: AuthProviderAction[] = [
     { provider: "x", label: "Continue with X" },
 ]
 
-export interface AuthBlockProps extends React.ComponentProps<"section"> {
+export interface AuthBlockProps extends React.ComponentProps<typeof motion.section> {
     providers?: AuthProviderAction[]
     separatorLabel?: string
     footer?: React.ReactNode
@@ -76,7 +81,8 @@ export interface AuthEmailButtonProps
 }
 
 export interface AuthEmailFormProps
-    extends Omit<React.ComponentProps<"form">, "children"> {
+    extends Omit<React.ComponentProps<typeof motion.form>, "children"> {
+    accountValueLayoutId?: string
     emailValue?: string
     onEmailValueChange?: (value: string) => void
     emailLabel?: string
@@ -98,6 +104,7 @@ export interface AuthEmailFormProps
     forgotPasswordLabel?: string
     forgotPasswordActionProps?: React.ComponentProps<typeof Button>
     submitLabel?: string
+    submitButtonStatus?: ButtonStatus
     showPasswordField?: boolean
     showSubmitIcon?: boolean
     showPasswordLabel?: string
@@ -106,7 +113,7 @@ export interface AuthEmailFormProps
 }
 
 export interface AuthRegisterFormProps
-    extends Omit<React.ComponentProps<"form">, "children"> {
+    extends Omit<React.ComponentProps<typeof motion.form>, "children"> {
     accountValue?: string
     onAccountValueChange?: (value: string) => void
     accountLabel?: string
@@ -129,13 +136,14 @@ export interface AuthRegisterFormProps
     confirmPasswordInvalid?: boolean
     confirmPasswordError?: React.ReactNode
     submitLabel?: string
+    submitButtonStatus?: ButtonStatus
     showPasswordLabel?: string
     hidePasswordLabel?: string
     disabled?: boolean
 }
 
 export interface AuthVerifyFormProps
-    extends Omit<React.ComponentProps<"form">, "children"> {
+    extends Omit<React.ComponentProps<typeof motion.form>, "children"> {
     email: string
     codeValue?: string
     onCodeValueChange?: (value: string) => void
@@ -145,15 +153,18 @@ export interface AuthVerifyFormProps
     sentToLabel?: string
     resendLabel?: string
     resendActionLabel?: string
-    resendActionProps?: React.ComponentProps<"button">
+    resendActionProps?: React.ComponentProps<typeof Button>
+    resendButtonStatus?: ButtonStatus
     resendStatus?: React.ReactNode
     submitLabel?: string
+    submitButtonStatus?: ButtonStatus
     disabled?: boolean
 }
 
 export interface AuthResetPasswordFormProps
-    extends Omit<React.ComponentProps<"form">, "children"> {
+    extends Omit<React.ComponentProps<typeof motion.form>, "children"> {
     account: string
+    accountLayoutId?: string
     codeValue?: string
     onCodeValueChange?: (value: string) => void
     codeLength?: number
@@ -176,6 +187,7 @@ export interface AuthResetPasswordFormProps
     confirmPasswordInvalid?: boolean
     confirmPasswordError?: React.ReactNode
     submitLabel?: string
+    submitButtonStatus?: ButtonStatus
     showPasswordLabel?: string
     hidePasswordLabel?: string
     disabled?: boolean
@@ -261,49 +273,66 @@ export function AuthBlock({
                               ...props
                           }: AuthBlockProps) {
     const hasProviders = providers.length > 0
+    const shouldReduceMotion = useReducedMotion()
+    const itemVariants = getAuthFadeItemVariants(!!shouldReduceMotion)
+    const containerVariants = getAuthStaggerContainerVariants(!!shouldReduceMotion)
 
     return (
-        <section
+        <motion.section
             data-slot="auth-block"
             className={cn("flex w-full flex-col gap-4", className)}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={itemVariants}
             {...props}
         >
             {hasProviders ? (
-                <>
+                <motion.div className="flex w-full flex-col gap-4" variants={containerVariants}>
                     <FieldGroup className="gap-3">
                         {providers.map((provider) => (
-                            <AuthProviderButton key={provider.provider} {...provider} />
+                            <motion.div key={provider.provider} variants={itemVariants}>
+                                <AuthProviderButton {...provider} />
+                            </motion.div>
                         ))}
                     </FieldGroup>
-                    <AuthSeparator>{separatorLabel}</AuthSeparator>
-                </>
+                    <motion.div variants={itemVariants}>
+                        <AuthSeparator>{separatorLabel}</AuthSeparator>
+                    </motion.div>
+                </motion.div>
             ) : null}
             {children}
-            {footer ? <div className="pt-1">{footer}</div> : null}
-        </section>
+            {footer ? (
+                <motion.div className="pt-1" variants={itemVariants}>
+                    {footer}
+                </motion.div>
+            ) : null}
+        </motion.section>
     )
 }
 
 export function AuthFooterLink({
                                    label,
                                    action,
-                                   actionProps,
-                                   className,
-                                   ...props
-                               }: React.ComponentProps<"p"> & {
+                               actionProps,
+                               className,
+                               ...props
+                           }: React.ComponentProps<typeof motion.p> & {
     label: string
     action: React.ReactNode
     actionProps?: React.ComponentProps<typeof Button>
 }) {
     const { className: actionClassName, ...buttonProps } = actionProps ?? {}
+    const shouldReduceMotion = useReducedMotion()
 
     return (
-        <p
+        <motion.p
             className={cn(
                 "text-center text-xs leading-4 font-medium tracking-[0.6px] text-auth-muted",
                 "font-normal tracking-[0.3px]",
                 className
             )}
+            variants={getAuthFadeItemVariants(!!shouldReduceMotion)}
             {...props}
         >
             {label}{" "}
@@ -319,11 +348,12 @@ export function AuthFooterLink({
             >
                 {action}
             </Button>
-        </p>
+        </motion.p>
     )
 }
 
 export function AuthEmailForm({
+                                  accountValueLayoutId,
                                   emailValue,
                                   onEmailValueChange,
                                   emailLabel = "Account",
@@ -345,6 +375,7 @@ export function AuthEmailForm({
                                   forgotPasswordLabel = "Forgot Password",
                                   forgotPasswordActionProps,
                                   submitLabel = "Sign In",
+                                  submitButtonStatus = "idle",
                                   showPasswordField = true,
                                   showSubmitIcon = true,
                                   showPasswordLabel,
@@ -358,6 +389,9 @@ export function AuthEmailForm({
     const [internalPhoneCountryCode, setInternalPhoneCountryCode] = React.useState(
         phoneCountryOptions[0]?.value ?? "86"
     )
+    const shouldReduceMotion = useReducedMotion()
+    const itemVariants = getAuthFadeItemVariants(!!shouldReduceMotion)
+    const containerVariants = getAuthStaggerContainerVariants(!!shouldReduceMotion)
     const isPhoneVariant = isNumericAccountValue(emailValue)
     const resolvedPhoneCountryCodeValue = phoneCountryCodeValue ?? internalPhoneCountryCode
 
@@ -367,49 +401,67 @@ export function AuthEmailForm({
     }
 
     return (
-        <form noValidate className={cn("flex w-full flex-col gap-8", className)} {...props}>
+        <motion.form
+            noValidate
+            className={cn("flex w-full flex-col gap-8", className)}
+            variants={containerVariants}
+            {...props}
+        >
             <FieldGroup className="gap-5">
-                <AuthAccountField
-                    id={emailId}
-                    label={emailLabel}
-                    placeholder={emailPlaceholder}
-                    value={emailValue}
-                    onValueChange={onEmailValueChange}
-                    onBlur={onEmailBlur}
-                    invalid={emailInvalid}
-                    error={emailError}
-                    disabled={disabled}
-                    phoneCountryCodeValue={resolvedPhoneCountryCodeValue}
-                    onPhoneCountryCodeValueChange={handlePhoneCountryCodeValueChange}
-                    phoneCountryCodeLabel={phoneCountryCodeLabel}
-                    phoneCountryOptions={phoneCountryOptions}
-                    phoneVariant={isPhoneVariant}
-                />
+                <motion.div className="w-full" variants={itemVariants}>
+                    <AuthAccountField
+                        id={emailId}
+                        label={emailLabel}
+                        placeholder={emailPlaceholder}
+                        value={emailValue}
+                        onValueChange={onEmailValueChange}
+                        onBlur={onEmailBlur}
+                        invalid={emailInvalid}
+                        error={emailError}
+                        disabled={disabled}
+                        phoneCountryCodeValue={resolvedPhoneCountryCodeValue}
+                        onPhoneCountryCodeValueChange={handlePhoneCountryCodeValueChange}
+                        phoneCountryCodeLabel={phoneCountryCodeLabel}
+                        phoneCountryOptions={phoneCountryOptions}
+                        phoneVariant={isPhoneVariant}
+                        valueLayoutId={accountValueLayoutId}
+                    />
+                </motion.div>
 
                 {showPasswordField ? (
-                    <AuthPasswordField
-                        id={passwordId}
-                        label={passwordLabel}
-                        placeholder={passwordPlaceholder}
-                        invalid={passwordInvalid}
-                        error={passwordError}
-                        action={forgotPasswordLabel}
-                        actionProps={forgotPasswordActionProps}
-                        value={passwordValue}
-                        onValueChange={onPasswordValueChange}
-                        onBlur={onPasswordBlur}
-                        showPasswordLabel={showPasswordLabel}
-                        hidePasswordLabel={hidePasswordLabel}
-                        disabled={disabled}
-                    />
+                    <motion.div className="w-full" variants={itemVariants}>
+                        <AuthPasswordField
+                            id={passwordId}
+                            label={passwordLabel}
+                            placeholder={passwordPlaceholder}
+                            invalid={passwordInvalid}
+                            error={passwordError}
+                            action={forgotPasswordLabel}
+                            actionProps={forgotPasswordActionProps}
+                            value={passwordValue}
+                            onValueChange={onPasswordValueChange}
+                            onBlur={onPasswordBlur}
+                            showPasswordLabel={showPasswordLabel}
+                            hidePasswordLabel={hidePasswordLabel}
+                            disabled={disabled}
+                        />
+                    </motion.div>
                 ) : null}
             </FieldGroup>
 
-            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]" disabled={disabled}>
-                {submitLabel}
-                {showSubmitIcon ? <ArrowRight data-icon="inline-end" /> : null}
-            </Button>
-        </form>
+            <motion.div variants={itemVariants}>
+                <Button
+                    type="submit"
+                    size="email"
+                    className="w-full font-semibold tracking-[0.35px]"
+                    disabled={disabled}
+                    status={submitButtonStatus}
+                >
+                    {submitLabel}
+                    {showSubmitIcon ? <ArrowRight data-icon="inline-end" /> : null}
+                </Button>
+            </motion.div>
+        </motion.form>
     )
 }
 
@@ -428,6 +480,7 @@ function AuthAccountField({
                               phoneCountryCodeLabel,
                               phoneCountryOptions,
                               phoneVariant,
+                              valueLayoutId,
                           }: {
     id: string
     label: string
@@ -443,7 +496,10 @@ function AuthAccountField({
     phoneCountryCodeLabel: string
     phoneCountryOptions: AuthPhoneCountryOption[]
     phoneVariant: boolean
+    valueLayoutId?: string
 }) {
+    const shouldReduceMotion = useReducedMotion()
+
     return (
         <Field
             data-invalid={invalid || undefined}
@@ -453,38 +509,58 @@ function AuthAccountField({
             <FieldLabel htmlFor={id}>{label}</FieldLabel>
             <div
                 className={cn(
-                    "flex w-full items-center justify-center overflow-hidden border-b border-auth-input-border pt-3.25 pb-3.5 transition-colors focus-within:border-auth-ink",
+                    "flex w-full items-center justify-center overflow-hidden border-b border-auth-input-border pt-3.25 pb-3.5 transition-[border-color,box-shadow,opacity] duration-[var(--motion-duration-medium)] ease-[var(--motion-ease-standard)] focus-within:border-auth-ink",
                     invalid && "border-status-danger/30 focus-within:border-status-danger",
-                    phoneVariant && "gap-3"
                 )}
             >
-                {phoneVariant ? (
-                    <>
-                        <AuthPhoneCountrySelect
-                            value={phoneCountryCodeValue}
-                            onValueChange={onPhoneCountryCodeValueChange}
-                            label={phoneCountryCodeLabel}
-                            options={phoneCountryOptions}
-                            disabled={disabled}
-                        />
-                        <div className="w-px self-stretch bg-auth-muted/10" aria-hidden="true" />
-                    </>
-                ) : null}
-                <Input
-                    id={id}
-                    type="text"
-                    autoComplete="username"
-                    inputMode={phoneVariant ? "numeric" : "email"}
-                    value={value}
-                    onChange={(event) => onValueChange?.(event.target.value)}
-                    onBlur={onBlur}
-                    aria-invalid={invalid || undefined}
-                    placeholder={placeholder}
-                    disabled={disabled}
-                    className="h-6 border-b-0 px-0 pt-0 pb-0 leading-6 focus-visible:border-transparent"
-                />
+                <AnimatePresence initial={false}>
+                    {phoneVariant ? (
+                        <motion.div
+                            key="phone-country-select"
+                            className="flex shrink-0 items-center gap-3 overflow-hidden"
+                            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, width: 0 }}
+                            animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, width: "auto" }}
+                            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, width: 0 }}
+                            transition={{
+                                duration: shouldReduceMotion ? 0.1 : 0.22,
+                                ease: [0.2, 0.8, 0.2, 1],
+                            }}
+                        >
+                            <AuthPhoneCountrySelect
+                                value={phoneCountryCodeValue}
+                                onValueChange={onPhoneCountryCodeValueChange}
+                                label={phoneCountryCodeLabel}
+                                options={phoneCountryOptions}
+                                disabled={disabled}
+                            />
+                            <div className="w-px self-stretch bg-auth-muted/10" aria-hidden="true" />
+                        </motion.div>
+                    ) : null}
+                </AnimatePresence>
+                <motion.div
+                    className={cn("min-w-0 flex-1", phoneVariant && "pl-3")}
+                    layoutId={valueLayoutId}
+                    transition={{
+                        duration: shouldReduceMotion ? 0.1 : 0.28,
+                        ease: [0.16, 1, 0.3, 1],
+                    }}
+                >
+                    <Input
+                        id={id}
+                        type="text"
+                        autoComplete="username"
+                        inputMode={phoneVariant ? "numeric" : "email"}
+                        value={value}
+                        onChange={(event) => onValueChange?.(event.target.value)}
+                        onBlur={onBlur}
+                        aria-invalid={invalid || undefined}
+                        placeholder={placeholder}
+                        disabled={disabled}
+                        className="h-6 border-b-0 px-0 pt-0 pb-0 leading-6 focus-visible:border-transparent"
+                    />
+                </motion.div>
             </div>
-            {error ? <FieldError>{error}</FieldError> : null}
+            <FieldError>{error}</FieldError>
         </Field>
     )
 }
@@ -557,6 +633,7 @@ export function AuthRegisterForm({
                                      confirmPasswordInvalid,
                                      confirmPasswordError,
                                      submitLabel = "Sign Up",
+                                     submitButtonStatus = "idle",
                                      showPasswordLabel,
                                      hidePasswordLabel,
                                      disabled,
@@ -566,64 +643,86 @@ export function AuthRegisterForm({
     const accountId = React.useId()
     const passwordId = React.useId()
     const confirmPasswordId = React.useId()
+    const shouldReduceMotion = useReducedMotion()
+    const itemVariants = getAuthFadeItemVariants(!!shouldReduceMotion)
+    const containerVariants = getAuthStaggerContainerVariants(!!shouldReduceMotion)
 
     return (
-        <form noValidate className={cn("flex w-full flex-col gap-8", className)} {...props}>
+        <motion.form
+            noValidate
+            className={cn("flex w-full flex-col gap-8", className)}
+            variants={containerVariants}
+            {...props}
+        >
             <FieldGroup className="gap-2.5">
-                <Field data-invalid={accountInvalid || undefined}>
-                    <FieldLabel htmlFor={accountId}>{accountLabel}</FieldLabel>
-                    <Input
-                        id={accountId}
-                        type="email"
-                        autoComplete="email"
-                        value={accountValue}
-                        onChange={(event) => onAccountValueChange?.(event.target.value)}
-                        onBlur={onAccountBlur}
-                        aria-invalid={accountInvalid || undefined}
-                        placeholder={accountPlaceholder}
+                <motion.div className="w-full" variants={itemVariants}>
+                    <Field data-invalid={accountInvalid || undefined}>
+                        <FieldLabel htmlFor={accountId}>{accountLabel}</FieldLabel>
+                        <Input
+                            id={accountId}
+                            type="email"
+                            autoComplete="email"
+                            value={accountValue}
+                            onChange={(event) => onAccountValueChange?.(event.target.value)}
+                            onBlur={onAccountBlur}
+                            aria-invalid={accountInvalid || undefined}
+                            placeholder={accountPlaceholder}
+                            disabled={disabled}
+                        />
+                        <FieldError>{accountError}</FieldError>
+                    </Field>
+                </motion.div>
+
+                <motion.div className="w-full" variants={itemVariants}>
+                    <AuthPasswordField
+                        id={passwordId}
+                        label={passwordLabel}
+                        placeholder={passwordPlaceholder}
+                        invalid={passwordInvalid}
+                        error={passwordError}
+                        action={null}
+                        value={passwordValue}
+                        onValueChange={onPasswordValueChange}
+                        onBlur={onPasswordBlur}
+                        autoComplete="new-password"
+                        showPasswordLabel={showPasswordLabel}
+                        hidePasswordLabel={hidePasswordLabel}
                         disabled={disabled}
                     />
-                    {accountError ? <FieldError>{accountError}</FieldError> : null}
-                </Field>
+                </motion.div>
 
-                <AuthPasswordField
-                    id={passwordId}
-                    label={passwordLabel}
-                    placeholder={passwordPlaceholder}
-                    invalid={passwordInvalid}
-                    error={passwordError}
-                    action={null}
-                    value={passwordValue}
-                    onValueChange={onPasswordValueChange}
-                    onBlur={onPasswordBlur}
-                    autoComplete="new-password"
-                    showPasswordLabel={showPasswordLabel}
-                    hidePasswordLabel={hidePasswordLabel}
-                    disabled={disabled}
-                />
-
-                <AuthPasswordField
-                    id={confirmPasswordId}
-                    label={confirmPasswordLabel}
-                    placeholder={confirmPasswordPlaceholder}
-                    invalid={confirmPasswordInvalid}
-                    error={confirmPasswordError}
-                    action={null}
-                    value={confirmPasswordValue}
-                    onValueChange={onConfirmPasswordValueChange}
-                    onBlur={onConfirmPasswordBlur}
-                    autoComplete="new-password"
-                    showPasswordLabel={showPasswordLabel}
-                    hidePasswordLabel={hidePasswordLabel}
-                    disabled={disabled}
-                />
+                <motion.div className="w-full" variants={itemVariants}>
+                    <AuthPasswordField
+                        id={confirmPasswordId}
+                        label={confirmPasswordLabel}
+                        placeholder={confirmPasswordPlaceholder}
+                        invalid={confirmPasswordInvalid}
+                        error={confirmPasswordError}
+                        action={null}
+                        value={confirmPasswordValue}
+                        onValueChange={onConfirmPasswordValueChange}
+                        onBlur={onConfirmPasswordBlur}
+                        autoComplete="new-password"
+                        showPasswordLabel={showPasswordLabel}
+                        hidePasswordLabel={hidePasswordLabel}
+                        disabled={disabled}
+                    />
+                </motion.div>
             </FieldGroup>
 
-            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]" disabled={disabled}>
-                {submitLabel}
-                <ArrowRight data-icon="inline-end" />
-            </Button>
-        </form>
+            <motion.div variants={itemVariants}>
+                <Button
+                    type="submit"
+                    size="email"
+                    className="w-full font-semibold tracking-[0.35px]"
+                    disabled={disabled}
+                    status={submitButtonStatus}
+                >
+                    {submitLabel}
+                    <ArrowRight data-icon="inline-end" />
+                </Button>
+            </motion.div>
+        </motion.form>
     )
 }
 
@@ -667,6 +766,7 @@ export function AuthPasswordField({
         ...resolvedActionProps
     } = actionProps ?? {}
     const toggleLabel = isVisible ? hidePasswordLabel : showPasswordLabel
+    const shouldReduceMotion = useReducedMotion()
 
     return (
         <Field data-invalid={invalid || undefined} data-disabled={disabled || undefined}>
@@ -710,14 +810,30 @@ export function AuthPasswordField({
                     onClick={() => setIsVisible((current) => !current)}
                     disabled={disabled}
                 >
-                    {isVisible ? (
-                        <Eye data-icon="inline-start" aria-hidden="true" />
-                    ) : (
-                        <EyeClosed data-icon="inline-start" aria-hidden="true" />
-                    )}
+                    <span className="relative flex size-4 items-center justify-center">
+                        <AnimatePresence initial={false} mode="wait">
+                            <motion.span
+                                key={isVisible ? "visible" : "hidden"}
+                                className="absolute inset-0 flex items-center justify-center"
+                                initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+                                animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+                                exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+                                transition={{
+                                    duration: shouldReduceMotion ? 0.1 : 0.16,
+                                    ease: [0.2, 0.8, 0.2, 1],
+                                }}
+                            >
+                                {isVisible ? (
+                                    <Eye data-icon="inline-start" aria-hidden="true" />
+                                ) : (
+                                    <EyeClosed data-icon="inline-start" aria-hidden="true" />
+                                )}
+                            </motion.span>
+                        </AnimatePresence>
+                    </span>
                 </Button>
             </div>
-            {error ? <FieldError>{error}</FieldError> : null}
+            <FieldError>{error}</FieldError>
         </Field>
     )
 }
@@ -733,60 +849,113 @@ export function AuthVerifyForm({
                                    resendLabel = "Didn't receive the code?",
                                    resendActionLabel = "Resend",
                                    resendActionProps,
+                                   resendButtonStatus = "idle",
                                    resendStatus,
                                    submitLabel = "Verify",
+                                   submitButtonStatus = "idle",
                                    disabled,
                                    className,
                                    ...props
                                }: AuthVerifyFormProps) {
+    const shouldReduceMotion = useReducedMotion()
+    const itemVariants = getAuthFadeItemVariants(!!shouldReduceMotion)
+    const containerVariants = getAuthStaggerContainerVariants(!!shouldReduceMotion)
+    const {
+        className: resendActionClassName,
+        disabled: resendActionDisabled,
+        ...resolvedResendActionProps
+    } = resendActionProps ?? {}
+
     return (
-        <form noValidate className={cn("flex w-full flex-col gap-8", className)} {...props}>
-            <div className="flex w-full flex-col items-center justify-center gap-2 overflow-hidden text-center">
+        <motion.form
+            noValidate
+            className={cn("flex w-full flex-col gap-8", className)}
+            variants={containerVariants}
+            {...props}
+        >
+            <motion.div
+                className="flex w-full flex-col items-center justify-center gap-2 overflow-hidden text-center"
+                variants={itemVariants}
+            >
                 <FieldDescription className="text-center capitalize">
                     {sentToLabel}
                 </FieldDescription>
                 <p className="text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink">
                     {email}
                 </p>
-            </div>
+            </motion.div>
 
-            <AuthCodeField
-                value={codeValue}
-                onValueChange={onCodeValueChange}
-                codeLength={codeLength}
-                ariaLabel={`Verification code for ${email}`}
-                invalid={codeInvalid}
-                error={codeError}
-                disabled={disabled}
-            />
-
-            <p className="text-center text-sm leading-5 font-medium tracking-[0.7px] text-auth-muted">
-                {resendLabel}{" "}
-                <button
-                    type="button"
-                    className="border-b border-dashed border-auth-ink px-0.5 pb-px text-auth-ink disabled:pointer-events-none disabled:opacity-50"
+            <motion.div variants={itemVariants}>
+                <AuthCodeField
+                    value={codeValue}
+                    onValueChange={onCodeValueChange}
+                    codeLength={codeLength}
+                    ariaLabel={`Verification code for ${email}`}
+                    invalid={codeInvalid}
+                    error={codeError}
                     disabled={disabled}
-                    {...resendActionProps}
+                />
+            </motion.div>
+
+            <motion.p
+                className="text-center text-sm leading-5 font-medium tracking-[0.7px] text-auth-muted"
+                variants={itemVariants}
+            >
+                {resendLabel}{" "}
+                <Button
+                    type="button"
+                    variant="link"
+                    size="link"
+                    className={cn(
+                        "inline-flex border-b border-dashed border-auth-ink px-0.5 pb-px align-baseline text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink no-underline hover:no-underline",
+                        resendActionClassName
+                    )}
+                    disabled={disabled || resendActionDisabled}
+                    status={resendButtonStatus}
+                    {...resolvedResendActionProps}
                 >
                     {resendActionLabel}
-                </button>
-            </p>
+                </Button>
+            </motion.p>
 
-            {resendStatus ? (
-                <FieldDescription className="text-center text-xs leading-4">
-                    {resendStatus}
-                </FieldDescription>
-            ) : null}
+            <AnimatePresence initial={false}>
+                {resendStatus ? (
+                    <motion.div
+                        key="resend-status"
+                        variants={itemVariants}
+                        initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, y: -4 }}
+                        animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, height: "auto", y: 0 }}
+                        exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, y: -4 }}
+                        transition={{
+                            duration: shouldReduceMotion ? 0.1 : 0.2,
+                            ease: [0.2, 0.8, 0.2, 1],
+                        }}
+                    >
+                        <FieldDescription className="text-center text-xs leading-4">
+                            {resendStatus}
+                        </FieldDescription>
+                    </motion.div>
+                ) : null}
+            </AnimatePresence>
 
-            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]" disabled={disabled}>
-                {submitLabel}
-            </Button>
-        </form>
+            <motion.div variants={itemVariants}>
+                <Button
+                    type="submit"
+                    size="email"
+                    className="w-full font-semibold tracking-[0.35px]"
+                    disabled={disabled}
+                    status={submitButtonStatus}
+                >
+                    {submitLabel}
+                </Button>
+            </motion.div>
+        </motion.form>
     )
 }
 
 export function AuthResetPasswordForm({
                                           account,
+                                          accountLayoutId,
                                           codeValue,
                                           onCodeValueChange,
                                           codeLength = 6,
@@ -809,70 +978,104 @@ export function AuthResetPasswordForm({
                                           confirmPasswordInvalid,
                                           confirmPasswordError,
                                           submitLabel = "Reset Password",
+                                          submitButtonStatus = "idle",
                                           showPasswordLabel,
                                           hidePasswordLabel,
                                           disabled,
                                           className,
                                           ...props
                                       }: AuthResetPasswordFormProps) {
+    const shouldReduceMotion = useReducedMotion()
+    const itemVariants = getAuthFadeItemVariants(!!shouldReduceMotion)
+    const containerVariants = getAuthStaggerContainerVariants(!!shouldReduceMotion)
+
     return (
-        <form noValidate className={cn("flex w-full flex-col gap-8", className)} {...props}>
-            <div className="flex w-full flex-col items-center justify-center gap-2 overflow-hidden text-center">
+        <motion.form
+            noValidate
+            className={cn("flex w-full flex-col gap-8", className)}
+            variants={containerVariants}
+            {...props}
+        >
+            <motion.div
+                className="flex w-full flex-col items-center justify-center gap-2 overflow-hidden text-center"
+                variants={itemVariants}
+            >
                 <FieldDescription className="text-center capitalize">
                     {accountLabel}
                 </FieldDescription>
-                <p className="text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink">
+                <motion.p
+                    className="text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink"
+                    layoutId={accountLayoutId}
+                    transition={{
+                        duration: shouldReduceMotion ? 0.1 : 0.28,
+                        ease: [0.16, 1, 0.3, 1],
+                    }}
+                >
                     {account}
-                </p>
-            </div>
+                </motion.p>
+            </motion.div>
 
             <FieldGroup className="gap-5">
-                <AuthCodeField
-                    label={codeLabel}
-                    value={codeValue}
-                    onValueChange={onCodeValueChange}
-                    codeLength={codeLength}
-                    ariaLabel={codeLabel}
-                    invalid={codeInvalid}
-                    error={codeError}
-                    disabled={disabled}
-                />
+                <motion.div className="w-full" variants={itemVariants}>
+                    <AuthCodeField
+                        label={codeLabel}
+                        value={codeValue}
+                        onValueChange={onCodeValueChange}
+                        codeLength={codeLength}
+                        ariaLabel={codeLabel}
+                        invalid={codeInvalid}
+                        error={codeError}
+                        disabled={disabled}
+                    />
+                </motion.div>
 
-                <AuthPasswordField
-                    label={newPasswordLabel}
-                    placeholder={newPasswordPlaceholder}
-                    invalid={newPasswordInvalid}
-                    error={newPasswordError}
-                    action={null}
-                    value={newPasswordValue}
-                    onValueChange={onNewPasswordValueChange}
-                    onBlur={onNewPasswordBlur}
-                    autoComplete="new-password"
-                    showPasswordLabel={showPasswordLabel}
-                    hidePasswordLabel={hidePasswordLabel}
-                    disabled={disabled}
-                />
+                <motion.div className="w-full" variants={itemVariants}>
+                    <AuthPasswordField
+                        label={newPasswordLabel}
+                        placeholder={newPasswordPlaceholder}
+                        invalid={newPasswordInvalid}
+                        error={newPasswordError}
+                        action={null}
+                        value={newPasswordValue}
+                        onValueChange={onNewPasswordValueChange}
+                        onBlur={onNewPasswordBlur}
+                        autoComplete="new-password"
+                        showPasswordLabel={showPasswordLabel}
+                        hidePasswordLabel={hidePasswordLabel}
+                        disabled={disabled}
+                    />
+                </motion.div>
 
-                <AuthPasswordField
-                    label={confirmPasswordLabel}
-                    placeholder={confirmPasswordPlaceholder}
-                    invalid={confirmPasswordInvalid}
-                    error={confirmPasswordError}
-                    action={null}
-                    value={confirmPasswordValue}
-                    onValueChange={onConfirmPasswordValueChange}
-                    onBlur={onConfirmPasswordBlur}
-                    autoComplete="new-password"
-                    showPasswordLabel={showPasswordLabel}
-                    hidePasswordLabel={hidePasswordLabel}
-                    disabled={disabled}
-                />
+                <motion.div className="w-full" variants={itemVariants}>
+                    <AuthPasswordField
+                        label={confirmPasswordLabel}
+                        placeholder={confirmPasswordPlaceholder}
+                        invalid={confirmPasswordInvalid}
+                        error={confirmPasswordError}
+                        action={null}
+                        value={confirmPasswordValue}
+                        onValueChange={onConfirmPasswordValueChange}
+                        onBlur={onConfirmPasswordBlur}
+                        autoComplete="new-password"
+                        showPasswordLabel={showPasswordLabel}
+                        hidePasswordLabel={hidePasswordLabel}
+                        disabled={disabled}
+                    />
+                </motion.div>
             </FieldGroup>
 
-            <Button type="submit" size="email" className="w-full font-semibold tracking-[0.35px]" disabled={disabled}>
-                {submitLabel}
-            </Button>
-        </form>
+            <motion.div variants={itemVariants}>
+                <Button
+                    type="submit"
+                    size="email"
+                    className="w-full font-semibold tracking-[0.35px]"
+                    disabled={disabled}
+                    status={submitButtonStatus}
+                >
+                    {submitLabel}
+                </Button>
+            </motion.div>
+        </motion.form>
     )
 }
 
@@ -922,7 +1125,7 @@ function AuthCodeField({
                     </InputOTPGroup>
                 </div>
             </InputOTP>
-            {error ? <FieldError>{error}</FieldError> : null}
+            <FieldError>{error}</FieldError>
         </Field>
     )
 }
@@ -933,15 +1136,21 @@ export function AuthSuccess({
                                 className,
                                 ...props
                             }: AuthSuccessProps) {
+    const shouldReduceMotion = useReducedMotion()
+
     return (
         <div
             className={cn("flex w-full flex-col items-center gap-6 text-center", className)}
             {...props}
         >
             <motion.div
-                initial={{ opacity: 0, scale: 0.86 }}
+                initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.86 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                transition={
+                    shouldReduceMotion
+                        ? { duration: 0.12, ease: [0.2, 0.8, 0.2, 1] }
+                        : { type: "spring", stiffness: 260, damping: 20 }
+                }
                 className="flex size-16 items-center justify-center rounded-full bg-auth-success-surface"
             >
                 <div className="flex size-10 items-center justify-center rounded-full bg-auth-success text-white">

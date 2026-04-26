@@ -116,9 +116,9 @@
     --shadow-dialog: 0 18px 48px -18px oklch(0.1619 0.0039 229.0847 / 0.12);
     --shadow-hover: 0 8px 24px -12px oklch(0.1619 0.0039 229.0847 / 0.08);
 
-    --motion-duration-fast: 160ms;
-    --motion-duration-medium: 220ms;
-    --motion-duration-slow: 320ms;
+    --motion-duration-fast: 280ms;
+    --motion-duration-medium: 500ms;
+    --motion-duration-slow: 720ms;
     --motion-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
     --motion-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
 

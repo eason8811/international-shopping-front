@@ -147,7 +147,7 @@ describe("AuthPageClient", () => {
         cleanup()
     })
 
-    it("validates login account only after the field changed and blurred", () => {
+    it("validates login account only after the field changed and blurred", async () => {
         render(<AuthPageClient copy={copy} locale="en-US" />)
 
         fireEvent.click(screen.getByRole("button", { name: "Continue with Email" }))
@@ -168,10 +168,12 @@ describe("AuthPageClient", () => {
         fireEvent.change(accountInput, { target: { value: "member@example.com" } })
 
         expect(accountInput).toHaveAttribute("data-variant", "default")
-        expect(screen.queryByText("Enter a valid email address or phone number.")).not.toBeInTheDocument()
+        await waitFor(() => {
+            expect(screen.queryByText("Enter a valid email address or phone number.")).not.toBeInTheDocument()
+        })
     })
 
-    it("switches AuthEmailForm account field between email and phone variants", () => {
+    it("switches AuthEmailForm account field between email and phone variants", async () => {
         render(<AuthPageClient copy={copy} locale="en-US" />)
 
         fireEvent.click(screen.getByRole("button", { name: "Continue with Email" }))
@@ -190,7 +192,9 @@ describe("AuthPageClient", () => {
 
         fireEvent.change(accountInput, { target: { value: "member@example.com" } })
 
-        expect(screen.queryByText("+86 (CN)")).not.toBeInTheDocument()
+        await waitFor(() => {
+            expect(screen.queryByText("+86 (CN)")).not.toBeInTheDocument()
+        })
         expect(accountInput.closest("[data-account-variant]")).toHaveAttribute(
             "data-account-variant",
             "email",
@@ -218,12 +222,18 @@ describe("AuthPageClient", () => {
                 countryCode: "86",
             })
         })
+        await waitFor(() => {
+            expect(screen.getByText(copy.success.loginTitle)).toBeInTheDocument()
+        })
     })
 
-    it("validates registration password and confirmation after blur", () => {
+    it("validates registration password and confirmation after blur", async () => {
         render(<AuthPageClient copy={copy} locale="en-US" />)
 
         fireEvent.click(screen.getByRole("button", { name: "Request Access" }))
+        await waitFor(() => {
+            expect(screen.getAllByRole("button", { name: "Continue with Email" })).toHaveLength(1)
+        })
         fireEvent.click(screen.getByRole("button", { name: "Continue with Email" }))
 
         const passwordInput = screen.getByLabelText("Secret Key")
@@ -238,6 +248,9 @@ describe("AuthPageClient", () => {
         fireEvent.change(passwordInput, { target: { value: "Password1" } })
 
         expect(passwordInput).toHaveAttribute("data-variant", "default")
+        await waitFor(() => {
+            expect(screen.queryByText(copy.form.validation.passwordInvalid)).not.toBeInTheDocument()
+        })
 
         fireEvent.change(confirmInput, { target: { value: "Password2" } })
         fireEvent.blur(confirmInput)
@@ -248,7 +261,9 @@ describe("AuthPageClient", () => {
         fireEvent.change(confirmInput, { target: { value: "Password1" } })
 
         expect(confirmInput).toHaveAttribute("data-variant", "default")
-        expect(screen.queryByText("The passwords do not match.")).not.toBeInTheDocument()
+        await waitFor(() => {
+            expect(screen.queryByText("The passwords do not match.")).not.toBeInTheDocument()
+        })
     })
 
     it("shows request errors with sonner instead of inline content", async () => {

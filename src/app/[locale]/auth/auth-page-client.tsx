@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react"
 import { toast } from "sonner"
 
 import {
@@ -17,6 +18,11 @@ import {
     type AuthProvider,
     type AuthShellCopy,
 } from "@/components/blocks"
+import {
+    getAuthFadeItemVariants,
+    getAuthStaggerContainerVariants,
+} from "@/components/blocks/auth-motion"
+import type { ButtonStatus } from "@/components/ui/button"
 import {
     loginUser,
     registerUser,
@@ -170,8 +176,10 @@ const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 const PHONE_PATTERN = /^\d{6,20}$/
 const MAX_EMAIL_LENGTH = 254
 const DEFAULT_PHONE_COUNTRY_CODE = "86"
+const BUTTON_SUCCESS_HOLD_MS = 450
 const REDIRECT_DELAY_MS = 3000
 const RESEND_COOLDOWN_SECONDS = 60
+const RECOVERY_ACCOUNT_LAYOUT_ID = "auth-recovery-account-value"
 
 export function AuthPageClient({
                                    copy,
@@ -182,6 +190,8 @@ export function AuthPageClient({
     const [mode, setMode] = React.useState<AuthMode>("login")
     const [flow, setFlow] = React.useState<AuthFlow>("login")
     const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null)
+    const [completedAction, setCompletedAction] = React.useState<PendingAction | null>(null)
+    const [pendingOAuthProvider, setPendingOAuthProvider] = React.useState<AuthProvider | null>(null)
     const [formErrors, setFormErrors] = React.useState<AuthFormErrors>({})
     const [success, setSuccess] = React.useState<AuthSuccessState>({
         title: copy.success.loginTitle,
@@ -207,8 +217,14 @@ export function AuthPageClient({
     const [blurredFields, setBlurredFields] = React.useState<AuthInputFieldState>({})
     const changedFieldsRef = React.useRef<AuthInputFieldState>({})
     const initialOAuthHandledRef = React.useRef(false)
+    const shouldReduceMotion = useReducedMotion()
+    const itemVariants = getAuthFadeItemVariants(!!shouldReduceMotion)
+    const containerVariants = getAuthStaggerContainerVariants(!!shouldReduceMotion)
 
-    const isPending = pendingAction !== null
+    const isPending =
+        pendingAction !== null ||
+        completedAction !== null ||
+        pendingOAuthProvider !== null
     const isRegister = flow === "register"
     const isForgot = flow === "forgot"
     const intro = isForgot ? copy.forgot : isRegister ? copy.register : copy.login
@@ -230,6 +246,8 @@ export function AuthPageClient({
             setSuccessRedirectTo(resolveBrowserReturnTo())
             setFormErrors({})
             setPendingAction(null)
+            setCompletedAction(null)
+            setPendingOAuthProvider(null)
             setMode("success")
             return
         }
@@ -278,6 +296,8 @@ export function AuthPageClient({
     function clearFeedback() {
         setFormErrors({})
         setResendNotice(null)
+        setCompletedAction(null)
+        setPendingOAuthProvider(null)
         toast.dismiss()
     }
 
@@ -298,14 +318,17 @@ export function AuthPageClient({
             return
         }
 
-        await runRequest("login", copy.form.errors.loginFailed, async () => {
+        const succeeded = await runRequest("login", copy.form.errors.loginFailed, async () => {
             await loginUser({
                 account: loginAccount.trim(),
                 password: loginPassword,
                 countryCode: getAccountCountryCode(loginAccount, loginCountryCode),
             })
-            finishWithSuccess("login")
         })
+
+        if (succeeded) {
+            finishWithSuccess("login")
+        }
     }
 
     async function submitRegister(event: React.FormEvent<HTMLFormElement>) {
@@ -318,18 +341,21 @@ export function AuthPageClient({
             return
         }
 
-        await runRequest("register", copy.form.errors.registerFailed, async () => {
+        const succeeded = await runRequest("register", copy.form.errors.registerFailed, async () => {
             await registerUser({
                 email: registerEmail.trim(),
                 password: registerPassword,
                 phoneCountryCode: null,
                 phoneNationalNumber: null,
             })
+        })
+
+        if (succeeded) {
             setVerificationCode("")
             setResendRemaining(RESEND_COOLDOWN_SECONDS)
             setFlow("register")
             setMode("verify")
-        })
+        }
     }
 
     async function submitVerification(event: React.FormEvent<HTMLFormElement>) {
@@ -341,13 +367,16 @@ export function AuthPageClient({
             return
         }
 
-        await runRequest("verify", copy.form.errors.verifyFailed, async () => {
+        const succeeded = await runRequest("verify", copy.form.errors.verifyFailed, async () => {
             await verifyRegistrationEmail({
                 email: registerEmail.trim(),
                 code: verificationCode,
             })
-            finishWithSuccess("verify")
         })
+
+        if (succeeded) {
+            finishWithSuccess("verify")
+        }
     }
 
     async function resendVerificationCode() {
@@ -357,11 +386,14 @@ export function AuthPageClient({
             return
         }
 
-        await runRequest("resend", copy.form.errors.resendFailed, async () => {
+        const succeeded = await runRequest("resend", copy.form.errors.resendFailed, async () => {
             await resendActivationEmail({ email: registerEmail.trim() })
+        })
+
+        if (succeeded) {
             setResendNotice(copy.form.resendSuccess)
             setResendRemaining(RESEND_COOLDOWN_SECONDS)
-        })
+        }
     }
 
     async function submitForgotPassword(event: React.FormEvent<HTMLFormElement>) {
@@ -377,17 +409,20 @@ export function AuthPageClient({
             return
         }
 
-        await runRequest("forgot", copy.form.errors.resetRequestFailed, async () => {
+        const succeeded = await runRequest("forgot", copy.form.errors.resetRequestFailed, async () => {
             await requestPasswordReset({
                 account: recoveryAccount.trim(),
                 countryCode: getAccountCountryCode(recoveryAccount, recoveryCountryCode),
             })
+        })
+
+        if (succeeded) {
             setRecoveryCode("")
             setNewPassword("")
             setNewConfirmPassword("")
             setFlow("forgot")
             setMode("reset")
-        })
+        }
     }
 
     async function submitPasswordReset(event: React.FormEvent<HTMLFormElement>) {
@@ -400,19 +435,23 @@ export function AuthPageClient({
             return
         }
 
-        await runRequest("reset", copy.form.errors.resetFailed, async () => {
+        const succeeded = await runRequest("reset", copy.form.errors.resetFailed, async () => {
             await resetPassword({
                 account: recoveryAccount.trim(),
                 code: recoveryCode,
                 newPassword,
                 countryCode: getAccountCountryCode(recoveryAccount, recoveryCountryCode),
             })
-            finishWithSuccess("reset")
         })
+
+        if (succeeded) {
+            finishWithSuccess("reset")
+        }
     }
 
     function startOAuth(provider: AuthProvider) {
         clearFeedback()
+        setPendingOAuthProvider(provider)
         setPendingAction("oauth")
 
         const url = new URL(`/api/bff/oauth2/${provider}/authorize`, window.location.origin)
@@ -433,6 +472,8 @@ export function AuthPageClient({
         setFormErrors({})
         resetFieldInteraction()
         setPendingAction(null)
+        setCompletedAction(null)
+        setPendingOAuthProvider(null)
         setMode("success")
     }
 
@@ -468,15 +509,42 @@ export function AuthPageClient({
         action: PendingAction,
         fallbackMessage: string,
         callback: () => Promise<void>,
-    ) {
+    ): Promise<boolean> {
+        setCompletedAction(null)
         setPendingAction(action)
         try {
             await callback()
+            setPendingAction((current) => (current === action ? null : current))
+            setCompletedAction(action)
+            await waitForButtonSuccess()
+            return true
         } catch (error) {
             notifyRequestError(normalizeClientError(error, fallbackMessage))
+            return false
         } finally {
             setPendingAction((current) => (current === action ? null : current))
+            setCompletedAction((current) => (current === action ? null : current))
         }
+    }
+
+    function getButtonStatus(action: PendingAction): ButtonStatus {
+        if (completedAction === action) {
+            return "success"
+        }
+
+        if (pendingAction === action) {
+            return "loading"
+        }
+
+        return "idle"
+    }
+
+    function getProviderButtonStatus(provider: AuthProvider): ButtonStatus {
+        if (pendingAction === "oauth" && pendingOAuthProvider === provider) {
+            return "loading"
+        }
+
+        return "idle"
     }
 
     function validateAccountPassword(account: string, password: string): AuthFormErrors {
@@ -722,209 +790,319 @@ export function AuthPageClient({
     )
 
     return (
-        <AuthPageShell copy={copy.shell}>
-            <AuthHeroText title={intro.title} subtitle={intro.subtitle} />
+        <LayoutGroup id="auth-page">
+            <AuthPageShell copy={copy.shell}>
+                <AuthHeroText title={intro.title} subtitle={intro.subtitle} />
 
-            <div className="flex w-full flex-col gap-12">
-                <AuthBlock
-                    providers={mode === "success" ? [] : [
-                        {
-                            provider: "google",
-                            label: copy.social.google,
-                            disabled: isPending,
-                            onClick: () => startOAuth("google"),
-                        },
-                        {
-                            provider: "tiktok",
-                            label: copy.social.tiktok,
-                            disabled: isPending,
-                            onClick: () => startOAuth("tiktok"),
-                        },
-                        {
-                            provider: "x",
-                            label: copy.social.x,
-                            disabled: isPending,
-                            onClick: () => startOAuth("x"),
-                        },
-                    ]}
-                    separatorLabel={separatorLabel}
+                <motion.div
+                    className="flex w-full flex-col gap-12"
+                    variants={containerVariants}
                 >
-                    {mode === "login" ? (
-                        <AuthEmailButton
-                            label={copy.login.continueWithEmail}
-                            disabled={isPending}
-                            onClick={() => switchToMode("login-email", "login")}
-                        />
-                    ) : null}
-
-                    {mode === "register" ? (
-                        <AuthEmailButton
-                            label={copy.register.continueWithEmail}
-                            disabled={isPending}
-                            onClick={() => switchToMode("register-email", "register")}
-                        />
-                    ) : null}
-
-                    {mode === "login-email" ? (
-                        <AuthEmailForm
-                            emailValue={loginAccount}
-                            onEmailValueChange={(value) => updateInputValue("loginAccount", value, setLoginAccount)}
-                            onEmailBlur={() => markFieldBlurred("loginAccount")}
-                            emailLabel={copy.form.labels.account}
-                            emailPlaceholder={copy.form.placeholders.account}
-                            emailInvalid={!!loginAccountError}
-                            emailError={loginAccountError}
-                            phoneCountryCodeValue={loginCountryCode}
-                            onPhoneCountryCodeValueChange={setLoginCountryCode}
-                            passwordValue={loginPassword}
-                            onPasswordValueChange={(value) => updateInputValue("loginPassword", value, setLoginPassword)}
-                            onPasswordBlur={() => markFieldBlurred("loginPassword")}
-                            passwordLabel={copy.form.labels.password}
-                            passwordPlaceholder={copy.form.placeholders.password}
-                            passwordInvalid={!!loginPasswordError}
-                            passwordError={loginPasswordError}
-                            forgotPasswordLabel={copy.form.actions.forgotPassword}
-                            forgotPasswordActionProps={{
-                                onClick: () => switchToMode("forgot", "forgot"),
-                            }}
-                            submitLabel={copy.form.buttons.signIn}
-                            showPasswordLabel={copy.form.actions.showPassword}
-                            hidePasswordLabel={copy.form.actions.hidePassword}
-                            disabled={isPending}
-                            onSubmit={submitLogin}
-                        />
-                    ) : null}
-
-                    {mode === "register-email" ? (
-                        <AuthRegisterForm
-                            accountValue={registerEmail}
-                            onAccountValueChange={(value) => updateInputValue("registerEmail", value, setRegisterEmail)}
-                            onAccountBlur={() => markFieldBlurred("registerEmail")}
-                            accountLabel={copy.form.labels.email}
-                            accountPlaceholder={copy.form.placeholders.email}
-                            accountInvalid={!!registerEmailError}
-                            accountError={registerEmailError}
-                            passwordValue={registerPassword}
-                            onPasswordValueChange={(value) => updateInputValue("registerPassword", value, setRegisterPassword)}
-                            onPasswordBlur={() => markFieldBlurred("registerPassword")}
-                            passwordLabel={copy.form.labels.password}
-                            passwordPlaceholder={copy.form.placeholders.password}
-                            passwordInvalid={!!registerPasswordError}
-                            passwordError={registerPasswordError}
-                            confirmPasswordValue={registerConfirmPassword}
-                            onConfirmPasswordValueChange={(value) => updateInputValue("registerConfirmPassword", value, setRegisterConfirmPassword)}
-                            onConfirmPasswordBlur={() => markFieldBlurred("registerConfirmPassword")}
-                            confirmPasswordLabel={copy.form.labels.confirmPassword}
-                            confirmPasswordPlaceholder={copy.form.placeholders.password}
-                            confirmPasswordInvalid={!!registerConfirmPasswordError}
-                            confirmPasswordError={registerConfirmPasswordError}
-                            submitLabel={copy.form.buttons.signUp}
-                            showPasswordLabel={copy.form.actions.showPassword}
-                            hidePasswordLabel={copy.form.actions.hidePassword}
-                            disabled={isPending}
-                            onSubmit={submitRegister}
-                        />
-                    ) : null}
-
-                    {mode === "verify" ? (
-                        <AuthVerifyForm
-                            email={registerEmail}
-                            codeValue={verificationCode}
-                            onCodeValueChange={setVerificationCode}
-                            codeInvalid={!!formErrors.code}
-                            codeError={formErrors.code}
-                            sentToLabel={copy.form.labels.verificationSentTo}
-                            resendLabel={copy.form.resendPrompt}
-                            resendActionLabel={copy.form.resendAction}
-                            resendActionProps={{
-                                onClick: resendVerificationCode,
-                                disabled: isPending || resendRemaining > 0,
-                            }}
-                            resendStatus={resendStatus}
-                            submitLabel={copy.form.buttons.verify}
-                            disabled={pendingAction === "verify"}
-                            onSubmit={submitVerification}
-                        />
-                    ) : null}
-
-                    {mode === "forgot" ? (
-                        <AuthEmailForm
-                            emailValue={recoveryAccount}
-                            onEmailValueChange={(value) => updateInputValue("recoveryAccount", value, setRecoveryAccount)}
-                            onEmailBlur={() => markFieldBlurred("recoveryAccount")}
-                            emailLabel={copy.form.labels.account}
-                            emailPlaceholder={copy.form.placeholders.account}
-                            emailInvalid={!!recoveryAccountError}
-                            emailError={recoveryAccountError}
-                            phoneCountryCodeValue={recoveryCountryCode}
-                            onPhoneCountryCodeValueChange={setRecoveryCountryCode}
-                            submitLabel={copy.form.buttons.sendCode}
-                            showPasswordField={false}
-                            showSubmitIcon
-                            disabled={isPending}
-                            onSubmit={submitForgotPassword}
-                        />
-                    ) : null}
-
-                    {mode === "reset" ? (
-                        <AuthResetPasswordForm
-                            account={recoveryAccount}
-                            codeValue={recoveryCode}
-                            onCodeValueChange={setRecoveryCode}
-                            codeLabel={copy.reset.codeLabel}
-                            codeInvalid={!!formErrors.code}
-                            codeError={formErrors.code}
-                            accountLabel={copy.reset.accountLabel}
-                            newPasswordValue={newPassword}
-                            onNewPasswordValueChange={(value) => updateInputValue("newPassword", value, setNewPassword)}
-                            onNewPasswordBlur={() => markFieldBlurred("newPassword")}
-                            newPasswordLabel={copy.form.labels.newPassword}
-                            newPasswordPlaceholder={copy.form.placeholders.password}
-                            newPasswordInvalid={!!newPasswordError}
-                            newPasswordError={newPasswordError}
-                            confirmPasswordValue={newConfirmPassword}
-                            onConfirmPasswordValueChange={(value) => updateInputValue("newConfirmPassword", value, setNewConfirmPassword)}
-                            onConfirmPasswordBlur={() => markFieldBlurred("newConfirmPassword")}
-                            confirmPasswordLabel={copy.form.labels.confirmPassword}
-                            confirmPasswordPlaceholder={copy.form.placeholders.password}
-                            confirmPasswordInvalid={!!newConfirmPasswordError}
-                            confirmPasswordError={newConfirmPasswordError}
-                            submitLabel={copy.form.buttons.resetPassword}
-                            showPasswordLabel={copy.form.actions.showPassword}
-                            hidePasswordLabel={copy.form.actions.hidePassword}
-                            disabled={isPending}
-                            onSubmit={submitPasswordReset}
-                        />
-                    ) : null}
-
-                    {mode === "success" ? (
-                        <AuthSuccess
-                            title={success.title}
-                            description={success.description}
-                        />
-                    ) : null}
-                </AuthBlock>
-
-                {mode !== "success" ? (
-                    <AuthFooterLink
-                        label={isForgot ? copy.forgot.footerPrompt : isRegister ? copy.register.footerPrompt : copy.login.footerPrompt}
-                        action={isForgot ? copy.forgot.footerAction : isRegister ? copy.register.footerAction : copy.login.footerAction}
-                        actionProps={{
-                            disabled: isPending,
-                            onClick: () => {
-                                if (isForgot) {
-                                    switchToMode("login-email", "login")
-                                    return
-                                }
-
-                                const nextFlow = isRegister ? "login" : "register"
-                                switchToMode(nextFlow, nextFlow)
+                    <AuthBlock
+                        key={`auth-block-${flow}-${mode}`}
+                        providers={mode === "success" ? [] : [
+                            {
+                                provider: "google",
+                                label: copy.social.google,
+                                disabled: isPending,
+                                status: getProviderButtonStatus("google"),
+                                onClick: () => startOAuth("google"),
                             },
-                        }}
-                    />
-                ) : null}
-            </div>
-        </AuthPageShell>
+                            {
+                                provider: "tiktok",
+                                label: copy.social.tiktok,
+                                disabled: isPending,
+                                status: getProviderButtonStatus("tiktok"),
+                                onClick: () => startOAuth("tiktok"),
+                            },
+                            {
+                                provider: "x",
+                                label: copy.social.x,
+                                disabled: isPending,
+                                status: getProviderButtonStatus("x"),
+                                onClick: () => startOAuth("x"),
+                            },
+                        ]}
+                        separatorLabel={separatorLabel}
+                    >
+                        <AnimatePresence initial={false} mode="popLayout">
+                            {mode === "login" ? (
+                                <motion.div
+                                    key="login"
+                                    className="w-full"
+                                    variants={itemVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    layout
+                                >
+                                    <AuthEmailButton
+                                        label={copy.login.continueWithEmail}
+                                        disabled={isPending}
+                                        onClick={() => switchToMode("login-email", "login")}
+                                    />
+                                </motion.div>
+                            ) : null}
+
+                            {mode === "register" ? (
+                                <motion.div
+                                    key="register"
+                                    className="w-full"
+                                    variants={itemVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    layout
+                                >
+                                    <AuthEmailButton
+                                        label={copy.register.continueWithEmail}
+                                        disabled={isPending}
+                                        onClick={() => switchToMode("register-email", "register")}
+                                    />
+                                </motion.div>
+                            ) : null}
+
+                            {mode === "login-email" ? (
+                                <motion.div
+                                    key="login-email"
+                                    className="w-full"
+                                    variants={itemVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    layout
+                                >
+                                    <AuthEmailForm
+                                        emailValue={loginAccount}
+                                        onEmailValueChange={(value) => updateInputValue("loginAccount", value, setLoginAccount)}
+                                        onEmailBlur={() => markFieldBlurred("loginAccount")}
+                                        emailLabel={copy.form.labels.account}
+                                        emailPlaceholder={copy.form.placeholders.account}
+                                        emailInvalid={!!loginAccountError}
+                                        emailError={loginAccountError}
+                                        phoneCountryCodeValue={loginCountryCode}
+                                        onPhoneCountryCodeValueChange={setLoginCountryCode}
+                                        passwordValue={loginPassword}
+                                        onPasswordValueChange={(value) => updateInputValue("loginPassword", value, setLoginPassword)}
+                                        onPasswordBlur={() => markFieldBlurred("loginPassword")}
+                                        passwordLabel={copy.form.labels.password}
+                                        passwordPlaceholder={copy.form.placeholders.password}
+                                        passwordInvalid={!!loginPasswordError}
+                                        passwordError={loginPasswordError}
+                                        forgotPasswordLabel={copy.form.actions.forgotPassword}
+                                        forgotPasswordActionProps={{
+                                            onClick: () => switchToMode("forgot", "forgot"),
+                                        }}
+                                        submitLabel={copy.form.buttons.signIn}
+                                        submitButtonStatus={getButtonStatus("login")}
+                                        showPasswordLabel={copy.form.actions.showPassword}
+                                        hidePasswordLabel={copy.form.actions.hidePassword}
+                                        disabled={isPending}
+                                        onSubmit={submitLogin}
+                                    />
+                                </motion.div>
+                            ) : null}
+
+                            {mode === "register-email" ? (
+                                <motion.div
+                                    key="register-email"
+                                    className="w-full"
+                                    variants={itemVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    layout
+                                >
+                                    <AuthRegisterForm
+                                        accountValue={registerEmail}
+                                        onAccountValueChange={(value) => updateInputValue("registerEmail", value, setRegisterEmail)}
+                                        onAccountBlur={() => markFieldBlurred("registerEmail")}
+                                        accountLabel={copy.form.labels.email}
+                                        accountPlaceholder={copy.form.placeholders.email}
+                                        accountInvalid={!!registerEmailError}
+                                        accountError={registerEmailError}
+                                        passwordValue={registerPassword}
+                                        onPasswordValueChange={(value) => updateInputValue("registerPassword", value, setRegisterPassword)}
+                                        onPasswordBlur={() => markFieldBlurred("registerPassword")}
+                                        passwordLabel={copy.form.labels.password}
+                                        passwordPlaceholder={copy.form.placeholders.password}
+                                        passwordInvalid={!!registerPasswordError}
+                                        passwordError={registerPasswordError}
+                                        confirmPasswordValue={registerConfirmPassword}
+                                        onConfirmPasswordValueChange={(value) => updateInputValue("registerConfirmPassword", value, setRegisterConfirmPassword)}
+                                        onConfirmPasswordBlur={() => markFieldBlurred("registerConfirmPassword")}
+                                        confirmPasswordLabel={copy.form.labels.confirmPassword}
+                                        confirmPasswordPlaceholder={copy.form.placeholders.password}
+                                        confirmPasswordInvalid={!!registerConfirmPasswordError}
+                                        confirmPasswordError={registerConfirmPasswordError}
+                                        submitLabel={copy.form.buttons.signUp}
+                                        submitButtonStatus={getButtonStatus("register")}
+                                        showPasswordLabel={copy.form.actions.showPassword}
+                                        hidePasswordLabel={copy.form.actions.hidePassword}
+                                        disabled={isPending}
+                                        onSubmit={submitRegister}
+                                    />
+                                </motion.div>
+                            ) : null}
+
+                            {mode === "verify" ? (
+                                <motion.div
+                                    key="verify"
+                                    className="w-full"
+                                    variants={itemVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    layout
+                                >
+                                    <AuthVerifyForm
+                                        email={registerEmail}
+                                        codeValue={verificationCode}
+                                        onCodeValueChange={setVerificationCode}
+                                        codeInvalid={!!formErrors.code}
+                                        codeError={formErrors.code}
+                                        sentToLabel={copy.form.labels.verificationSentTo}
+                                        resendLabel={copy.form.resendPrompt}
+                                        resendActionLabel={copy.form.resendAction}
+                                        resendActionProps={{
+                                            onClick: resendVerificationCode,
+                                            disabled: isPending || resendRemaining > 0,
+                                        }}
+                                        resendButtonStatus={getButtonStatus("resend")}
+                                        resendStatus={resendStatus}
+                                        submitLabel={copy.form.buttons.verify}
+                                        submitButtonStatus={getButtonStatus("verify")}
+                                        disabled={pendingAction === "verify" || completedAction === "verify"}
+                                        onSubmit={submitVerification}
+                                    />
+                                </motion.div>
+                            ) : null}
+
+                            {mode === "forgot" ? (
+                                <motion.div
+                                    key="forgot"
+                                    className="w-full"
+                                    variants={itemVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    layout
+                                >
+                                    <AuthEmailForm
+                                        accountValueLayoutId={RECOVERY_ACCOUNT_LAYOUT_ID}
+                                        emailValue={recoveryAccount}
+                                        onEmailValueChange={(value) => updateInputValue("recoveryAccount", value, setRecoveryAccount)}
+                                        onEmailBlur={() => markFieldBlurred("recoveryAccount")}
+                                        emailLabel={copy.form.labels.account}
+                                        emailPlaceholder={copy.form.placeholders.account}
+                                        emailInvalid={!!recoveryAccountError}
+                                        emailError={recoveryAccountError}
+                                        phoneCountryCodeValue={recoveryCountryCode}
+                                        onPhoneCountryCodeValueChange={setRecoveryCountryCode}
+                                        submitLabel={copy.form.buttons.sendCode}
+                                        submitButtonStatus={getButtonStatus("forgot")}
+                                        showPasswordField={false}
+                                        showSubmitIcon
+                                        disabled={isPending}
+                                        onSubmit={submitForgotPassword}
+                                    />
+                                </motion.div>
+                            ) : null}
+
+                            {mode === "reset" ? (
+                                <motion.div
+                                    key="reset"
+                                    className="w-full"
+                                    variants={itemVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    layout
+                                >
+                                    <AuthResetPasswordForm
+                                        account={recoveryAccount}
+                                        accountLayoutId={RECOVERY_ACCOUNT_LAYOUT_ID}
+                                        codeValue={recoveryCode}
+                                        onCodeValueChange={setRecoveryCode}
+                                        codeLabel={copy.reset.codeLabel}
+                                        codeInvalid={!!formErrors.code}
+                                        codeError={formErrors.code}
+                                        accountLabel={copy.reset.accountLabel}
+                                        newPasswordValue={newPassword}
+                                        onNewPasswordValueChange={(value) => updateInputValue("newPassword", value, setNewPassword)}
+                                        onNewPasswordBlur={() => markFieldBlurred("newPassword")}
+                                        newPasswordLabel={copy.form.labels.newPassword}
+                                        newPasswordPlaceholder={copy.form.placeholders.password}
+                                        newPasswordInvalid={!!newPasswordError}
+                                        newPasswordError={newPasswordError}
+                                        confirmPasswordValue={newConfirmPassword}
+                                        onConfirmPasswordValueChange={(value) => updateInputValue("newConfirmPassword", value, setNewConfirmPassword)}
+                                        onConfirmPasswordBlur={() => markFieldBlurred("newConfirmPassword")}
+                                        confirmPasswordLabel={copy.form.labels.confirmPassword}
+                                        confirmPasswordPlaceholder={copy.form.placeholders.password}
+                                        confirmPasswordInvalid={!!newConfirmPasswordError}
+                                        confirmPasswordError={newConfirmPasswordError}
+                                        submitLabel={copy.form.buttons.resetPassword}
+                                        submitButtonStatus={getButtonStatus("reset")}
+                                        showPasswordLabel={copy.form.actions.showPassword}
+                                        hidePasswordLabel={copy.form.actions.hidePassword}
+                                        disabled={isPending}
+                                        onSubmit={submitPasswordReset}
+                                    />
+                                </motion.div>
+                            ) : null}
+
+                            {mode === "success" ? (
+                                <motion.div
+                                    key="success"
+                                    className="w-full"
+                                    variants={itemVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    layout
+                                >
+                                    <AuthSuccess
+                                        title={success.title}
+                                        description={success.description}
+                                    />
+                                </motion.div>
+                            ) : null}
+                        </AnimatePresence>
+                    </AuthBlock>
+
+                    <AnimatePresence initial={false} mode="popLayout">
+                        {mode !== "success" ? (
+                            <motion.div
+                                key={`footer-${flow}`}
+                                variants={containerVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
+                                layout
+                            >
+                                <AuthFooterLink
+                                    label={isForgot ? copy.forgot.footerPrompt : isRegister ? copy.register.footerPrompt : copy.login.footerPrompt}
+                                    action={isForgot ? copy.forgot.footerAction : isRegister ? copy.register.footerAction : copy.login.footerAction}
+                                    actionProps={{
+                                        disabled: isPending,
+                                        onClick: () => {
+                                            if (isForgot) {
+                                                switchToMode("login-email", "login")
+                                                return
+                                            }
+
+                                            const nextFlow = isRegister ? "login" : "register"
+                                            switchToMode(nextFlow, nextFlow)
+                                        },
+                                    }}
+                                />
+                            </motion.div>
+                        ) : null}
+                    </AnimatePresence>
+                </motion.div>
+            </AuthPageShell>
+        </LayoutGroup>
     )
 }
 
@@ -935,6 +1113,12 @@ function hasErrors(errors: AuthFormErrors) {
 function notifyRequestError(error: NormalizedClientError) {
     toast.error(error.message, {
         description: error.traceId ? `Trace ID: ${error.traceId}` : undefined,
+    })
+}
+
+function waitForButtonSuccess() {
+    return new Promise((resolve) => {
+        window.setTimeout(resolve, BUTTON_SUCCESS_HOLD_MS)
     })
 }
 

@@ -1,11 +1,15 @@
+"use client"
+
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { AnimatePresence, motion } from "motion/react"
+import { Check, LoaderCircle } from "lucide-react"
 import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-    "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[12px] border border-transparent bg-clip-padding text-center text-sm leading-5 font-medium tracking-[0.7px] whitespace-nowrap transition-colors duration-200 outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/35 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-status-danger aria-invalid:ring-2 aria-invalid:ring-status-danger/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+    "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[12px] border border-transparent bg-clip-padding text-center text-sm leading-5 font-medium tracking-[0.7px] whitespace-nowrap transition-[color,background-color,border-color,box-shadow,transform,filter,opacity] duration-[var(--motion-duration-medium)] ease-[var(--motion-ease-standard)] outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/35 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-status-danger aria-invalid:ring-2 aria-invalid:ring-status-danger/20 data-[pressable=true]:active:scale-[0.985] data-[pressable=true]:active:shadow-[inset_0_2px_8px_rgb(0_0_0_/_0.12)] data-[pressable=true]:active:brightness-95 data-[pressable=true]:active:duration-100 data-[status=loading]:cursor-wait data-[status=success]:cursor-default [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     {
         variants: {
             variant: {
@@ -54,27 +58,112 @@ const buttonVariants = cva(
     }
 )
 
+type ButtonStatus = "idle" | "loading" | "success"
+
+type ButtonProps = React.ComponentProps<"button"> &
+    VariantProps<typeof buttonVariants> & {
+    asChild?: boolean
+    loadingLabel?: React.ReactNode
+    pressable?: boolean | "auto"
+    status?: ButtonStatus
+    successLabel?: React.ReactNode
+}
+
 function Button({
                     className,
                     variant = "default",
                     size = "default",
                     asChild = false,
+                    children,
+                    disabled,
+                    loadingLabel = "Loading",
+                    pressable = "auto",
+                    status = "idle",
+                    successLabel = "Done",
                     ...props
-                }: React.ComponentProps<"button"> &
-    VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-}) {
-    const Comp = asChild ? Slot.Root : "button"
+                }: ButtonProps) {
+    const isLoading = status === "loading"
+    const isSuccess = status === "success"
+    const isBlocked = disabled || isLoading || isSuccess
+    const resolvedPressable =
+        pressable === "auto" ? isPressableButton(variant, size) : pressable
+    const sharedProps = {
+        "data-slot": "button",
+        "data-pressable": resolvedPressable || undefined,
+        "data-status": status,
+        "data-variant": variant,
+        "data-size": size,
+        className: cn(buttonVariants({ variant, size, className })),
+        "aria-busy": isLoading || undefined,
+    }
+
+    if (asChild) {
+        return (
+            <Slot.Root
+                {...sharedProps}
+                aria-disabled={isBlocked ? true : undefined}
+                {...props}
+            >
+                {children}
+            </Slot.Root>
+        )
+    }
 
     return (
-        <Comp
-            data-slot="button"
-            data-variant={variant}
-            data-size={size}
-            className={cn(buttonVariants({ variant, size, className }))}
+        <button
+            {...sharedProps}
+            disabled={isBlocked}
             {...props}
-        />
+        >
+            <span className="relative inline-grid min-w-0 grid-cols-1 grid-rows-1 items-center justify-items-center gap-[inherit]">
+                <AnimatePresence initial={false} mode="popLayout">
+                    <motion.span
+                        key={status}
+                        className="col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-[inherit]"
+                        initial={{ opacity: 0, y: 4, scale: 0.985 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -4, scale: 0.985 }}
+                        transition={{
+                            duration: 0.18,
+                            ease: [0.2, 0.8, 0.2, 1],
+                        }}
+                    >
+                        {status === "loading" ? (
+                            <LoaderCircle
+                                data-icon="inline-start"
+                                className="animate-spin"
+                                role="status"
+                                aria-label={getStatusLabel(loadingLabel, "Loading")}
+                            />
+                        ) : status === "success" ? (
+                            <Check
+                                data-icon="inline-start"
+                                role="status"
+                                aria-label={getStatusLabel(successLabel, "Done")}
+                            />
+                        ) : (
+                            children
+                        )}
+                    </motion.span>
+                </AnimatePresence>
+            </span>
+        </button>
     )
 }
 
-export { Button, buttonVariants }
+function getStatusLabel(label: React.ReactNode, fallback: string) {
+    return typeof label === "string" && label.trim() ? label : fallback
+}
+
+function isPressableButton(
+    variant: VariantProps<typeof buttonVariants>["variant"],
+    size: VariantProps<typeof buttonVariants>["size"]
+) {
+    if (variant === "link" || variant === "ghost-bare") {
+        return false
+    }
+
+    return size !== "bare" && size !== "icon-bare" && size !== "icon-bare-sm"
+}
+
+export { Button, buttonVariants, type ButtonStatus }

@@ -16,7 +16,7 @@ function InputOTP({
       <OTPInput
           data-slot="input-otp"
           containerClassName={cn(
-              "cn-input-otp flex items-center justify-center has-disabled:opacity-50",
+              "cn-input-otp flex items-center justify-center transition-opacity duration-[var(--motion-duration-medium)] ease-[var(--motion-ease-standard)] has-disabled:opacity-50",
               containerClassName
           )}
           spellCheck={false}
@@ -31,7 +31,7 @@ function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
       <div
           data-slot="input-otp-group"
           className={cn(
-              "flex items-center rounded-lg has-aria-invalid:border-status-danger has-aria-invalid:ring-2 has-aria-invalid:ring-status-danger/20",
+              "flex items-center rounded-lg transition-[border-color,box-shadow,opacity] duration-[var(--motion-duration-medium)] ease-[var(--motion-ease-standard)] has-aria-invalid:border-status-danger has-aria-invalid:ring-2 has-aria-invalid:ring-status-danger/20",
               className
           )}
           {...props}
@@ -54,7 +54,7 @@ function InputOTPSlot({
           data-slot="input-otp-slot"
           data-active={isActive}
           className={cn(
-              "relative flex size-10.5 items-center justify-center border-y border-r border-auth-otp-border bg-white text-base leading-6 font-medium text-auth-ink transition-colors outline-none first:rounded-l-lg first:border-l last:rounded-r-lg aria-invalid:border-status-danger data-[active=true]:z-10 data-[active=true]:border-auth-ink data-[active=true]:ring-2 data-[active=true]:ring-auth-ink/10 data-[active=true]:aria-invalid:border-status-danger data-[active=true]:aria-invalid:ring-status-danger/20 md:size-12 dark:bg-white dark:text-[#1c1917]",
+              "relative flex size-10.5 items-center justify-center border-y border-r border-auth-otp-border bg-white text-base leading-6 font-medium text-auth-ink transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-[var(--motion-duration-medium)] ease-[var(--motion-ease-standard)] outline-none first:rounded-l-lg first:border-l last:rounded-r-lg aria-invalid:border-status-danger data-[active=true]:z-10 data-[active=true]:border-auth-ink data-[active=true]:ring-2 data-[active=true]:ring-auth-ink/10 data-[active=true]:aria-invalid:border-status-danger data-[active=true]:aria-invalid:ring-status-danger/20 md:size-12 dark:bg-white dark:text-[#1c1917]",
               className
           )}
           {...props}
