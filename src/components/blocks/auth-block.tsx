@@ -1133,17 +1133,17 @@ function AuthCodeField({
 export function AuthSuccess({
                                 title = "Successful",
                                 description = "Your account has been created and verified.",
-                                className
+                                className,
+                                ...props
                             }: AuthSuccessProps) {
     const shouldReduceMotion = useReducedMotion()
+    const itemVariants = getAuthFadeItemVariants(!!shouldReduceMotion)
+    const containerVariants = getAuthStaggerContainerVariants(!!shouldReduceMotion)
 
     return (
-        <motion.div
+        <div
             className={cn("flex w-full flex-col items-center gap-6 text-center", className)}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            {...props}
         >
             <motion.div
                 initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.86 }}
@@ -1160,14 +1160,25 @@ export function AuthSuccess({
                 </div>
             </motion.div>
 
-            <div className="flex max-w-70 flex-col gap-2">
-                <h3 className="text-2xl leading-8 font-semibold tracking-[-0.6px] text-auth-ink">
+            <motion.div
+                className="flex max-w-70 flex-col gap-2"
+                initial="hidden"
+                animate="visible"
+                variants={containerVariants}
+            >
+                <motion.h3
+                    className="text-2xl leading-8 font-semibold tracking-[-0.6px] text-auth-ink"
+                    variants={itemVariants}
+                >
                     {title}
-                </h3>
-                <p className="text-sm leading-[22.75px] font-normal text-auth-muted">
+                </motion.h3>
+                <motion.p
+                    className="text-sm leading-[22.75px] font-normal text-auth-muted"
+                    variants={itemVariants}
+                >
                     {description}
-                </p>
-            </div>
-        </motion.div>
+                </motion.p>
+            </motion.div>
+        </div>
     )
 }

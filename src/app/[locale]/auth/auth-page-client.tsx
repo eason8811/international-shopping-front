@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion, type Variants } from "motion/react"
 import { toast } from "sonner"
 
 import {
@@ -19,7 +19,6 @@ import {
     type AuthShellCopy,
 } from "@/components/blocks"
 import {
-    getAuthCollapsePanelVariants,
     getAuthFadeItemVariants,
     getAuthStaggerContainerVariants,
 } from "@/components/blocks/auth-motion"
@@ -181,6 +180,61 @@ const BUTTON_SUCCESS_HOLD_MS = 450
 const REDIRECT_DELAY_MS = 3000
 const RESEND_COOLDOWN_SECONDS = 60
 const RECOVERY_ACCOUNT_LAYOUT_ID = "auth-recovery-account-value"
+const AUTH_SUCCESS_PANEL_TRANSITION = { duration: 0.3 }
+
+type AuthModePanelKind = "content" | "success"
+type AuthModePanelExitTarget = "default" | "success"
+
+interface AuthModePanelCustom {
+    exitTarget: AuthModePanelExitTarget
+    kind?: AuthModePanelKind
+    reducedMotion: boolean
+}
+
+const authModePanelVariants: Variants = {
+    hidden: (custom: AuthModePanelCustom) => {
+        if (custom.kind === "success") {
+            return { opacity: 0 }
+        }
+
+        return { height: 0, opacity: 0 }
+    },
+    visible: (custom: AuthModePanelCustom) => {
+        if (custom.kind === "success") {
+            return {
+                opacity: 1,
+                transition: AUTH_SUCCESS_PANEL_TRANSITION,
+            }
+        }
+
+        return {
+            height: "auto",
+            opacity: 1,
+            transition: {
+                duration: custom.reducedMotion ? 0.12 : 0.3,
+                ease: "easeOut",
+                when: "beforeChildren",
+            },
+        }
+    },
+    exit: (custom: AuthModePanelCustom) => {
+        if (custom.exitTarget === "success") {
+            return {
+                opacity: 0,
+                transition: AUTH_SUCCESS_PANEL_TRANSITION,
+            }
+        }
+
+        return {
+            height: 0,
+            opacity: 0,
+            transition: {
+                duration: custom.reducedMotion ? 0.08 : 0.3,
+                ease: "easeOut",
+            },
+        }
+    },
+}
 
 export function AuthPageClient({
                                    copy,
@@ -230,6 +284,20 @@ export function AuthPageClient({
     const isForgot = flow === "forgot"
     const intro = isForgot ? copy.forgot : isRegister ? copy.register : copy.login
     const separatorLabel = isRegister ? copy.register.divider : copy.login.divider
+    const authModePanelExitTarget: AuthModePanelExitTarget =
+        mode === "success" ? "success" : "default"
+    const authModePanelPresenceCustom: AuthModePanelCustom = {
+        exitTarget: authModePanelExitTarget,
+        reducedMotion: !!shouldReduceMotion,
+    }
+    const providers: AuthProvider[] = ["google", "tiktok", "x"]
+    const authProviders = providers.map((provider) => ({
+        provider,
+        label: copy.social[provider],
+        disabled: isPending,
+        status: getProviderButtonStatus(provider),
+        onClick: () => startOAuth(provider),
+    }))
 
     React.useEffect(() => {
         if (initialOAuthHandledRef.current) {
@@ -803,32 +871,14 @@ export function AuthPageClient({
                     <AuthHeroText title={intro.title} subtitle={intro.subtitle} />
 
                     <AuthBlock
-                        providers={mode === "success" ? [] : [
-                            {
-                                provider: "google",
-                                label: copy.social.google,
-                                disabled: isPending,
-                                status: getProviderButtonStatus("google"),
-                                onClick: () => startOAuth("google"),
-                            },
-                            {
-                                provider: "tiktok",
-                                label: copy.social.tiktok,
-                                disabled: isPending,
-                                status: getProviderButtonStatus("tiktok"),
-                                onClick: () => startOAuth("tiktok"),
-                            },
-                            {
-                                provider: "x",
-                                label: copy.social.x,
-                                disabled: isPending,
-                                status: getProviderButtonStatus("x"),
-                                onClick: () => startOAuth("x"),
-                            },
-                        ]}
+                        providers={authProviders}
                         separatorLabel={separatorLabel}
                     >
-                        <AnimatePresence initial={false} mode="wait">
+                        <AnimatePresence
+                            initial={false}
+                            mode="wait"
+                            custom={authModePanelPresenceCustom}
+                        >
                             {mode === "login" ? (
                                 <AuthModePanel key="login">
                                     <AuthEmailButton
@@ -1000,7 +1050,7 @@ export function AuthPageClient({
                             ) : null}
 
                             {mode === "success" ? (
-                                <AuthModePanel key="success">
+                                <AuthModePanel key="success" kind="success">
                                     <AuthSuccess
                                         title={success.title}
                                         description={success.description}
@@ -1037,13 +1087,24 @@ export function AuthPageClient({
     )
 }
 
-function AuthModePanel({ children }: { children: React.ReactNode }) {
+function AuthModePanel({
+                           children,
+                           kind = "content",
+                       }: {
+    children: React.ReactNode
+    kind?: AuthModePanelKind
+}) {
     const shouldReduceMotion = useReducedMotion()
 
     return (
         <motion.div
             className="w-full overflow-visible"
-            variants={getAuthCollapsePanelVariants(!!shouldReduceMotion)}
+            custom={{
+                exitTarget: "default",
+                kind,
+                reducedMotion: !!shouldReduceMotion,
+            } satisfies AuthModePanelCustom}
+            variants={authModePanelVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
