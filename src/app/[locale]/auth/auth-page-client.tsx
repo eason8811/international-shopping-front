@@ -1,7 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion, type Variants } from "motion/react"
+import {
+    AnimatePresence,
+    LayoutGroup,
+    motion,
+    usePresenceData,
+    useReducedMotion,
+    type Variants,
+} from "motion/react"
 import { toast } from "sonner"
 
 import {
@@ -180,30 +187,28 @@ const BUTTON_SUCCESS_HOLD_MS = 450
 const REDIRECT_DELAY_MS = 3000
 const RESEND_COOLDOWN_SECONDS = 60
 const RECOVERY_ACCOUNT_LAYOUT_ID = "auth-recovery-account-value"
-const AUTH_SUCCESS_PANEL_TRANSITION = { duration: 0.3 }
+const AUTH_MODE_PANEL_FADE_TRANSITION = { duration: 0.3 }
 
-type AuthModePanelKind = "content" | "success"
-type AuthModePanelExitTarget = "default" | "success"
+type AuthModePanelTransition = "expand" | "morph"
 
 interface AuthModePanelCustom {
-    exitTarget: AuthModePanelExitTarget
-    kind?: AuthModePanelKind
+    transition: AuthModePanelTransition
     reducedMotion: boolean
 }
 
 const authModePanelVariants: Variants = {
     hidden: (custom: AuthModePanelCustom) => {
-        if (custom.kind === "success") {
+        if (custom.transition === "morph") {
             return { opacity: 0 }
         }
 
         return { height: 0, opacity: 0 }
     },
     visible: (custom: AuthModePanelCustom) => {
-        if (custom.kind === "success") {
+        if (custom.transition === "morph") {
             return {
                 opacity: 1,
-                transition: AUTH_SUCCESS_PANEL_TRANSITION,
+                transition: AUTH_MODE_PANEL_FADE_TRANSITION,
             }
         }
 
@@ -218,10 +223,10 @@ const authModePanelVariants: Variants = {
         }
     },
     exit: (custom: AuthModePanelCustom) => {
-        if (custom.exitTarget === "success") {
+        if (custom.transition === "morph") {
             return {
                 opacity: 0,
-                transition: AUTH_SUCCESS_PANEL_TRANSITION,
+                transition: AUTH_MODE_PANEL_FADE_TRANSITION,
             }
         }
 
@@ -243,6 +248,8 @@ export function AuthPageClient({
                                    initialOAuthError,
                                }: AuthPageClientProps) {
     const [mode, setMode] = React.useState<AuthMode>("login")
+    const [authModePanelTransition, setAuthModePanelTransition] =
+        React.useState<AuthModePanelTransition>("expand")
     const [flow, setFlow] = React.useState<AuthFlow>("login")
     const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null)
     const [completedAction, setCompletedAction] = React.useState<PendingAction | null>(null)
@@ -284,10 +291,8 @@ export function AuthPageClient({
     const isForgot = flow === "forgot"
     const intro = isForgot ? copy.forgot : isRegister ? copy.register : copy.login
     const separatorLabel = isRegister ? copy.register.divider : copy.login.divider
-    const authModePanelExitTarget: AuthModePanelExitTarget =
-        mode === "success" ? "success" : "default"
     const authModePanelPresenceCustom: AuthModePanelCustom = {
-        exitTarget: authModePanelExitTarget,
+        transition: authModePanelTransition,
         reducedMotion: !!shouldReduceMotion,
     }
     const providers: AuthProvider[] = ["google", "tiktok", "x"]
@@ -298,6 +303,10 @@ export function AuthPageClient({
         status: getProviderButtonStatus(provider),
         onClick: () => startOAuth(provider),
     }))
+    const changeMode = React.useCallback((nextMode: AuthMode) => {
+        setAuthModePanelTransition(resolveAuthModePanelTransition(mode, nextMode))
+        setMode(nextMode)
+    }, [mode])
 
     React.useEffect(() => {
         if (initialOAuthHandledRef.current) {
@@ -317,13 +326,13 @@ export function AuthPageClient({
             setPendingAction(null)
             setCompletedAction(null)
             setPendingOAuthProvider(null)
-            setMode("success")
+            changeMode("success")
             return
         }
 
         if (initialOAuthStatus === "error") {
             setFlow("login")
-            setMode("login")
+            changeMode("login")
             notifyRequestError({
                 status: 400,
                 code: "BAD_REQUEST",
@@ -334,6 +343,7 @@ export function AuthPageClient({
         copy.form.errors.loginFailed,
         copy.success.oauthDescription,
         copy.success.oauthTitle,
+        changeMode,
         initialOAuthError,
         initialOAuthStatus,
     ])
@@ -374,7 +384,7 @@ export function AuthPageClient({
         clearFeedback()
         resetFieldInteraction()
         setFlow(nextFlow)
-        setMode(nextMode)
+        changeMode(nextMode)
     }
 
     async function submitLogin(event: React.FormEvent<HTMLFormElement>) {
@@ -423,7 +433,7 @@ export function AuthPageClient({
             setVerificationCode("")
             setResendRemaining(RESEND_COOLDOWN_SECONDS)
             setFlow("register")
-            setMode("verify")
+            changeMode("verify")
         }
     }
 
@@ -490,7 +500,7 @@ export function AuthPageClient({
             setNewPassword("")
             setNewConfirmPassword("")
             setFlow("forgot")
-            setMode("reset")
+            changeMode("reset")
         }
     }
 
@@ -543,7 +553,7 @@ export function AuthPageClient({
         setPendingAction(null)
         setCompletedAction(null)
         setPendingOAuthProvider(null)
-        setMode("success")
+        changeMode("success")
     }
 
     function getSuccessCopy(kind: AuthFlow | "verify" | "reset"): AuthSuccessState {
@@ -874,190 +884,192 @@ export function AuthPageClient({
                         providers={authProviders}
                         separatorLabel={separatorLabel}
                     >
-                        <AnimatePresence
-                            initial={false}
-                            mode="wait"
-                            custom={authModePanelPresenceCustom}
-                        >
-                            {mode === "login" ? (
-                                <AuthModePanel key="login">
-                                    <AuthEmailButton
-                                        label={copy.login.continueWithEmail}
-                                        disabled={isPending}
-                                        onClick={() => switchToMode("login-email", "login")}
-                                    />
-                                </AuthModePanel>
-                            ) : null}
+                        <AuthModePanelViewport shouldAnimateHeight={authModePanelTransition === "morph"}>
+                            <AnimatePresence
+                                initial={false}
+                                mode="wait"
+                                custom={authModePanelPresenceCustom}
+                            >
+                                {mode === "login" ? (
+                                    <AuthModePanel key="login">
+                                        <AuthEmailButton
+                                            label={copy.login.continueWithEmail}
+                                            disabled={isPending}
+                                            onClick={() => switchToMode("login-email", "login")}
+                                        />
+                                    </AuthModePanel>
+                                ) : null}
 
-                            {mode === "register" ? (
-                                <AuthModePanel key="register">
-                                    <AuthEmailButton
-                                        label={copy.register.continueWithEmail}
-                                        disabled={isPending}
-                                        onClick={() => switchToMode("register-email", "register")}
-                                    />
-                                </AuthModePanel>
-                            ) : null}
+                                {mode === "register" ? (
+                                    <AuthModePanel key="register">
+                                        <AuthEmailButton
+                                            label={copy.register.continueWithEmail}
+                                            disabled={isPending}
+                                            onClick={() => switchToMode("register-email", "register")}
+                                        />
+                                    </AuthModePanel>
+                                ) : null}
 
-                            {mode === "login-email" ? (
-                                <AuthModePanel key="login-email">
-                                    <AuthEmailForm
-                                        emailValue={loginAccount}
-                                        onEmailValueChange={(value) => updateInputValue("loginAccount", value, setLoginAccount)}
-                                        onEmailBlur={() => markFieldBlurred("loginAccount")}
-                                        emailLabel={copy.form.labels.account}
-                                        emailPlaceholder={copy.form.placeholders.account}
-                                        emailInvalid={!!loginAccountError}
-                                        emailError={loginAccountError}
-                                        phoneCountryCodeValue={loginCountryCode}
-                                        onPhoneCountryCodeValueChange={setLoginCountryCode}
-                                        passwordValue={loginPassword}
-                                        onPasswordValueChange={(value) => updateInputValue("loginPassword", value, setLoginPassword)}
-                                        onPasswordBlur={() => markFieldBlurred("loginPassword")}
-                                        passwordLabel={copy.form.labels.password}
-                                        passwordPlaceholder={copy.form.placeholders.password}
-                                        passwordInvalid={!!loginPasswordError}
-                                        passwordError={loginPasswordError}
-                                        forgotPasswordLabel={copy.form.actions.forgotPassword}
-                                        forgotPasswordActionProps={{
-                                            onClick: () => switchToMode("forgot", "forgot"),
-                                        }}
-                                        submitLabel={copy.form.buttons.signIn}
-                                        submitButtonStatus={getButtonStatus("login")}
-                                        showPasswordLabel={copy.form.actions.showPassword}
-                                        hidePasswordLabel={copy.form.actions.hidePassword}
-                                        disabled={isPending}
-                                        onSubmit={submitLogin}
-                                    />
-                                </AuthModePanel>
-                            ) : null}
+                                {mode === "login-email" ? (
+                                    <AuthModePanel key="login-email">
+                                        <AuthEmailForm
+                                            emailValue={loginAccount}
+                                            onEmailValueChange={(value) => updateInputValue("loginAccount", value, setLoginAccount)}
+                                            onEmailBlur={() => markFieldBlurred("loginAccount")}
+                                            emailLabel={copy.form.labels.account}
+                                            emailPlaceholder={copy.form.placeholders.account}
+                                            emailInvalid={!!loginAccountError}
+                                            emailError={loginAccountError}
+                                            phoneCountryCodeValue={loginCountryCode}
+                                            onPhoneCountryCodeValueChange={setLoginCountryCode}
+                                            passwordValue={loginPassword}
+                                            onPasswordValueChange={(value) => updateInputValue("loginPassword", value, setLoginPassword)}
+                                            onPasswordBlur={() => markFieldBlurred("loginPassword")}
+                                            passwordLabel={copy.form.labels.password}
+                                            passwordPlaceholder={copy.form.placeholders.password}
+                                            passwordInvalid={!!loginPasswordError}
+                                            passwordError={loginPasswordError}
+                                            forgotPasswordLabel={copy.form.actions.forgotPassword}
+                                            forgotPasswordActionProps={{
+                                                onClick: () => switchToMode("forgot", "forgot"),
+                                            }}
+                                            submitLabel={copy.form.buttons.signIn}
+                                            submitButtonStatus={getButtonStatus("login")}
+                                            showPasswordLabel={copy.form.actions.showPassword}
+                                            hidePasswordLabel={copy.form.actions.hidePassword}
+                                            disabled={isPending}
+                                            onSubmit={submitLogin}
+                                        />
+                                    </AuthModePanel>
+                                ) : null}
 
-                            {mode === "register-email" ? (
-                                <AuthModePanel key="register-email">
-                                    <AuthRegisterForm
-                                        accountValue={registerEmail}
-                                        onAccountValueChange={(value) => updateInputValue("registerEmail", value, setRegisterEmail)}
-                                        onAccountBlur={() => markFieldBlurred("registerEmail")}
-                                        accountLabel={copy.form.labels.email}
-                                        accountPlaceholder={copy.form.placeholders.email}
-                                        accountInvalid={!!registerEmailError}
-                                        accountError={registerEmailError}
-                                        passwordValue={registerPassword}
-                                        onPasswordValueChange={(value) => updateInputValue("registerPassword", value, setRegisterPassword)}
-                                        onPasswordBlur={() => markFieldBlurred("registerPassword")}
-                                        passwordLabel={copy.form.labels.password}
-                                        passwordPlaceholder={copy.form.placeholders.password}
-                                        passwordInvalid={!!registerPasswordError}
-                                        passwordError={registerPasswordError}
-                                        confirmPasswordValue={registerConfirmPassword}
-                                        onConfirmPasswordValueChange={(value) => updateInputValue("registerConfirmPassword", value, setRegisterConfirmPassword)}
-                                        onConfirmPasswordBlur={() => markFieldBlurred("registerConfirmPassword")}
-                                        confirmPasswordLabel={copy.form.labels.confirmPassword}
-                                        confirmPasswordPlaceholder={copy.form.placeholders.password}
-                                        confirmPasswordInvalid={!!registerConfirmPasswordError}
-                                        confirmPasswordError={registerConfirmPasswordError}
-                                        submitLabel={copy.form.buttons.signUp}
-                                        submitButtonStatus={getButtonStatus("register")}
-                                        showPasswordLabel={copy.form.actions.showPassword}
-                                        hidePasswordLabel={copy.form.actions.hidePassword}
-                                        disabled={isPending}
-                                        onSubmit={submitRegister}
-                                    />
-                                </AuthModePanel>
-                            ) : null}
+                                {mode === "register-email" ? (
+                                    <AuthModePanel key="register-email">
+                                        <AuthRegisterForm
+                                            accountValue={registerEmail}
+                                            onAccountValueChange={(value) => updateInputValue("registerEmail", value, setRegisterEmail)}
+                                            onAccountBlur={() => markFieldBlurred("registerEmail")}
+                                            accountLabel={copy.form.labels.email}
+                                            accountPlaceholder={copy.form.placeholders.email}
+                                            accountInvalid={!!registerEmailError}
+                                            accountError={registerEmailError}
+                                            passwordValue={registerPassword}
+                                            onPasswordValueChange={(value) => updateInputValue("registerPassword", value, setRegisterPassword)}
+                                            onPasswordBlur={() => markFieldBlurred("registerPassword")}
+                                            passwordLabel={copy.form.labels.password}
+                                            passwordPlaceholder={copy.form.placeholders.password}
+                                            passwordInvalid={!!registerPasswordError}
+                                            passwordError={registerPasswordError}
+                                            confirmPasswordValue={registerConfirmPassword}
+                                            onConfirmPasswordValueChange={(value) => updateInputValue("registerConfirmPassword", value, setRegisterConfirmPassword)}
+                                            onConfirmPasswordBlur={() => markFieldBlurred("registerConfirmPassword")}
+                                            confirmPasswordLabel={copy.form.labels.confirmPassword}
+                                            confirmPasswordPlaceholder={copy.form.placeholders.password}
+                                            confirmPasswordInvalid={!!registerConfirmPasswordError}
+                                            confirmPasswordError={registerConfirmPasswordError}
+                                            submitLabel={copy.form.buttons.signUp}
+                                            submitButtonStatus={getButtonStatus("register")}
+                                            showPasswordLabel={copy.form.actions.showPassword}
+                                            hidePasswordLabel={copy.form.actions.hidePassword}
+                                            disabled={isPending}
+                                            onSubmit={submitRegister}
+                                        />
+                                    </AuthModePanel>
+                                ) : null}
 
-                            {mode === "verify" ? (
-                                <AuthModePanel key="verify">
-                                    <AuthVerifyForm
-                                        email={registerEmail}
-                                        codeValue={verificationCode}
-                                        onCodeValueChange={setVerificationCode}
-                                        codeInvalid={!!formErrors.code}
-                                        codeError={formErrors.code}
-                                        sentToLabel={copy.form.labels.verificationSentTo}
-                                        resendLabel={copy.form.resendPrompt}
-                                        resendActionLabel={copy.form.resendAction}
-                                        resendActionProps={{
-                                            onClick: resendVerificationCode,
-                                            disabled: isPending || resendRemaining > 0,
-                                        }}
-                                        resendButtonStatus={getButtonStatus("resend")}
-                                        resendStatus={resendStatus}
-                                        submitLabel={copy.form.buttons.verify}
-                                        submitButtonStatus={getButtonStatus("verify")}
-                                        disabled={pendingAction === "verify" || completedAction === "verify"}
-                                        onSubmit={submitVerification}
-                                    />
-                                </AuthModePanel>
-                            ) : null}
+                                {mode === "verify" ? (
+                                    <AuthModePanel key="verify">
+                                        <AuthVerifyForm
+                                            email={registerEmail}
+                                            codeValue={verificationCode}
+                                            onCodeValueChange={setVerificationCode}
+                                            codeInvalid={!!formErrors.code}
+                                            codeError={formErrors.code}
+                                            sentToLabel={copy.form.labels.verificationSentTo}
+                                            resendLabel={copy.form.resendPrompt}
+                                            resendActionLabel={copy.form.resendAction}
+                                            resendActionProps={{
+                                                onClick: resendVerificationCode,
+                                                disabled: isPending || resendRemaining > 0,
+                                            }}
+                                            resendButtonStatus={getButtonStatus("resend")}
+                                            resendStatus={resendStatus}
+                                            submitLabel={copy.form.buttons.verify}
+                                            submitButtonStatus={getButtonStatus("verify")}
+                                            disabled={pendingAction === "verify" || completedAction === "verify"}
+                                            onSubmit={submitVerification}
+                                        />
+                                    </AuthModePanel>
+                                ) : null}
 
-                            {mode === "forgot" ? (
-                                <AuthModePanel key="forgot">
-                                    <AuthEmailForm
-                                        accountValueLayoutId={RECOVERY_ACCOUNT_LAYOUT_ID}
-                                        emailValue={recoveryAccount}
-                                        onEmailValueChange={(value) => updateInputValue("recoveryAccount", value, setRecoveryAccount)}
-                                        onEmailBlur={() => markFieldBlurred("recoveryAccount")}
-                                        emailLabel={copy.form.labels.account}
-                                        emailPlaceholder={copy.form.placeholders.account}
-                                        emailInvalid={!!recoveryAccountError}
-                                        emailError={recoveryAccountError}
-                                        phoneCountryCodeValue={recoveryCountryCode}
-                                        onPhoneCountryCodeValueChange={setRecoveryCountryCode}
-                                        submitLabel={copy.form.buttons.sendCode}
-                                        submitButtonStatus={getButtonStatus("forgot")}
-                                        showPasswordField={false}
-                                        showSubmitIcon
-                                        disabled={isPending}
-                                        onSubmit={submitForgotPassword}
-                                    />
-                                </AuthModePanel>
-                            ) : null}
+                                {mode === "forgot" ? (
+                                    <AuthModePanel key="forgot">
+                                        <AuthEmailForm
+                                            accountValueLayoutId={RECOVERY_ACCOUNT_LAYOUT_ID}
+                                            emailValue={recoveryAccount}
+                                            onEmailValueChange={(value) => updateInputValue("recoveryAccount", value, setRecoveryAccount)}
+                                            onEmailBlur={() => markFieldBlurred("recoveryAccount")}
+                                            emailLabel={copy.form.labels.account}
+                                            emailPlaceholder={copy.form.placeholders.account}
+                                            emailInvalid={!!recoveryAccountError}
+                                            emailError={recoveryAccountError}
+                                            phoneCountryCodeValue={recoveryCountryCode}
+                                            onPhoneCountryCodeValueChange={setRecoveryCountryCode}
+                                            submitLabel={copy.form.buttons.sendCode}
+                                            submitButtonStatus={getButtonStatus("forgot")}
+                                            showPasswordField={false}
+                                            showSubmitIcon
+                                            disabled={isPending}
+                                            onSubmit={submitForgotPassword}
+                                        />
+                                    </AuthModePanel>
+                                ) : null}
 
-                            {mode === "reset" ? (
-                                <AuthModePanel key="reset">
-                                    <AuthResetPasswordForm
-                                        account={recoveryAccount}
-                                        accountLayoutId={RECOVERY_ACCOUNT_LAYOUT_ID}
-                                        codeValue={recoveryCode}
-                                        onCodeValueChange={setRecoveryCode}
-                                        codeLabel={copy.reset.codeLabel}
-                                        codeInvalid={!!formErrors.code}
-                                        codeError={formErrors.code}
-                                        accountLabel={copy.reset.accountLabel}
-                                        newPasswordValue={newPassword}
-                                        onNewPasswordValueChange={(value) => updateInputValue("newPassword", value, setNewPassword)}
-                                        onNewPasswordBlur={() => markFieldBlurred("newPassword")}
-                                        newPasswordLabel={copy.form.labels.newPassword}
-                                        newPasswordPlaceholder={copy.form.placeholders.password}
-                                        newPasswordInvalid={!!newPasswordError}
-                                        newPasswordError={newPasswordError}
-                                        confirmPasswordValue={newConfirmPassword}
-                                        onConfirmPasswordValueChange={(value) => updateInputValue("newConfirmPassword", value, setNewConfirmPassword)}
-                                        onConfirmPasswordBlur={() => markFieldBlurred("newConfirmPassword")}
-                                        confirmPasswordLabel={copy.form.labels.confirmPassword}
-                                        confirmPasswordPlaceholder={copy.form.placeholders.password}
-                                        confirmPasswordInvalid={!!newConfirmPasswordError}
-                                        confirmPasswordError={newConfirmPasswordError}
-                                        submitLabel={copy.form.buttons.resetPassword}
-                                        submitButtonStatus={getButtonStatus("reset")}
-                                        showPasswordLabel={copy.form.actions.showPassword}
-                                        hidePasswordLabel={copy.form.actions.hidePassword}
-                                        disabled={isPending}
-                                        onSubmit={submitPasswordReset}
-                                    />
-                                </AuthModePanel>
-                            ) : null}
+                                {mode === "reset" ? (
+                                    <AuthModePanel key="reset">
+                                        <AuthResetPasswordForm
+                                            account={recoveryAccount}
+                                            accountLayoutId={RECOVERY_ACCOUNT_LAYOUT_ID}
+                                            codeValue={recoveryCode}
+                                            onCodeValueChange={setRecoveryCode}
+                                            codeLabel={copy.reset.codeLabel}
+                                            codeInvalid={!!formErrors.code}
+                                            codeError={formErrors.code}
+                                            accountLabel={copy.reset.accountLabel}
+                                            newPasswordValue={newPassword}
+                                            onNewPasswordValueChange={(value) => updateInputValue("newPassword", value, setNewPassword)}
+                                            onNewPasswordBlur={() => markFieldBlurred("newPassword")}
+                                            newPasswordLabel={copy.form.labels.newPassword}
+                                            newPasswordPlaceholder={copy.form.placeholders.password}
+                                            newPasswordInvalid={!!newPasswordError}
+                                            newPasswordError={newPasswordError}
+                                            confirmPasswordValue={newConfirmPassword}
+                                            onConfirmPasswordValueChange={(value) => updateInputValue("newConfirmPassword", value, setNewConfirmPassword)}
+                                            onConfirmPasswordBlur={() => markFieldBlurred("newConfirmPassword")}
+                                            confirmPasswordLabel={copy.form.labels.confirmPassword}
+                                            confirmPasswordPlaceholder={copy.form.placeholders.password}
+                                            confirmPasswordInvalid={!!newConfirmPasswordError}
+                                            confirmPasswordError={newConfirmPasswordError}
+                                            submitLabel={copy.form.buttons.resetPassword}
+                                            submitButtonStatus={getButtonStatus("reset")}
+                                            showPasswordLabel={copy.form.actions.showPassword}
+                                            hidePasswordLabel={copy.form.actions.hidePassword}
+                                            disabled={isPending}
+                                            onSubmit={submitPasswordReset}
+                                        />
+                                    </AuthModePanel>
+                                ) : null}
 
-                            {mode === "success" ? (
-                                <AuthModePanel key="success" kind="success">
-                                    <AuthSuccess
-                                        title={success.title}
-                                        description={success.description}
-                                    />
-                                </AuthModePanel>
-                            ) : null}
-                        </AnimatePresence>
+                                {mode === "success" ? (
+                                    <AuthModePanel key="success">
+                                        <AuthSuccess
+                                            title={success.title}
+                                            description={success.description}
+                                        />
+                                    </AuthModePanel>
+                                ) : null}
+                            </AnimatePresence>
+                        </AuthModePanelViewport>
                     </AuthBlock>
 
                     <AuthFooterLink
@@ -1085,21 +1097,70 @@ export function AuthPageClient({
     )
 }
 
-function AuthModePanel({
-                           children,
-                           kind = "content",
-                       }: {
+function AuthModePanelViewport({
+                                   children,
+                                   shouldAnimateHeight,
+                               }: {
     children: React.ReactNode
-    kind?: AuthModePanelKind
+    shouldAnimateHeight: boolean
 }) {
     const shouldReduceMotion = useReducedMotion()
+    const contentRef = React.useRef<HTMLDivElement>(null)
+    const [contentHeight, setContentHeight] = React.useState<number | null>(null)
+
+    React.useLayoutEffect(() => {
+        const element = contentRef.current
+
+        if (!element) {
+            return
+        }
+
+        const updateHeight = () => {
+            setContentHeight(element.getBoundingClientRect().height)
+        }
+
+        updateHeight()
+
+        const observer = new ResizeObserver(updateHeight)
+        observer.observe(element)
+
+        return () => observer.disconnect()
+    }, [])
+
+    return (
+        <motion.div
+            className="w-full overflow-hidden"
+            initial={false}
+            animate={
+                shouldAnimateHeight && contentHeight !== null
+                    ? { height: contentHeight }
+                    : { height: "auto" }
+            }
+            transition={{
+                duration: shouldReduceMotion ? 0.12 : 0.3,
+                ease: "easeOut",
+            }}
+        >
+            <div ref={contentRef} className="w-full">
+                {children}
+            </div>
+        </motion.div>
+    )
+}
+
+function AuthModePanel({
+                           children,
+                       }: {
+    children: React.ReactNode
+}) {
+    const shouldReduceMotion = useReducedMotion()
+    const presenceCustom = usePresenceData() as AuthModePanelCustom | undefined
 
     return (
         <motion.div
             className="w-full overflow-visible"
             custom={{
-                exitTarget: "default",
-                kind,
+                transition: presenceCustom?.transition ?? "morph",
                 reducedMotion: !!shouldReduceMotion,
             } satisfies AuthModePanelCustom}
             variants={authModePanelVariants}
@@ -1111,6 +1172,15 @@ function AuthModePanel({
             {children}
         </motion.div>
     )
+}
+
+function resolveAuthModePanelTransition(currentMode: AuthMode, nextMode: AuthMode): AuthModePanelTransition {
+    return (
+        (currentMode === "login" && nextMode === "login-email") ||
+        (currentMode === "register" && nextMode === "register-email")
+    )
+        ? "expand"
+        : "morph"
 }
 
 function hasErrors(errors: AuthFormErrors) {
