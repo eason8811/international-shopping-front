@@ -60,12 +60,15 @@ const buttonVariants = cva(
 
 type ButtonStatus = "idle" | "loading" | "success"
 
+const DEFAULT_SUCCESS_HOLD_MS = 450
+
 type ButtonProps = React.ComponentProps<"button"> &
     VariantProps<typeof buttonVariants> & {
     asChild?: boolean
     loadingLabel?: React.ReactNode
     pressable?: boolean | "auto"
     status?: ButtonStatus
+    successHoldMs?: number
     successLabel?: React.ReactNode
 }
 
@@ -79,18 +82,63 @@ function Button({
                     loadingLabel = "Loading",
                     pressable = "auto",
                     status = "idle",
+                    successHoldMs = DEFAULT_SUCCESS_HOLD_MS,
                     successLabel = "Done",
                     ...props
                 }: ButtonProps) {
-    const isLoading = status === "loading"
-    const isSuccess = status === "success"
+    const [displayStatus, setDisplayStatus] = React.useState(status)
+    const displayStatusRef = React.useRef(status)
+    const successStartedAtRef = React.useRef<number | null>(null)
+
+    const setVisibleStatus = React.useCallback((nextStatus: ButtonStatus) => {
+        displayStatusRef.current = nextStatus
+        setDisplayStatus(nextStatus)
+    }, [])
+
+    React.useEffect(() => {
+        const normalizedSuccessHoldMs = Math.max(0, successHoldMs)
+        let successHoldTimer: number | undefined
+
+        if (status === "loading") {
+            successStartedAtRef.current = null
+            setVisibleStatus("loading")
+            return undefined
+        }
+
+        if (status === "success") {
+            successStartedAtRef.current = Date.now()
+            setVisibleStatus("success")
+            return undefined
+        }
+
+        if (displayStatusRef.current === "success") {
+            const startedAt = successStartedAtRef.current ?? Date.now()
+            const remainingMs = normalizedSuccessHoldMs - (Date.now() - startedAt)
+
+            if (remainingMs > 0) {
+                successHoldTimer = window.setTimeout(() => {
+                    successStartedAtRef.current = null
+                    setVisibleStatus(status)
+                }, remainingMs)
+
+                return () => window.clearTimeout(successHoldTimer)
+            }
+        }
+
+        successStartedAtRef.current = null
+        setVisibleStatus(status)
+        return undefined
+    }, [setVisibleStatus, status, successHoldMs])
+
+    const isLoading = displayStatus === "loading"
+    const isSuccess = displayStatus === "success"
     const isBlocked = disabled || isLoading || isSuccess
     const resolvedPressable =
         pressable === "auto" ? isPressableButton(variant, size) : pressable
     const sharedProps = {
         "data-slot": "button",
         "data-pressable": resolvedPressable || undefined,
-        "data-status": status,
+        "data-status": displayStatus,
         "data-variant": variant,
         "data-size": size,
         className: cn(buttonVariants({ variant, size, className })),
@@ -117,24 +165,24 @@ function Button({
         >
             <AnimatePresence initial={false} mode="wait">
                 <motion.div
-                    key={status}
+                    key={displayStatus}
                     className="col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-[inherit]"
-                    initial={{ opacity: 0, y: 10}}
-                    animate={{ opacity: 1, y: 0}}
-                    exit={{ opacity: 0, y: -10}}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
                     transition={{
                         duration: 0.2,
                         ease: "easeOut",
                     }}
                 >
-                    {status === "loading" ? (
+                    {displayStatus === "loading" ? (
                         <LoaderCircle
                             data-icon="inline-start"
                             className="size-4 shrink-0 animate-spin origin-center transform-fill"
                             role="status"
                             aria-label={getStatusLabel(loadingLabel, "Loading")}
                         />
-                    ) : status === "success" ? (
+                    ) : displayStatus === "success" ? (
                         <Check
                             data-icon="inline-start"
                             role="status"

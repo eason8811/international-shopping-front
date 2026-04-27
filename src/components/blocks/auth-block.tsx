@@ -1133,15 +1133,17 @@ function AuthCodeField({
 export function AuthSuccess({
                                 title = "Successful",
                                 description = "Your account has been created and verified.",
-                                className,
-                                ...props
+                                className
                             }: AuthSuccessProps) {
     const shouldReduceMotion = useReducedMotion()
 
     return (
-        <div
+        <motion.div
             className={cn("flex w-full flex-col items-center gap-6 text-center", className)}
-            {...props}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
         >
             <motion.div
                 initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.86 }}
@@ -1149,7 +1151,7 @@ export function AuthSuccess({
                 transition={
                     shouldReduceMotion
                         ? { duration: 0.12, ease: "easeOut" }
-                        : { type: "spring", stiffness: 260, damping: 20 }
+                        : { type: "spring", stiffness: 260, damping: 20, delay: 0.1 }
                 }
                 className="flex size-16 items-center justify-center rounded-full bg-auth-success-surface"
             >
@@ -1166,6 +1168,6 @@ export function AuthSuccess({
                     {description}
                 </p>
             </div>
-        </div>
+        </motion.div>
     )
 }
