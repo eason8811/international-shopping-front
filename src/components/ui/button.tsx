@@ -9,7 +9,7 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-    "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[12px] border border-transparent bg-clip-padding text-center text-sm leading-5 font-medium tracking-[0.7px] whitespace-nowrap transition-[color,background-color,border-color,box-shadow,transform,filter,opacity] duration-[var(--motion-duration-medium)] ease-[var(--motion-ease-standard)] outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/35 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-status-danger aria-invalid:ring-2 aria-invalid:ring-status-danger/20 data-[pressable=true]:active:scale-[0.985] data-[pressable=true]:active:shadow-[inset_0_2px_8px_rgb(0_0_0_/_0.12)] data-[pressable=true]:active:brightness-95 data-[pressable=true]:active:duration-100 data-[status=loading]:cursor-wait data-[status=success]:cursor-default [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+    "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[12px] border border-transparent bg-clip-padding text-center text-sm leading-5 font-medium tracking-[0.7px] whitespace-nowrap transition-[color,background-color,border-color,box-shadow,transform,filter,opacity] duration-[var(--motion-duration-medium)] ease-[var(--motion-ease-standard)] outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/35 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-status-danger aria-invalid:ring-2 aria-invalid:ring-status-danger/20 data-[pressable=true]:active:scale-[0.98] data-[pressable=true]:active:brightness-95 transition-all data-[pressable=true]:active:duration-300 data-[status=loading]:cursor-wait data-[status=success]:cursor-default [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     {
         variants: {
             variant: {
@@ -120,11 +120,11 @@ function Button({
                     <motion.span
                         key={status}
                         className="col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-[inherit]"
-                        initial={{ opacity: 0, y: 4, scale: 0.985 }}
+                        initial={{ opacity: 0, y: 10, scale: 0.8 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -4, scale: 0.985 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.8 }}
                         transition={{
-                            duration: 0.18,
+                            duration: 0.2,
                             ease: [0.2, 0.8, 0.2, 1],
                         }}
                     >
