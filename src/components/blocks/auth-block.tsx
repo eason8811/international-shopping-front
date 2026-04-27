@@ -341,7 +341,7 @@ export function AuthFooterLink({
                 variant="link"
                 size="link"
                 className={cn(
-                    "inline-flex border-b border-dashed border-auth-ink px-0.5 pb-px align-baseline text-xs leading-4 font-bold tracking-[0.3px] text-auth-ink uppercase no-underline hover:no-underline",
+                    "inline-flex border-b border-auth-ink/0 border-dashed hover:border-auth-ink px-0.5 pb-px align-baseline text-xs leading-4 font-bold tracking-[0.3px] text-auth-ink uppercase no-underline hover:no-underline",
                     actionClassName
                 )}
                 {...buttonProps}
@@ -509,7 +509,7 @@ function AuthAccountField({
             <FieldLabel htmlFor={id}>{label}</FieldLabel>
             <div
                 className={cn(
-                    "flex w-full items-center justify-center overflow-hidden border-b border-auth-input-border pt-3.25 pb-3.5 transition-[border-color,box-shadow,opacity] duration-[var(--motion-duration-medium)] ease-[var(--motion-ease-standard)] focus-within:border-auth-ink",
+                    "flex w-full items-center justify-center overflow-hidden border-b border-auth-input-border pt-3.25 pb-3.5 transition-[border-color,box-shadow,opacity] duration-(--motion-duration-medium) ease-(--motion-ease-standard) focus-within:border-auth-ink",
                     invalid && "border-status-danger/30 focus-within:border-status-danger",
                 )}
             >
