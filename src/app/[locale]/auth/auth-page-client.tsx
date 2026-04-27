@@ -62,6 +62,7 @@ type AuthInputField =
     | "newPassword"
     | "newConfirmPassword"
 type AuthInputFieldState = Partial<Record<AuthInputField, boolean>>
+type RequestErrorHandler = (error: NormalizedClientError) => void
 
 interface AuthFormErrors {
     account?: string
@@ -261,7 +262,6 @@ export function AuthPageClient({
     })
     const [successRedirectTo, setSuccessRedirectTo] = React.useState<string | null>(null)
     const [resendRemaining, setResendRemaining] = React.useState(0)
-    const [resendNotice, setResendNotice] = React.useState<string | null>(null)
 
     const [loginAccount, setLoginAccount] = React.useState("")
     const [loginPassword, setLoginPassword] = React.useState("")
@@ -374,7 +374,6 @@ export function AuthPageClient({
 
     function clearFeedback() {
         setFormErrors({})
-        setResendNotice(null)
         setCompletedAction(null)
         setPendingOAuthProvider(null)
         toast.dismiss()
@@ -451,6 +450,8 @@ export function AuthPageClient({
                 email: registerEmail.trim(),
                 code: verificationCode,
             })
+        }, (error) => {
+            setFormErrors({ code: error.message })
         })
 
         if (succeeded) {
@@ -470,7 +471,6 @@ export function AuthPageClient({
         })
 
         if (succeeded) {
-            setResendNotice(copy.form.resendSuccess)
             setResendRemaining(RESEND_COOLDOWN_SECONDS)
         }
     }
@@ -588,6 +588,7 @@ export function AuthPageClient({
         action: PendingAction,
         fallbackMessage: string,
         callback: () => Promise<void>,
+        onError?: RequestErrorHandler,
     ): Promise<boolean> {
         setCompletedAction(null)
         setPendingAction(action)
@@ -598,7 +599,9 @@ export function AuthPageClient({
             await waitForButtonSuccess()
             return true
         } catch (error) {
-            notifyRequestError(normalizeClientError(error, fallbackMessage))
+            const normalizedError = normalizeClientError(error, fallbackMessage)
+            onError?.(normalizedError)
+            notifyRequestError(normalizedError)
             return false
         } finally {
             setPendingAction((current) => (current === action ? null : current))
@@ -825,7 +828,7 @@ export function AuthPageClient({
 
     const resendStatus = resendRemaining > 0
         ? copy.form.sentCountdown.replace("{seconds}", String(resendRemaining))
-        : resendNotice
+        : null
 
     const loginAccountError = resolveShownFieldError(
         "loginAccount",

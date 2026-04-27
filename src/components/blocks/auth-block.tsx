@@ -68,6 +68,20 @@ export const defaultAuthProviders: AuthProviderAction[] = [
     { provider: "x", label: "Continue with X" },
 ]
 
+const resendSwapMotion = {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -15 },
+    transition: { duration: 0.3, ease: "easeInOut" },
+} as const
+
+const reducedResendSwapMotion = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.1, ease: "easeInOut" },
+} as const
+
 export interface AuthBlockProps extends React.ComponentProps<typeof motion.section> {
     providers?: AuthProviderAction[]
     separatorLabel?: string
@@ -897,46 +911,45 @@ export function AuthVerifyForm({
                 />
             </motion.div>
 
-            <motion.p
-                className="text-center text-sm leading-5 font-medium tracking-[0.7px] text-auth-muted"
-                variants={itemVariants}
-            >
-                {resendLabel}{" "}
-                <Button
-                    type="button"
-                    variant="link"
-                    size="link"
-                    className={cn(
-                        "inline-flex border-b border-dashed border-auth-ink px-0.5 pb-px align-baseline text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink no-underline hover:no-underline",
-                        resendActionClassName
+            <motion.div className="flex min-h-5 justify-center overflow-view" variants={itemVariants}>
+                <AnimatePresence initial={false} mode="wait">
+                    {resendStatus ? (
+                        <motion.div
+                            key="resend-status"
+                            className="flex items-center justify-center gap-2.5 overflow-clip"
+                            {...(shouldReduceMotion ? reducedResendSwapMotion : resendSwapMotion)}
+                        >
+                            <Check
+                                className="size-4 shrink-0 text-auth-success"
+                                aria-hidden="true"
+                            />
+                            <AuthResendStatusContent>{resendStatus}</AuthResendStatusContent>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="resend-action"
+                            className="flex items-top justify-center gap-2.5 overflow-clip text-center text-sm leading-5 font-medium tracking-[0.7px] text-auth-muted"
+                            {...(shouldReduceMotion ? reducedResendSwapMotion : resendSwapMotion)}
+                        >
+                            <span className="shrink-0 whitespace-nowrap">{resendLabel}</span>
+                            <Button
+                                type="button"
+                                variant="link"
+                                size="link"
+                                className={cn(
+                                    "inline-flex border-b-[0.5px] border-dashed border-auth-ink/0 hover:border-auth-ink px-0.5 pb-0 align-baseline text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink no-underline hover:no-underline",
+                                    resendActionClassName
+                                )}
+                                disabled={disabled || resendActionDisabled}
+                                status={resendButtonStatus}
+                                {...resolvedResendActionProps}
+                            >
+                                {resendActionLabel}
+                            </Button>
+                        </motion.div>
                     )}
-                    disabled={disabled || resendActionDisabled}
-                    status={resendButtonStatus}
-                    {...resolvedResendActionProps}
-                >
-                    {resendActionLabel}
-                </Button>
-            </motion.p>
-
-            <AnimatePresence initial={false}>
-                {resendStatus ? (
-                    <motion.div
-                        key="resend-status"
-                        variants={itemVariants}
-                        initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, y: -4 }}
-                        animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, height: "auto", y: 0 }}
-                        exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, y: -4 }}
-                        transition={{
-                            duration: shouldReduceMotion ? 0.1 : 0.2,
-                            ease: "easeOut",
-                        }}
-                    >
-                        <FieldDescription className="text-center text-xs leading-4">
-                            {resendStatus}
-                        </FieldDescription>
-                    </motion.div>
-                ) : null}
-            </AnimatePresence>
+                </AnimatePresence>
+            </motion.div>
 
             <motion.div variants={itemVariants}>
                 <Button
@@ -951,6 +964,58 @@ export function AuthVerifyForm({
             </motion.div>
         </motion.form>
     )
+}
+
+function AuthResendStatusContent({ children }: { children: React.ReactNode }) {
+    if (typeof children !== "string") {
+        return (
+            <span className="shrink-0 text-sm leading-5 font-medium tracking-[0.7px] whitespace-nowrap text-auth-muted">
+                {children}
+            </span>
+        )
+    }
+
+    const statusParts = splitResendStatus(children)
+
+    if (!statusParts) {
+        return (
+            <span className="shrink-0 text-sm leading-5 font-medium tracking-[0.7px] whitespace-nowrap text-auth-muted">
+                {children}
+            </span>
+        )
+    }
+
+    return (
+        <>
+            {statusParts.prefix ? (
+                <span className="shrink-0 text-sm leading-5 font-medium tracking-[0.7px] whitespace-nowrap text-auth-muted">
+                    {statusParts.prefix}
+                </span>
+            ) : null}
+            <span className="shrink-0 px-0.5 text-sm leading-5 font-medium tracking-[0.7px] whitespace-nowrap text-auth-ink">
+                {statusParts.countdown}
+            </span>
+            {statusParts.suffix ? (
+                <span className="shrink-0 text-sm leading-5 font-medium tracking-[0.7px] whitespace-nowrap text-auth-muted">
+                    {statusParts.suffix}
+                </span>
+            ) : null}
+        </>
+    )
+}
+
+function splitResendStatus(status: string) {
+    const match = status.trim().match(/^(.*?)(\d+\s*s)(.*)$/i)
+
+    if (!match) {
+        return null
+    }
+
+    return {
+        prefix: match[1]?.trim() ?? "",
+        countdown: match[2]?.replace(/\s+/g, "") ?? "",
+        suffix: match[3]?.trim() ?? "",
+    }
 }
 
 export function AuthResetPasswordForm({
@@ -1125,7 +1190,9 @@ function AuthCodeField({
                     </InputOTPGroup>
                 </div>
             </InputOTP>
-            <FieldError>{error}</FieldError>
+            <div className="flex justify-center">
+                <FieldError>{error}</FieldError>
+            </div>
         </Field>
     )
 }
