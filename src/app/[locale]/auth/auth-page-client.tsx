@@ -792,12 +792,15 @@ export function AuthPageClient({
     return (
         <LayoutGroup id="auth-page">
             <AuthPageShell copy={copy.shell}>
-                <AuthHeroText title={intro.title} subtitle={intro.subtitle} />
-
                 <motion.div
-                    className="flex w-full flex-col gap-12"
+                    key={`auth-flow-${flow}`}
+                    className="flex w-full flex-col items-center gap-12"
+                    initial={shouldReduceMotion ? false : "hidden"}
+                    animate="visible"
                     variants={containerVariants}
                 >
+                    <AuthHeroText title={intro.title} subtitle={intro.subtitle} />
+
                     <AuthBlock
                         key={`auth-block-${flow}-${mode}`}
                         providers={mode === "success" ? [] : [
@@ -1071,35 +1074,27 @@ export function AuthPageClient({
                         </AnimatePresence>
                     </AuthBlock>
 
-                    <AnimatePresence initial={false} mode="popLayout">
-                        {mode !== "success" ? (
-                            <motion.div
-                                key={`footer-${flow}`}
-                                variants={containerVariants}
-                                initial="hidden"
-                                animate="visible"
-                                exit="exit"
-                                layout
-                            >
-                                <AuthFooterLink
-                                    label={isForgot ? copy.forgot.footerPrompt : isRegister ? copy.register.footerPrompt : copy.login.footerPrompt}
-                                    action={isForgot ? copy.forgot.footerAction : isRegister ? copy.register.footerAction : copy.login.footerAction}
-                                    actionProps={{
-                                        disabled: isPending,
-                                        onClick: () => {
-                                            if (isForgot) {
-                                                switchToMode("login-email", "login")
-                                                return
-                                            }
+                    {mode !== "success" ? (
+                        <AuthFooterLink
+                            key={`footer-${flow}`}
+                            variants={itemVariants}
+                            layout
+                            label={isForgot ? copy.forgot.footerPrompt : isRegister ? copy.register.footerPrompt : copy.login.footerPrompt}
+                            action={isForgot ? copy.forgot.footerAction : isRegister ? copy.register.footerAction : copy.login.footerAction}
+                            actionProps={{
+                                disabled: isPending,
+                                onClick: () => {
+                                    if (isForgot) {
+                                        switchToMode("login-email", "login")
+                                        return
+                                    }
 
-                                            const nextFlow = isRegister ? "login" : "register"
-                                            switchToMode(nextFlow, nextFlow)
-                                        },
-                                    }}
-                                />
-                            </motion.div>
-                        ) : null}
-                    </AnimatePresence>
+                                    const nextFlow = isRegister ? "login" : "register"
+                                    switchToMode(nextFlow, nextFlow)
+                                },
+                            }}
+                        />
+                    ) : null}
                 </motion.div>
             </AuthPageShell>
         </LayoutGroup>

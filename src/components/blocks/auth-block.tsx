@@ -314,10 +314,10 @@ export function AuthBlock({
 export function AuthFooterLink({
                                    label,
                                    action,
-                               actionProps,
-                               className,
-                               ...props
-                           }: React.ComponentProps<typeof motion.p> & {
+                                   actionProps,
+                                   className,
+                                   ...props
+                               }: React.ComponentProps<typeof motion.p> & {
     label: string
     action: React.ReactNode
     actionProps?: React.ComponentProps<typeof Button>
@@ -523,7 +523,7 @@ function AuthAccountField({
                             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, width: 0 }}
                             transition={{
                                 duration: shouldReduceMotion ? 0.1 : 0.22,
-                                ease: [0.2, 0.8, 0.2, 1],
+                                ease: "easeOut",
                             }}
                         >
                             <AuthPhoneCountrySelect
@@ -542,7 +542,7 @@ function AuthAccountField({
                     layoutId={valueLayoutId}
                     transition={{
                         duration: shouldReduceMotion ? 0.1 : 0.28,
-                        ease: [0.16, 1, 0.3, 1],
+                        ease: "easeOut",
                     }}
                 >
                     <Input
@@ -820,7 +820,7 @@ export function AuthPasswordField({
                                 exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
                                 transition={{
                                     duration: shouldReduceMotion ? 0.1 : 0.16,
-                                    ease: [0.2, 0.8, 0.2, 1],
+                                    ease: "easeOut",
                                 }}
                             >
                                 {isVisible ? (
@@ -928,7 +928,7 @@ export function AuthVerifyForm({
                         exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, y: -4 }}
                         transition={{
                             duration: shouldReduceMotion ? 0.1 : 0.2,
-                            ease: [0.2, 0.8, 0.2, 1],
+                            ease: "easeOut",
                         }}
                     >
                         <FieldDescription className="text-center text-xs leading-4">
@@ -1008,7 +1008,7 @@ export function AuthResetPasswordForm({
                     layoutId={accountLayoutId}
                     transition={{
                         duration: shouldReduceMotion ? 0.1 : 0.28,
-                        ease: [0.16, 1, 0.3, 1],
+                        ease: "easeOut",
                     }}
                 >
                     {account}
@@ -1148,7 +1148,7 @@ export function AuthSuccess({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={
                     shouldReduceMotion
-                        ? { duration: 0.12, ease: [0.2, 0.8, 0.2, 1] }
+                        ? { duration: 0.12, ease: "easeOut" }
                         : { type: "spring", stiffness: 260, damping: 20 }
                 }
                 className="flex size-16 items-center justify-center rounded-full bg-auth-success-surface"
