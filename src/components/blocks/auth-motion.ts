@@ -58,6 +58,54 @@ const authReducedFadeItemVariants: Variants = {
     },
 }
 
+const authCollapsePanelVariants: Variants = {
+    hidden: {
+        height: 0,
+        opacity: 0,
+    },
+    visible: {
+        height: "auto",
+        opacity: 1,
+        transition: {
+            duration: 0.3,
+            ease: "easeOut",
+            when: "beforeChildren",
+        },
+    },
+    exit: {
+        height: 0,
+        opacity: 0,
+        transition: {
+            duration: 0.3,
+            ease: "easeOut",
+        },
+    },
+}
+
+const authReducedCollapsePanelVariants: Variants = {
+    hidden: {
+        height: 0,
+        opacity: 0,
+    },
+    visible: {
+        height: "auto",
+        opacity: 1,
+        transition: {
+            duration: 0.12,
+            ease: "easeOut",
+            when: "beforeChildren",
+        },
+    },
+    exit: {
+        height: 0,
+        opacity: 0,
+        transition: {
+            duration: 0.08,
+            ease: "easeOut",
+        },
+    },
+}
+
 function getAuthStaggerContainerVariants(reducedMotion: boolean) {
     return reducedMotion
         ? authReducedStaggerContainerVariants
@@ -68,7 +116,14 @@ function getAuthFadeItemVariants(reducedMotion: boolean) {
     return reducedMotion ? authReducedFadeItemVariants : authFadeUpItemVariants
 }
 
+function getAuthCollapsePanelVariants(reducedMotion: boolean) {
+    return reducedMotion
+        ? authReducedCollapsePanelVariants
+        : authCollapsePanelVariants
+}
+
 export {
+    getAuthCollapsePanelVariants,
     getAuthFadeItemVariants,
     getAuthStaggerContainerVariants,
 }

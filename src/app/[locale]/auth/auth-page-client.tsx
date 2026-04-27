@@ -19,6 +19,7 @@ import {
     type AuthShellCopy,
 } from "@/components/blocks"
 import {
+    getAuthCollapsePanelVariants,
     getAuthFadeItemVariants,
     getAuthStaggerContainerVariants,
 } from "@/components/blocks/auth-motion"
@@ -802,7 +803,6 @@ export function AuthPageClient({
                     <AuthHeroText title={intro.title} subtitle={intro.subtitle} />
 
                     <AuthBlock
-                        key={`auth-block-${flow}-${mode}`}
                         providers={mode === "success" ? [] : [
                             {
                                 provider: "google",
@@ -828,53 +828,29 @@ export function AuthPageClient({
                         ]}
                         separatorLabel={separatorLabel}
                     >
-                        <AnimatePresence initial={false} mode="popLayout">
+                        <AnimatePresence initial={false} mode="wait">
                             {mode === "login" ? (
-                                <motion.div
-                                    key="login"
-                                    className="w-full"
-                                    variants={itemVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                    exit="exit"
-                                    layout
-                                >
+                                <AuthModePanel key="login">
                                     <AuthEmailButton
                                         label={copy.login.continueWithEmail}
                                         disabled={isPending}
                                         onClick={() => switchToMode("login-email", "login")}
                                     />
-                                </motion.div>
+                                </AuthModePanel>
                             ) : null}
 
                             {mode === "register" ? (
-                                <motion.div
-                                    key="register"
-                                    className="w-full"
-                                    variants={itemVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                    exit="exit"
-                                    layout
-                                >
+                                <AuthModePanel key="register">
                                     <AuthEmailButton
                                         label={copy.register.continueWithEmail}
                                         disabled={isPending}
                                         onClick={() => switchToMode("register-email", "register")}
                                     />
-                                </motion.div>
+                                </AuthModePanel>
                             ) : null}
 
                             {mode === "login-email" ? (
-                                <motion.div
-                                    key="login-email"
-                                    className="w-full"
-                                    variants={itemVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                    exit="exit"
-                                    layout
-                                >
+                                <AuthModePanel key="login-email">
                                     <AuthEmailForm
                                         emailValue={loginAccount}
                                         onEmailValueChange={(value) => updateInputValue("loginAccount", value, setLoginAccount)}
@@ -903,19 +879,11 @@ export function AuthPageClient({
                                         disabled={isPending}
                                         onSubmit={submitLogin}
                                     />
-                                </motion.div>
+                                </AuthModePanel>
                             ) : null}
 
                             {mode === "register-email" ? (
-                                <motion.div
-                                    key="register-email"
-                                    className="w-full"
-                                    variants={itemVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                    exit="exit"
-                                    layout
-                                >
+                                <AuthModePanel key="register-email">
                                     <AuthRegisterForm
                                         accountValue={registerEmail}
                                         onAccountValueChange={(value) => updateInputValue("registerEmail", value, setRegisterEmail)}
@@ -945,19 +913,11 @@ export function AuthPageClient({
                                         disabled={isPending}
                                         onSubmit={submitRegister}
                                     />
-                                </motion.div>
+                                </AuthModePanel>
                             ) : null}
 
                             {mode === "verify" ? (
-                                <motion.div
-                                    key="verify"
-                                    className="w-full"
-                                    variants={itemVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                    exit="exit"
-                                    layout
-                                >
+                                <AuthModePanel key="verify">
                                     <AuthVerifyForm
                                         email={registerEmail}
                                         codeValue={verificationCode}
@@ -978,19 +938,11 @@ export function AuthPageClient({
                                         disabled={pendingAction === "verify" || completedAction === "verify"}
                                         onSubmit={submitVerification}
                                     />
-                                </motion.div>
+                                </AuthModePanel>
                             ) : null}
 
                             {mode === "forgot" ? (
-                                <motion.div
-                                    key="forgot"
-                                    className="w-full"
-                                    variants={itemVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                    exit="exit"
-                                    layout
-                                >
+                                <AuthModePanel key="forgot">
                                     <AuthEmailForm
                                         accountValueLayoutId={RECOVERY_ACCOUNT_LAYOUT_ID}
                                         emailValue={recoveryAccount}
@@ -1009,19 +961,11 @@ export function AuthPageClient({
                                         disabled={isPending}
                                         onSubmit={submitForgotPassword}
                                     />
-                                </motion.div>
+                                </AuthModePanel>
                             ) : null}
 
                             {mode === "reset" ? (
-                                <motion.div
-                                    key="reset"
-                                    className="w-full"
-                                    variants={itemVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                    exit="exit"
-                                    layout
-                                >
+                                <AuthModePanel key="reset">
                                     <AuthResetPasswordForm
                                         account={recoveryAccount}
                                         accountLayoutId={RECOVERY_ACCOUNT_LAYOUT_ID}
@@ -1052,24 +996,16 @@ export function AuthPageClient({
                                         disabled={isPending}
                                         onSubmit={submitPasswordReset}
                                     />
-                                </motion.div>
+                                </AuthModePanel>
                             ) : null}
 
                             {mode === "success" ? (
-                                <motion.div
-                                    key="success"
-                                    className="w-full"
-                                    variants={itemVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                    exit="exit"
-                                    layout
-                                >
+                                <AuthModePanel key="success">
                                     <AuthSuccess
                                         title={success.title}
                                         description={success.description}
                                     />
-                                </motion.div>
+                                </AuthModePanel>
                             ) : null}
                         </AnimatePresence>
                     </AuthBlock>
@@ -1098,6 +1034,23 @@ export function AuthPageClient({
                 </motion.div>
             </AuthPageShell>
         </LayoutGroup>
+    )
+}
+
+function AuthModePanel({ children }: { children: React.ReactNode }) {
+    const shouldReduceMotion = useReducedMotion()
+
+    return (
+        <motion.div
+            className="w-full overflow-visible"
+            variants={getAuthCollapsePanelVariants(!!shouldReduceMotion)}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            layout
+        >
+            {children}
+        </motion.div>
     )
 }
 
