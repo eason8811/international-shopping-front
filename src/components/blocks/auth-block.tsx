@@ -186,6 +186,11 @@ export interface AuthResetPasswordFormProps
     codeInvalid?: boolean
     codeError?: React.ReactNode
     accountLabel?: string
+    resendLabel?: string
+    resendActionLabel?: string
+    resendActionProps?: React.ComponentProps<typeof Button>
+    resendButtonStatus?: ButtonStatus
+    resendStatus?: React.ReactNode
     newPasswordValue?: string
     onNewPasswordValueChange?: (value: string) => void
     onNewPasswordBlur?: React.FocusEventHandler<HTMLInputElement>
@@ -552,8 +557,9 @@ function AuthAccountField({
                     ) : null}
                 </AnimatePresence>
                 <motion.div
-                    className={cn("min-w-0 flex-1", phoneVariant && "pl-3")}
+                    className={cn("min-w-0 w-full flex-1", phoneVariant && "pl-3")}
                     layoutId={valueLayoutId}
+                    layout={valueLayoutId ? "position" : undefined}
                     transition={{
                         duration: shouldReduceMotion ? 0.1 : 0.28,
                         ease: "easeOut",
@@ -874,11 +880,6 @@ export function AuthVerifyForm({
     const shouldReduceMotion = useReducedMotion()
     const itemVariants = getAuthFadeItemVariants(!!shouldReduceMotion)
     const containerVariants = getAuthStaggerContainerVariants(!!shouldReduceMotion)
-    const {
-        className: resendActionClassName,
-        disabled: resendActionDisabled,
-        ...resolvedResendActionProps
-    } = resendActionProps ?? {}
 
     return (
         <motion.form
@@ -894,9 +895,7 @@ export function AuthVerifyForm({
                 <FieldDescription className="text-center capitalize">
                     {sentToLabel}
                 </FieldDescription>
-                <p className="text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink">
-                    {email}
-                </p>
+                <AuthAccountSummary value={email} />
             </motion.div>
 
             <motion.div variants={itemVariants}>
@@ -911,44 +910,15 @@ export function AuthVerifyForm({
                 />
             </motion.div>
 
-            <motion.div className="flex min-h-5 justify-center overflow-view" variants={itemVariants}>
-                <AnimatePresence initial={false} mode="wait">
-                    {resendStatus ? (
-                        <motion.div
-                            key="resend-status"
-                            className="flex items-center justify-center gap-2.5 overflow-clip"
-                            {...(shouldReduceMotion ? reducedResendSwapMotion : resendSwapMotion)}
-                        >
-                            <Check
-                                className="size-4 shrink-0 text-auth-success"
-                                aria-hidden="true"
-                            />
-                            <AuthResendStatusContent>{resendStatus}</AuthResendStatusContent>
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="resend-action"
-                            className="flex items-top justify-center gap-2.5 overflow-clip text-center text-sm leading-5 font-medium tracking-[0.7px] text-auth-muted"
-                            {...(shouldReduceMotion ? reducedResendSwapMotion : resendSwapMotion)}
-                        >
-                            <span className="shrink-0 whitespace-nowrap">{resendLabel}</span>
-                            <Button
-                                type="button"
-                                variant="link"
-                                size="link"
-                                className={cn(
-                                    "inline-flex border-b-[0.5px] border-dashed border-auth-ink/0 hover:border-auth-ink px-0.5 pb-0 align-baseline text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink no-underline hover:no-underline",
-                                    resendActionClassName
-                                )}
-                                disabled={disabled || resendActionDisabled}
-                                status={resendButtonStatus}
-                                {...resolvedResendActionProps}
-                            >
-                                {resendActionLabel}
-                            </Button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+            <motion.div variants={itemVariants}>
+                <AuthResendModule
+                    resendLabel={resendLabel}
+                    resendActionLabel={resendActionLabel}
+                    resendActionProps={resendActionProps}
+                    resendButtonStatus={resendButtonStatus}
+                    resendStatus={resendStatus}
+                    disabled={disabled}
+                />
             </motion.div>
 
             <motion.div variants={itemVariants}>
@@ -963,6 +933,71 @@ export function AuthVerifyForm({
                 </Button>
             </motion.div>
         </motion.form>
+    )
+}
+
+function AuthResendModule({
+                              resendLabel,
+                              resendActionLabel,
+                              resendActionProps,
+                              resendButtonStatus = "idle",
+                              resendStatus,
+                              disabled,
+                          }: {
+    resendLabel: string
+    resendActionLabel: string
+    resendActionProps?: React.ComponentProps<typeof Button>
+    resendButtonStatus?: ButtonStatus
+    resendStatus?: React.ReactNode
+    disabled?: boolean
+}) {
+    const shouldReduceMotion = useReducedMotion()
+    const {
+        className: resendActionClassName,
+        disabled: resendActionDisabled,
+        ...resolvedResendActionProps
+    } = resendActionProps ?? {}
+
+    return (
+        <div className="flex min-h-5 justify-center overflow-view">
+            <AnimatePresence initial={false} mode="wait">
+                {resendStatus ? (
+                    <motion.div
+                        key="resend-status"
+                        className="flex items-center justify-center gap-2.5 overflow-clip"
+                        {...(shouldReduceMotion ? reducedResendSwapMotion : resendSwapMotion)}
+                    >
+                        <Check
+                            className="size-4 shrink-0 text-auth-success"
+                            aria-hidden="true"
+                        />
+                        <AuthResendStatusContent>{resendStatus}</AuthResendStatusContent>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="resend-action"
+                        className="flex items-top justify-center gap-2.5 overflow-clip text-center text-sm leading-5 font-medium tracking-[0.7px] text-auth-muted"
+                        {...(shouldReduceMotion ? reducedResendSwapMotion : resendSwapMotion)}
+                    >
+                        <span className="shrink-0 whitespace-nowrap">{resendLabel}</span>
+                        <Button
+                            type="button"
+                            variant="link"
+                            size="link"
+                            className={cn(
+                                "inline-flex border-b-[0.5px] border-dashed border-auth-ink/0 hover:border-auth-ink px-0.5 pb-0 align-baseline text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink no-underline hover:no-underline",
+                                resendActionClassName
+                            )}
+                            disabled={disabled || resendActionDisabled}
+                            status={resendButtonStatus}
+                            {...resolvedResendActionProps}
+                        >
+                            {resendActionLabel}
+                        </Button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     )
 }
 
@@ -1018,6 +1053,40 @@ function splitResendStatus(status: string) {
     }
 }
 
+function AuthAccountSummary({
+                                value,
+                                layoutId,
+                            }: {
+    value: string
+    layoutId?: string
+}) {
+    const shouldReduceMotion = useReducedMotion()
+
+    const content = (
+        <p className="text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink">
+            {value}
+        </p>
+    )
+
+    if (!layoutId) {
+        return content
+    }
+
+    return (
+        <motion.div
+            className="flex w-full justify-center"
+            layoutId={layoutId}
+            layout="position"
+            transition={{
+                duration: shouldReduceMotion ? 0.1 : 0.28,
+                ease: "easeOut",
+            }}
+        >
+            {content}
+        </motion.div>
+    )
+}
+
 export function AuthResetPasswordForm({
                                           account,
                                           accountLayoutId,
@@ -1028,6 +1097,11 @@ export function AuthResetPasswordForm({
                                           codeInvalid,
                                           codeError,
                                           accountLabel = "Account in recovery",
+                                          resendLabel = "Didn't receive the code?",
+                                          resendActionLabel = "Resend",
+                                          resendActionProps,
+                                          resendButtonStatus = "idle",
+                                          resendStatus,
                                           newPasswordValue,
                                           onNewPasswordValueChange,
                                           onNewPasswordBlur,
@@ -1068,16 +1142,7 @@ export function AuthResetPasswordForm({
                 <FieldDescription className="text-center capitalize">
                     {accountLabel}
                 </FieldDescription>
-                <motion.p
-                    className="text-sm leading-5 font-medium tracking-[0.7px] text-auth-ink"
-                    layoutId={accountLayoutId}
-                    transition={{
-                        duration: shouldReduceMotion ? 0.1 : 0.28,
-                        ease: "easeOut",
-                    }}
-                >
-                    {account}
-                </motion.p>
+                <AuthAccountSummary value={account} layoutId={accountLayoutId} />
             </motion.div>
 
             <FieldGroup className="gap-5">
@@ -1090,6 +1155,17 @@ export function AuthResetPasswordForm({
                         ariaLabel={codeLabel}
                         invalid={codeInvalid}
                         error={codeError}
+                        disabled={disabled}
+                    />
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                    <AuthResendModule
+                        resendLabel={resendLabel}
+                        resendActionLabel={resendActionLabel}
+                        resendActionProps={resendActionProps}
+                        resendButtonStatus={resendButtonStatus}
+                        resendStatus={resendStatus}
                         disabled={disabled}
                     />
                 </motion.div>

@@ -12,6 +12,13 @@ import {
 import { toast } from "sonner"
 
 import {
+    resolveAuthFlowMotionKey,
+    resolveAuthModePanelAnimation,
+    shouldAnimateAuthModePanelViewportHeight,
+    type AuthMode,
+    type AuthModePanelAnimationConfig,
+} from "./auth-mode-panel-transition"
+import {
     AuthBlock,
     AuthEmailButton,
     AuthEmailForm,
@@ -40,15 +47,6 @@ import {
 } from "@/features/auth"
 import { normalizeClientError, type NormalizedClientError } from "@/lib/api/normalize-client-error"
 
-type AuthMode =
-    | "login"
-    | "login-email"
-    | "register"
-    | "register-email"
-    | "verify"
-    | "forgot"
-    | "reset"
-    | "success"
 type AuthFlow = "login" | "register" | "forgot" | "oauth"
 type PendingAction = "login" | "register" | "verify" | "resend" | "forgot" | "reset" | "oauth"
 type InitialOAuthStatus = "success" | "error"
@@ -190,10 +188,9 @@ const RESEND_COOLDOWN_SECONDS = 60
 const RECOVERY_ACCOUNT_LAYOUT_ID = "auth-recovery-account-value"
 const AUTH_MODE_PANEL_FADE_TRANSITION = { duration: 0.3 }
 
-type AuthModePanelTransition = "expand" | "morph"
-
 interface AuthModePanelCustom {
-    transition: AuthModePanelTransition
+    transition: AuthModePanelAnimationConfig["transition"]
+    expandBehavior: AuthModePanelAnimationConfig["expandBehavior"]
     reducedMotion: boolean
 }
 
@@ -203,10 +200,21 @@ const authModePanelVariants: Variants = {
             return { opacity: 0 }
         }
 
+        if (custom.expandBehavior === "resize") {
+            return { opacity: 0 }
+        }
+
         return { height: 0, opacity: 0 }
     },
     visible: (custom: AuthModePanelCustom) => {
         if (custom.transition === "morph") {
+            return {
+                opacity: 1,
+                transition: AUTH_MODE_PANEL_FADE_TRANSITION,
+            }
+        }
+
+        if (custom.expandBehavior === "resize") {
             return {
                 opacity: 1,
                 transition: AUTH_MODE_PANEL_FADE_TRANSITION,
@@ -231,6 +239,13 @@ const authModePanelVariants: Variants = {
             }
         }
 
+        if (custom.expandBehavior === "resize") {
+            return {
+                opacity: 0,
+                transition: AUTH_MODE_PANEL_FADE_TRANSITION,
+            }
+        }
+
         return {
             height: 0,
             opacity: 0,
@@ -249,8 +264,10 @@ export function AuthPageClient({
                                    initialOAuthError,
                                }: AuthPageClientProps) {
     const [mode, setMode] = React.useState<AuthMode>("login")
-    const [authModePanelTransition, setAuthModePanelTransition] =
-        React.useState<AuthModePanelTransition>("expand")
+    const [authModePanelAnimation, setAuthModePanelAnimation] = React.useState<AuthModePanelAnimationConfig>({
+        transition: "expand",
+        expandBehavior: "collapse",
+    })
     const [flow, setFlow] = React.useState<AuthFlow>("login")
     const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null)
     const [completedAction, setCompletedAction] = React.useState<PendingAction | null>(null)
@@ -262,6 +279,7 @@ export function AuthPageClient({
     })
     const [successRedirectTo, setSuccessRedirectTo] = React.useState<string | null>(null)
     const [resendRemaining, setResendRemaining] = React.useState(0)
+    const [recoveryResendRemaining, setRecoveryResendRemaining] = React.useState(0)
 
     const [loginAccount, setLoginAccount] = React.useState("")
     const [loginPassword, setLoginPassword] = React.useState("")
@@ -291,8 +309,10 @@ export function AuthPageClient({
     const isForgot = flow === "forgot"
     const intro = isForgot ? copy.forgot : isRegister ? copy.register : copy.login
     const separatorLabel = isRegister ? copy.register.divider : copy.login.divider
+    const authContentMotionKey = resolveAuthFlowMotionKey(flow)
     const authModePanelPresenceCustom: AuthModePanelCustom = {
-        transition: authModePanelTransition,
+        transition: authModePanelAnimation.transition,
+        expandBehavior: authModePanelAnimation.expandBehavior,
         reducedMotion: !!shouldReduceMotion,
     }
     const providers: AuthProvider[] = ["google", "tiktok", "x"]
@@ -304,7 +324,7 @@ export function AuthPageClient({
         onClick: () => startOAuth(provider),
     }))
     const changeMode = React.useCallback((nextMode: AuthMode) => {
-        setAuthModePanelTransition(resolveAuthModePanelTransition(mode, nextMode))
+        setAuthModePanelAnimation(resolveAuthModePanelAnimation(mode, nextMode))
         setMode(nextMode)
     }, [mode])
 
@@ -371,6 +391,18 @@ export function AuthPageClient({
 
         return () => window.clearTimeout(timer)
     }, [resendRemaining])
+
+    React.useEffect(() => {
+        if (recoveryResendRemaining <= 0) {
+            return
+        }
+
+        const timer = window.setTimeout(() => {
+            setRecoveryResendRemaining((current) => Math.max(0, current - 1))
+        }, 1000)
+
+        return () => window.clearTimeout(timer)
+    }, [recoveryResendRemaining])
 
     function clearFeedback() {
         setFormErrors({})
@@ -475,6 +507,25 @@ export function AuthPageClient({
         }
     }
 
+    async function resendRecoveryCode() {
+        clearFeedback()
+
+        if (recoveryResendRemaining > 0 || !recoveryAccount.trim()) {
+            return
+        }
+
+        const succeeded = await runRequest("resend", copy.form.errors.resendFailed, async () => {
+            await requestPasswordReset({
+                account: recoveryAccount.trim(),
+                countryCode: getAccountCountryCode(recoveryAccount, recoveryCountryCode),
+            })
+        })
+
+        if (succeeded) {
+            setRecoveryResendRemaining(RESEND_COOLDOWN_SECONDS)
+        }
+    }
+
     async function submitForgotPassword(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
         clearFeedback()
@@ -499,6 +550,7 @@ export function AuthPageClient({
             setRecoveryCode("")
             setNewPassword("")
             setNewConfirmPassword("")
+            setRecoveryResendRemaining(RESEND_COOLDOWN_SECONDS)
             setFlow("forgot")
             changeMode("reset")
         }
@@ -829,6 +881,9 @@ export function AuthPageClient({
     const resendStatus = resendRemaining > 0
         ? copy.form.sentCountdown.replace("{seconds}", String(resendRemaining))
         : null
+    const recoveryResendStatus = recoveryResendRemaining > 0
+        ? copy.form.sentCountdown.replace("{seconds}", String(recoveryResendRemaining))
+        : null
 
     const loginAccountError = resolveShownFieldError(
         "loginAccount",
@@ -875,7 +930,7 @@ export function AuthPageClient({
         <LayoutGroup id="auth-page">
             <AuthPageShell copy={copy.shell}>
                 <motion.div
-                    key={`auth-flow-${flow}`}
+                    key={`auth-flow-${authContentMotionKey}`}
                     className="flex w-full flex-col items-center gap-12"
                     initial={shouldReduceMotion ? false : "hidden"}
                     animate="visible"
@@ -887,7 +942,9 @@ export function AuthPageClient({
                         providers={authProviders}
                         separatorLabel={separatorLabel}
                     >
-                        <AuthModePanelViewport shouldAnimateHeight={authModePanelTransition === "morph"}>
+                        <AuthModePanelViewport
+                            shouldAnimateHeight={shouldAnimateAuthModePanelViewportHeight(authModePanelAnimation)}
+                        >
                             <AnimatePresence
                                 initial={false}
                                 mode="wait"
@@ -1039,6 +1096,14 @@ export function AuthPageClient({
                                             codeInvalid={!!formErrors.code}
                                             codeError={formErrors.code}
                                             accountLabel={copy.reset.accountLabel}
+                                            resendLabel={copy.form.resendPrompt}
+                                            resendActionLabel={copy.form.resendAction}
+                                            resendActionProps={{
+                                                onClick: resendRecoveryCode,
+                                                disabled: isPending || recoveryResendRemaining > 0,
+                                            }}
+                                            resendButtonStatus={getButtonStatus("resend")}
+                                            resendStatus={recoveryResendStatus}
                                             newPasswordValue={newPassword}
                                             onNewPasswordValueChange={(value) => updateInputValue("newPassword", value, setNewPassword)}
                                             onNewPasswordBlur={() => markFieldBlurred("newPassword")}
@@ -1076,7 +1141,6 @@ export function AuthPageClient({
                     </AuthBlock>
 
                     <AuthFooterLink
-                        key={`footer-${flow}`}
                         variants={itemVariants}
                         layout
                         label={isForgot ? copy.forgot.footerPrompt : isRegister ? copy.register.footerPrompt : copy.login.footerPrompt}
@@ -1132,7 +1196,7 @@ function AuthModePanelViewport({
 
     return (
         <motion.div
-            className="w-full overflow-hidden"
+            className="w-full overflow-visible"
             initial={false}
             animate={
                 shouldAnimateHeight && contentHeight !== null
@@ -1163,7 +1227,8 @@ function AuthModePanel({
         <motion.div
             className="w-full overflow-visible"
             custom={{
-                transition: presenceCustom?.transition ?? "morph",
+                transition: presenceCustom?.transition ?? "expand",
+                expandBehavior: presenceCustom?.expandBehavior ?? "resize",
                 reducedMotion: !!shouldReduceMotion,
             } satisfies AuthModePanelCustom}
             variants={authModePanelVariants}
@@ -1175,15 +1240,6 @@ function AuthModePanel({
             {children}
         </motion.div>
     )
-}
-
-function resolveAuthModePanelTransition(currentMode: AuthMode, nextMode: AuthMode): AuthModePanelTransition {
-    return (
-        (currentMode === "login" && nextMode === "login-email") ||
-        (currentMode === "register" && nextMode === "register-email")
-    )
-        ? "expand"
-        : "morph"
 }
 
 function hasErrors(errors: AuthFormErrors) {
