@@ -4,7 +4,9 @@
 
 本文档用于约束本项目后续的 Figma-to-code 工作流，确保跨境电商前端的页面实现、组件抽象、设计 token 重建与目录落点保持一致。
 
-本文档只定义规则，不执行代码改造。`src/app/globals.css` 中当前存在的历史 token、旧语义映射和旧 utility class 视为待清理遗留，不作为本次设计系统的参考依据。
+本文档只定义规则，不执行代码改造。当前 `src/app/globals.css` 已作为本项目的 token bridge 与 `@theme inline` 公共入口，后续新增或调整 token 时必须继续受 Figma 与本文档约束。
+
+`Auth` 作为当前首个落地切片，其具体组件层级、目录落点与 Figma 对照关系以 [auth-component-architecture.md](/home/eason/codes/international-shopping-front/doc/design-system/auth-component-architecture.md) 为准；本文继续承担全局总规则。
 
 ## 2. Figma 页面范围
 
@@ -79,6 +81,7 @@
 
 - 登录、注册、邮箱验证、OTP 等认证流程页。
 - 重点关注认证卡片、表单、第三方登录入口、辅助文案与状态反馈。
+- `Auth` 的具体组件分层与 flow 设计不在本文展开，后续实现时直接参照 `doc/design-system/auth-component-architecture.md`。
 
 ### 2.2 页面与响应式关系
 
@@ -108,9 +111,12 @@
 - `src/components/ui`
   - 基础 UI 组件与原子组件。
   - 示例：`Button`、`Input`、`Badge`、`Dialog`、`Tabs`、`Pagination`。
+- `src/components/auth/blocks`
+  - Auth 专项派生块，只服务认证切片页面搭建。
+  - 示例：`AuthHeroHeader`、`AuthProviderButtons`、`AuthFormFrame`、`AuthSuccessPanel`。
 - `src/components/blocks`
   - 由多个基础组件组合成、但仍可跨业务页复用的复合块。
-  - 示例：`ProductListItem`、`FinancialSummary`、`AddressCard`、`AuthBlock`、`SupportThread`。
+  - 示例：`ProductListItem`、`FinancialSummary`、`AddressCard`、`SupportThread`。
 - `src/components/shared`
   - 站点级或布局级共享组件。
   - 示例：`Navbar`、`Sidebar`、`Footer`、`LocaleSwitcher`、`GlobalSearch`。
@@ -122,7 +128,7 @@
 
 - 当前仓库尚无成熟的 `src/components/*` 组件体系可直接继承。
 - `components.json` 已建立 `@/components`、`@/components/ui`、`@/lib/utils` 等别名，可直接作为后续目录约束基础。
-- `src/app/globals.css` 当前内容属于历史设计系统残留，不得被视为新的视觉事实来源。
+- `src/app/globals.css` 当前已承担 Tailwind v4 / shadcn 的 token bridge，后续组件实现应在其既有语义入口上继续推进，而不是另起一套主题入口。
 
 ## 4. 视觉语言总结
 
@@ -217,8 +223,6 @@
   - 配送方式、预估时间、物流信息。
 - `OrderCard`
   - 订单号、时间、状态、金额、明细入口。
-- `AuthBlock`
-  - 登录注册主卡片，含标题、表单、辅助文案、第三方入口。
 - `SupportThread`
   - 消息列表、会话头部、状态提示、输入与发送区。
 - `StatusBadge`
@@ -280,17 +284,18 @@
 - 状态色不可作为唯一信息来源，需配合文案或图标。
 - OTP、弹层、抽屉、对话框等交互组件必须遵守基础无障碍规则。
 
-## 7. Token 重建与 globals.css 清理方案
+## 7. Token 维护与 globals.css 约束
 
 ### 7.1 基本原则
 
-- 新 token 体系仍放在 `src/app/globals.css` 中。
-- 这是承载位置，不是沿用现状的许可。
-- 当前 `globals.css` 中的旧 token、旧 utility class、旧语义映射仅作为待清理对象，不作为新设计系统依据。
+- 语义 token 体系继续放在 `src/app/globals.css` 中。
+- `src/app/globals.css` 是当前 Tailwind v4 / shadcn 的唯一公共 bridge 入口。
+- 后续新增 token 仅允许来自 Figma `Semantics`、`Components` 或明确的 bridge 需要，不允许把 Figma `TailwindCSS` collection 镜像进代码。
+- 字体族仍以 `src/app/layout.tsx` 中注入的字体变量为准，不在 `globals.css` 中硬编码新的字体源。
 
-### 7.2 新 token 的职责边界
+### 7.2 token 的职责边界
 
-新的 `globals.css` 只应保留以下职责：
+当前 `globals.css` 只应保留以下职责：
 
 - 全局基础样式
 - 主题入口
@@ -298,9 +303,9 @@
 - 新的语义化设计 token
 - `@theme inline` 到 Tailwind v4 的映射层
 
-### 7.3 新 token 分组
+### 7.3 token 分组
 
-新的 token 应按语义分组，而不是沿用历史命名：
+后续维护 token 时，应继续按语义分组，而不是退回历史命名：
 
 - 颜色
   - 页面背景
@@ -374,21 +379,22 @@
 - `--gray-900-used-for-sometimes-title`
 - `--legacy-card-radius`
 
-### 7.5 清理顺序
+### 7.5 维护顺序
 
-后续实际清理 `src/app/globals.css` 时，应按以下顺序进行：
+后续维护 `src/app/globals.css` 时，应按以下顺序进行：
 
-1. 盘点现有旧变量、旧 `.ds-*` 工具类、旧 `@theme inline` 映射。
-2. 从 Figma 重新提取颜色、排版、间距、圆角、边框、阴影、动效语义。
-3. 定义新的语义 token，并先完成 Tailwind v4 映射。
-4. 将页面和组件逐步迁移到新 token。
-5. 确认仓库内无旧 token 引用后，再删除历史变量与工具类。
+1. 先确认改动是否确实来自 Figma `Semantics`、`Components` 或现有组件消费需要。
+2. 仅在 `:root` 语义层补充 token，不新增平行主题入口。
+3. 同步维护 `@theme inline` 暴露给 Tailwind v4 / shadcn 的公共映射。
+4. 让页面和组件消费新的语义 token，而不是直接硬编码视觉值。
+5. 发现无消费的遗留 token 时，再做定向删除，不做无边界重写。
 
 ### 7.6 禁止事项
 
-- 禁止在尚未完成新 token 映射前继续扩展旧 token。
-- 禁止把旧变量重命名后继续原样复用，必须重新对齐 Figma 事实。
-- 禁止在文档未更新的情况下私自新增语义层级。
+- 禁止把 Figma `TailwindCSS` collection 原样镜像到 `globals.css`。
+- 禁止新增无法追溯到 Figma 或 bridge 需求的便利 token。
+- 禁止绕开 `@theme inline` 另起新的公共主题入口。
+- 禁止在文档未更新的情况下私自扩张新的语义层级。
 
 ## 8. 页面到组件的映射建议
 
@@ -434,8 +440,9 @@
 
 ### 8.9 Auth
 
-- 登录、注册、验证邮件、OTP 必须统一归入 `AuthBlock`、`Input`、`Button`、`OTPInput`。
-- OAuth 入口、辅助链接、错误提示、成功提示必须具备统一变体规则。
+- `Auth` 作为首个专项切片，必须优先遵守 `doc/design-system/auth-component-architecture.md` 中的目录与组件层级。
+- 登录、注册、验证邮件、OTP 必须统一回归 `src/components/ui`、`src/components/shared`、`src/components/auth/blocks` 与 `src/features/auth` 的既定边界。
+- OAuth 入口、辅助链接、错误提示、成功提示必须通过显式面板与 Auth 专项 block 组合表达，不允许继续抽象为一个 `AuthBlock` 巨组件。
 
 ## 9. 验收与烟雾检查
 
@@ -443,7 +450,7 @@
 
 - 11 个 Figma Page 均被覆盖。
 - `Components` 被定义为组件真值来源，而不是普通业务页。
-- 文档已明确声明当前 `src/app/globals.css` 不作为新设计系统参考。
+- 文档已明确声明当前 `src/app/globals.css` 是现行 token bridge，且后续维护受 Figma 与本文档约束。
 
 ### 9.2 规则可执行性检查
 
@@ -459,7 +466,7 @@
 应至少使用以下 3 类场景验证文档是否足够指导实现：
 
 - `Auth`
-  - 用 `Authentication Block` 验证表单、按钮、OAuth、OTP 与错误态规则是否完整。
+  - 用 `Auth` 专项组件架构验证表单、按钮、OAuth、OTP、辅助链接与 success 状态规则是否完整。
 - `Product List` 或 `Shopping Cart`
   - 用 `Product List Item` 验证商品图、价格、摘要、数量控制、响应式规则是否完整。
 - `Customerservice`
@@ -469,4 +476,4 @@
 
 本项目后续的设计系统重建应以 Figma 为唯一视觉事实来源，以 `Components` 页为组件真值来源，以业务页为组合和响应式验证来源。
 
-`src/app/globals.css` 会继续作为未来 token 的承载文件，但其当前内容属于待迁移遗留，不应再参与任何新的设计判断。后续所有前端实现都应先建立新的语义 token 层，再推进组件抽象与页面落地。
+`src/app/globals.css` 会继续作为当前与未来 token 的承载文件，也是 Tailwind v4 / shadcn 的公共 bridge。后续所有前端实现都应继续在这层语义 token 之上推进组件抽象与页面落地，而不是回退到页面内硬编码样式或复制 Figma primitive collection。
