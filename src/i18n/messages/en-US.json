@@ -429,6 +429,7 @@
       "searchPlaceholder": "Search the Collection",
       "menuLabel": "Open navigation",
       "searchLabel": "Search",
+      "profileLabel": "Profile",
       "cartLabel": "Shopping bag"
     },
     "layout": {

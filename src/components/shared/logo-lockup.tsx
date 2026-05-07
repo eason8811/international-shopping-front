@@ -1,3 +1,6 @@
+import { Ampersand } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 interface LogoLockupProps {
@@ -9,24 +12,28 @@ export function LogoLockup({ brandLabel, className }: LogoLockupProps) {
   return (
     <div
       className={cn(
-        "inline-flex shrink-0 items-center gap-2.5 overflow-visible whitespace-nowrap",
+        "inline-flex shrink-0 items-center justify-center gap-2.5 overflow-visible whitespace-nowrap",
         className
       )}
     >
-      <span
-        aria-hidden="true"
-        className="shrink-0 font-serif text-2xl leading-none font-semibold italic text-(--color-text-primary)"
-      >
-        &
+      <span className="flex size-6 shrink-0 items-center justify-center overflow-hidden">
+        <Ampersand
+          aria-hidden="true"
+          className="size-4 shrink-0 text-(--button-naked-text-active)"
+          strokeWidth={1.75}
+        />
       </span>
-      <span
+      <Button
+        asChild
+        size="default"
+        variant="naked"
         className={[
           "shrink-0 whitespace-nowrap font-serif text-(length:--type-brand-large-font-size) leading-(--type-brand-large-line-height)",
-          "font-semibold italic tracking-(--type-brand-large-letter-spacing) text-(--color-text-primary)",
+          "font-semibold italic tracking-(--type-brand-large-letter-spacing) text-(--button-naked-text-active)",
         ].join(" ")}
       >
-        {brandLabel}
-      </span>
+        <span>{brandLabel}</span>
+      </Button>
     </div>
   )
 }

@@ -21,11 +21,6 @@ const inputVariants = cva(
           "leading-(--type-paragraph-regular-line-height) tracking-(--type-paragraph-regular-letter-spacing)",
           "focus-visible:ring-0",
         ].join(" "),
-        search: [
-          "h-5 border-0 px-0 py-0 text-(length:--type-paragraph-small-font-size)",
-          "leading-(--type-paragraph-small-line-height) tracking-(--type-paragraph-small-letter-spacing)",
-          "placeholder:text-(--color-text-placeholder) focus-visible:ring-0",
-        ].join(" "),
       },
     },
     defaultVariants: {

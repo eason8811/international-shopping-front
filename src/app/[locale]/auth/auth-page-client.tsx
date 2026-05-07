@@ -160,6 +160,7 @@ function AuthPageScene({
             newArrivals: t("shell.nav.newArrivals"),
             support: t("shell.nav.support"),
           }}
+          profileLabel={t("shell.profileLabel")}
           searchLabel={t("shell.searchLabel")}
           searchPlaceholder={t("shell.searchPlaceholder")}
         />
