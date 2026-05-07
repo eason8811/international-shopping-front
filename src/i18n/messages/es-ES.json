@@ -63,11 +63,12 @@
     "form": {
       "labels": {
         "account": "Cuenta",
-        "email": "Correo electronico",
+        "email": "Correo",
         "verificationSentTo": "Codigo enviado a",
         "password": "Clave secreta",
-        "newPassword": "Nueva clave",
-        "confirmPassword": "Confirmar clave"
+        "newPassword": "Nueva clave secreta",
+        "confirmPassword": "Confirmar clave",
+        "confirmNewPassword": "Confirmar nueva clave"
       },
       "placeholders": {
         "account": "Correo electronico o telefono",
@@ -85,7 +86,7 @@
         "signUp": "Registrarse",
         "sendCode": "Enviar codigo",
         "verify": "Verificar",
-        "resetPassword": "Restablecer clave"
+        "resetPassword": "Restablecer clave secreta"
       },
       "demoEmail": "leilaleilaleilaleila@gmail.com",
       "resendPrompt": "No recibiste el codigo?",

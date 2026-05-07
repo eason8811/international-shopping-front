@@ -455,7 +455,7 @@
       "subtitle": "Access your boutique journey",
       "divider": "or",
       "continueWithEmail": "Continue with Email",
-      "footerPrompt": "Already have an account?",
+      "footerPrompt": "Already a member?",
       "footerAction": "Sign In",
       "legalPrefix": "By clicking continue, you agree to our",
       "legalTerms": "Terms of Service",
@@ -471,11 +471,12 @@
     "form": {
       "labels": {
         "account": "Account",
-        "email": "Email address",
+        "email": "Email",
         "verificationSentTo": "Verification code sent to",
         "password": "Secret Key",
-        "newPassword": "New Password",
-        "confirmPassword": "Confirm Secret Key"
+        "newPassword": "New Secret Key",
+        "confirmPassword": "Confirm Secret Key",
+        "confirmNewPassword": "Confirm New Secret Key"
       },
       "placeholders": {
         "account": "Email address or phone number",
@@ -493,7 +494,7 @@
         "signUp": "Sign Up",
         "sendCode": "Send email verification code",
         "verify": "Verify",
-        "resetPassword": "Reset Password"
+        "resetPassword": "Reset Secret Key"
       },
       "demoEmail": "leilaleilaleilaleila@gmail.com",
       "resendPrompt": "Didn't receive the code?",
