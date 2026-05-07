@@ -27,26 +27,28 @@ export function PictureWithCard({
     >
       <div
         className={[
-          "flex w-full flex-col items-end rounded-2xl border border-white/30 px-9 py-6 backdrop-blur-md",
+            "flex max-w-full flex-col items-start rounded-2xl border border-white/30 px-9 py-6 backdrop-blur-md",
           "bg-(--color-surface-glass) shadow-(--shadow-weak)",
         ].join(" ")}
       >
         <p
           className={[
-            "font-serif text-(length:--type-heading-3-font-size) leading-(--type-heading-3-line-height)",
+              "w-full font-serif text-(length:--type-heading-3-font-size) leading-(--type-heading-3-line-height)",
             "font-medium italic tracking-(--type-heading-3-letter-spacing) text-white",
           ].join(" ")}
         >
           {quote}
         </p>
-        <p
-          className={[
-            "mt-3 text-right font-sans text-(length:--type-paragraph-regular-font-size)",
-            "leading-(--type-paragraph-regular-line-height) tracking-(--type-paragraph-regular-letter-spacing) text-white/60",
-          ].join(" ")}
-        >
-          {author}
-        </p>
+          <div className="flex w-full items-center justify-end">
+            <p
+              className={[
+                  "font-sans text-(length:--type-paragraph-regular-font-size)",
+                  "leading-(--type-paragraph-regular-line-height) tracking-(--type-paragraph-regular-letter-spacing) text-white/60",
+              ].join(" ")}
+            >
+              {author}
+            </p>
+          </div>
       </div>
     </div>
   )
