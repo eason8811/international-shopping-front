@@ -10,7 +10,7 @@ const buttonVariants = cva(
     "disabled:pointer-events-none disabled:opacity-(--state-opacity-disabled)",
     "data-[pending=true]:pointer-events-none data-[pending=true]:opacity-(--state-opacity-loading)",
     "**:data-[icon=inline-start]:shrink-0 **:data-[icon=inline-end]:shrink-0",
-    "**:data-[icon=inline-start]:pointer-events-none **:data-[icon=inline-end]:pointer-events-none",
+    "**:data-[icon=inline-start]:pointer-events-none **:data-[icon=inline-end]:pointer-events-none cursor-pointer",
   ].join(" "),
   {
     variants: {
