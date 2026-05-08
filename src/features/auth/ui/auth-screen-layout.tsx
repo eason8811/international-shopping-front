@@ -60,7 +60,7 @@ function AuthScreenLayoutContent({
   className,
 }: AuthScreenLayoutSlotProps) {
   return (
-    <section className={cn("flex w-full justify-center px-8 py-12 xl:w-lg xl:px-16", className)}>
+    <section className={cn("flex w-full justify-center px-8 py-12 xl:w-2/5 xl:px-16", className)}>
       <div className="flex w-full items-center justify-center xl:max-w-sm">{children}</div>
     </section>
   )
@@ -70,7 +70,7 @@ function AuthScreenLayoutPicture({
   children,
   className,
 }: AuthScreenLayoutSlotProps) {
-  return <aside className={cn("hidden flex-1 xl:flex", className)}>{children}</aside>
+  return <aside className={cn("hidden flex-1 xl:flex w-3/5", className)}>{children}</aside>
 }
 
 export const AuthScreenLayout = Object.assign(AuthScreenLayoutRoot, {
