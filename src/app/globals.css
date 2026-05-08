@@ -79,14 +79,14 @@
     --state-opacity-loading: 0.5;
 
     /* Component tokens: button */
-    --button-large-radius: 0.75rem;
-    --button-large-gap: 0.5rem;
-    --button-large-padding-inline: 2rem;
-    --button-large-padding-block: 1rem;
+    --button-large-radius: var(--radius-xl);
+    --button-large-gap: calc(var(--spacing) * 2);
+    --button-large-padding-inline: calc(var(--spacing) * 8);
+    --button-large-padding-block: calc(var(--spacing) * 4);
 
     --button-link-border-width: 0.03125rem;
     --button-link-gap: 0;
-    --button-link-padding-inline: 0.125rem;
+    --button-link-padding-inline: calc(var(--spacing) * 0.5);
     --button-link-padding-block: 0;
 
     --button-primary-border-width: 0.0625rem;
@@ -200,10 +200,10 @@
     --input-search-text-default: var(--color-text-primary);
     --input-search-text-readonly: var(--color-text-primary);
 
-    --input-otp-radius: 0.5rem;
-    --input-otp-gap: 0.5rem;
-    --input-otp-padding-inline: 0.5rem;
-    --input-otp-padding-block: 0.5rem;
+    --input-otp-radius: var(--radius-lg);
+    --input-otp-gap: calc(var(--spacing) * 2);
+    --input-otp-padding-inline: calc(var(--spacing) * 2);
+    --input-otp-padding-block: calc(var(--spacing) * 2);
     --input-otp-bg-default: var(--color-surface-default);
     --input-otp-bg-focus: var(--color-surface-default);
     --input-otp-bg-disabled: var(--color-surface-subtle);
@@ -225,12 +225,12 @@
     --input-otp-text-readonly: var(--color-text-primary);
 
     --input-underline-border-width: 0.0625rem;
-    --input-underline-gap: 0.5rem;
+    --input-underline-gap: calc(var(--spacing) * 2);
     --input-underline-padding-inline: 0;
     --input-underline-padding-block: 0;
-    --input-underline-content-gap: 0.75rem;
+    --input-underline-content-gap: calc(var(--spacing) * 3);
     --input-underline-content-padding-inline: 0;
-    --input-underline-content-padding-block: 0.75rem;
+    --input-underline-content-padding-block: calc(var(--spacing) * 3);
     --input-underline-bg-default: transparent;
     --input-underline-bg-focus: transparent;
     --input-underline-bg-disabled: transparent;
@@ -252,9 +252,9 @@
     --separator-default: var(--color-border-weak);
 
     /* Typography */
-    --type-weight-regular: 400;
-    --type-weight-semibold: 600;
-    --type-weight-bold: 700;
+    --type-weight-regular: var(--font-weight-normal);
+    --type-weight-semibold: var(--font-weight-semibold);
+    --type-weight-bold: var(--font-weight-bold);
 
     --type-brand-large-font-family: var(--font-family-serif);
     --type-brand-large-font-style: italic;
@@ -320,7 +320,7 @@
     --foreground: var(--color-text-primary);
     --card: var(--color-surface-default);
     --card-foreground: var(--color-text-primary);
-    --popover: var(--color-surface-elevated);
+    --popover: var(--color-surface-default);
     --popover-foreground: var(--color-text-primary);
     --primary: var(--button-primary-container-default);
     --primary-foreground: var(--button-primary-text-default);
