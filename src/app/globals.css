@@ -334,6 +334,7 @@
     --destructive-foreground: var(--color-text-inverse);
     --border: var(--color-border-default);
     --input: var(--color-border-default);
+    --radius: var(--radius-lg);
     --ring: var(--color-border-focus);
     --sidebar: var(--color-surface-default);
     --sidebar-foreground: var(--color-text-primary);
