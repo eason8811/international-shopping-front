@@ -19,12 +19,11 @@ export function LogoLockup({ brandLabel, className }: LogoLockupProps) {
       <span className="flex size-6 shrink-0 items-center justify-center overflow-hidden">
         <Ampersand
           aria-hidden="true"
-          className="size-4 shrink-0 text-(--button-naked-text-active)"
+          className="size-6 shrink-0 text-(--button-naked-text-active)"
           strokeWidth={1.75}
         />
       </span>
       <Button
-        asChild
         size="default"
         variant="naked"
         className={[
@@ -32,7 +31,7 @@ export function LogoLockup({ brandLabel, className }: LogoLockupProps) {
           "font-semibold italic tracking-(--type-brand-large-letter-spacing) text-(--button-naked-text-active)",
         ].join(" ")}
       >
-        <span>{brandLabel}</span>
+        <span className="text-trim-cap overflow-visible">{brandLabel}</span>
       </Button>
     </div>
   )

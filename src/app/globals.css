@@ -397,3 +397,9 @@
         color: var(--color-text-primary);
     }
 }
+
+@utility text-trim-cap {
+    @supports (text-box-trim: trim-both) {
+        text-box: trim-both cap alphabetic;
+    }
+}
