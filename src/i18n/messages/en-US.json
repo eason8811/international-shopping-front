@@ -472,6 +472,7 @@
     "form": {
       "labels": {
         "account": "Account",
+        "countryCode": "Phone country code",
         "email": "Email",
         "verificationSentTo": "Verification code sent to",
         "password": "Secret Key",

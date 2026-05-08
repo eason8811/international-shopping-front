@@ -27,7 +27,7 @@ export function AuthCodeResend({
 }: AuthCodeResendProps) {
   if (remainingSeconds > 0) {
     return (
-      <div className={cn("flex items-center gap-2", className)}>
+      <div className={cn("flex justify-center items-center gap-2", className)}>
         <CheckIcon
           aria-hidden="true"
           className="size-4 shrink-0 text-(--color-text-success)"
@@ -45,7 +45,7 @@ export function AuthCodeResend({
   }
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex justify-center items-center gap-2", className)}>
       <span
         className={[
           "font-sans text-(length:--type-paragraph-small-font-size) font-semibold",

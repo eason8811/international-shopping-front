@@ -64,6 +64,7 @@
     "form": {
       "labels": {
         "account": "Cuenta",
+        "countryCode": "Codigo de pais",
         "email": "Correo",
         "verificationSentTo": "Codigo enviado a",
         "password": "Clave secreta",

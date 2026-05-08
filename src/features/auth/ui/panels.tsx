@@ -64,6 +64,7 @@ function useLoginEmailPanelCopy(): {
 
   return {
     accountFieldCopy: {
+      countryCodeLabel: t("form.labels.countryCode"),
       label: t("form.labels.account"),
       placeholder: t("form.placeholders.account"),
     },
@@ -78,7 +79,7 @@ function useLoginEmailPanelCopy(): {
 }
 
 function useRegisterEmailPanelCopy(): {
-  accountFieldCopy: AuthAccountFieldCopy
+  emailFieldCopy: AuthEmailFieldEditableCopy
   passwordFieldCopy: AuthPasswordFieldCopy
   confirmPasswordFieldCopy: AuthPasswordFieldCopy
   submitLabel: string
@@ -88,9 +89,9 @@ function useRegisterEmailPanelCopy(): {
   const passwordPlaceholder = t("form.placeholders.password")
 
   return {
-    accountFieldCopy: {
-      label: t("form.labels.account"),
-      placeholder: t("form.placeholders.account"),
+    emailFieldCopy: {
+      label: t("form.labels.email"),
+      placeholder: t("form.placeholders.email"),
     },
     confirmPasswordFieldCopy: {
       ...passwordToggleCopy,
@@ -248,9 +249,11 @@ export function LoginEmailPanel() {
         <AuthAccountField
           {...accountFieldCopy}
           autoComplete="username"
+          countryCode={state.fields.loginCountryCode}
           error={state.errors.loginAccount}
           name="login-account"
           value={state.fields.loginAccount}
+          onCountryCodeChange={(value) => actions.update("loginCountryCode", value)}
           onValueChange={(value) => actions.update("loginAccount", value)}
         />
         <AuthPasswordField
@@ -286,7 +289,7 @@ export function RegisterEmailPanel() {
   const registerPasswordVisible = usePasswordVisibility("registerPassword")
   const confirmPasswordVisible = usePasswordVisibility("registerConfirmPassword")
   const {
-    accountFieldCopy,
+    emailFieldCopy,
     confirmPasswordFieldCopy,
     passwordFieldCopy,
     submitLabel,
@@ -295,11 +298,10 @@ export function RegisterEmailPanel() {
   return (
     <div className="flex w-full flex-col gap-8">
       <div className="flex w-full flex-col gap-6">
-        <AuthAccountField
-          {...accountFieldCopy}
+        <AuthEmailField
+          {...emailFieldCopy}
           autoComplete="email"
           error={state.errors.registerAccount}
-          inputMode="email"
           name="register-account"
           value={state.fields.registerAccount}
           onValueChange={(value) => actions.update("registerAccount", value)}

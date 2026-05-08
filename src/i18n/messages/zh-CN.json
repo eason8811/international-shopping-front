@@ -459,6 +459,7 @@
     "form": {
       "labels": {
         "account": "账号",
+        "countryCode": "手机号国家码",
         "email": "邮箱地址",
         "verificationSentTo": "验证码已发送至",
         "password": "密码",

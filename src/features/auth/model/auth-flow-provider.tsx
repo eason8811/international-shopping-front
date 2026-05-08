@@ -14,6 +14,7 @@ import {
   verifyRegistrationEmail,
 } from "@/features/auth"
 import { normalizeClientError } from "@/lib/api/normalize-client-error"
+import { normalizeOptionalPhoneCountryCodeInput } from "@/lib/format/phone"
 
 import type { AuthFieldName, AuthFlow, AuthFlowContextValue } from "./types"
 
@@ -25,6 +26,7 @@ const AuthFlowContext = React.createContext<AuthFlowContextValue | null>(null)
 
 const defaultFields: Record<AuthFieldName, string> = {
   loginAccount: "",
+  loginCountryCode: "+86",
   loginPassword: "",
   registerAccount: "",
   registerPassword: "",
@@ -51,6 +53,12 @@ function looksLikeEmail(value: string) {
 
 function looksLikePhone(value: string) {
   return /^\+?[0-9()\s-]{6,20}$/.test(value)
+}
+
+function usesPhoneAccountVariant(value: string) {
+  const trimmed = value.trim()
+
+  return trimmed.length > 0 && /^\d+$/.test(trimmed)
 }
 
 function isResolvableLoginAccount(value: string) {
@@ -307,6 +315,9 @@ export function AuthFlowProvider({
       if (flow === "login-email") {
         await loginUser({
           account: fields.loginAccount.trim(),
+          countryCode: usesPhoneAccountVariant(fields.loginAccount)
+            ? normalizeOptionalPhoneCountryCodeInput(fields.loginCountryCode)
+            : null,
           password: fields.loginPassword,
         })
 
@@ -426,6 +437,7 @@ export function AuthFlowProvider({
     errorsT,
     fields.forgotEmail,
     fields.loginAccount,
+    fields.loginCountryCode,
     fields.loginPassword,
     fields.registerAccount,
     fields.registerConfirmPassword,

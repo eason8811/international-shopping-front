@@ -14,6 +14,7 @@ export type AuthFooterKind = "login" | "register" | "recovery"
 
 export type AuthFieldName =
   | "loginAccount"
+  | "loginCountryCode"
   | "loginPassword"
   | "registerAccount"
   | "registerPassword"
