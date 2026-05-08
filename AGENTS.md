@@ -75,6 +75,19 @@ BFF 层负责：
 - 路由页面放在 `src/app/[locale]` 下，避免新增无 locale 前缀的用户页面。
 - 只在确有产品要求时新增 locale；新增时同步 routing、messages、导航和测试。
 
+## 组件组合与文案传递
+
+- 设计复杂组件 API、重构共享组件、处理 context/provider、compound components 或显式结构位时，默认遵循 `vercel-composition-patterns`。
+- 不要用多个布尔 prop 叠加出组件模式；优先改为显式变体组件、children 组合或 compound components。
+- provider 应是状态实现的唯一持有者；对下游组合件优先暴露稳定的 `state / actions / meta` 接口，不把内部状态细节层层透传。
+- 静态结构优先使用 `children` 组合，不新增 `renderHeader`、`renderFooter` 之类 render props API。
+- 如果一个组件正在通过 props 传入具名结构槽位，例如 `navbar`、`picture`、`hero`、`section`、`footer` 这类 `ReactNode` props，新实现或重构时应优先改成 compound components，例如 `Layout.Navbar`、`Layout.Content`、`Section.Form`；不要继续扩大“props 当具名插槽”的 API 面。
+- 在 React 19 语境下，新增业务组件和组合层组件时优先遵循该 skill 的 React 19 约束；除非是在延续已有 primitive 或第三方兼容层，不要把 `forwardRef` 当默认方案。
+- 文案传递默认分两类处理：
+  - 全局唯一、全局通用、且文案语义固定的 shared 组件，应在组件内部直接取翻译，而不是由页面层逐项透传文案 props。client 组件使用 `useTranslations`，server 组件使用对应的服务端翻译入口。
+  - 可在多个上下文复用的字段/区块组件，应从 `*Props` 中抽出文案专用的 `*Copy` 类型，并在调用侧整理成返回 `*Copy` 的 `use*Copy` hook，再通过 `{...copy}` 传入，避免在页面层散落大量字符串 props。
+- 设计组件接口时，区分行为 props、数据 props 与 copy props，避免把翻译字符串、状态开关和交互控制混成一个超长 props 接口。
+
 ## UI、Figma 与设计系统
 
 Figma 和 `doc/design-system/figma-design-system-rules.md` 是视觉实现的主要来源。做 Figma-to-code 时，先确认目标页面、组件节点和响应式形态，再改代码。
@@ -115,4 +128,3 @@ Auth 相关页面当前大量复用 `src/components/blocks` 与 `src/components/
 - `git diff -- <path>` 是否只包含预期改动。
 - 代码变更是否通过必要的 lint/test/build。
 - 文档、类型、i18n message、API contract 是否随功能变更同步更新。
-
