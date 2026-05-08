@@ -498,6 +498,10 @@
         "verify": "Verify",
         "resetPassword": "Reset Secret Key"
       },
+      "status": {
+        "loading": "Submitting request",
+        "success": "Request completed"
+      },
       "demoEmail": "leilaleilaleilaleila@gmail.com",
       "resendPrompt": "Didn't receive the code?",
       "resendAction": "Resend",

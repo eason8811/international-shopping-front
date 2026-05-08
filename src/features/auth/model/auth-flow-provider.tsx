@@ -16,9 +16,15 @@ import {
 import { normalizeClientError } from "@/lib/api/normalize-client-error"
 import { normalizeOptionalPhoneCountryCodeInput } from "@/lib/format/phone"
 
-import type { AuthFieldName, AuthFlow, AuthFlowContextValue } from "./types"
+import type {
+  AuthFieldName,
+  AuthFlow,
+  AuthFlowContextValue,
+  AuthSubmitStatus,
+} from "./types"
 
 const RESEND_COUNTDOWN_SECONDS = 60
+const SUBMIT_SUCCESS_HOLD_MS = 500
 const SUCCESS_REDIRECT_DELAY_MS = 1600
 const PASSWORD_RULE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
@@ -95,6 +101,7 @@ export function AuthFlowProvider({
   const [fields, setFields] = React.useState<Record<string, string>>(defaultFields)
   const [errors, setErrors] = React.useState<Record<string, string | null>>({})
   const [pending, setPending] = React.useState(false)
+  const [submitStatus, setSubmitStatus] = React.useState<AuthSubmitStatus>("idle")
   const [remainingSeconds, setRemainingSeconds] = React.useState(0)
   const [success, setSuccess] = React.useState<{
     visible: boolean
@@ -180,10 +187,19 @@ export function AuthFlowProvider({
     }))
   }, [])
 
+  const holdSubmitSuccess = React.useCallback(async () => {
+    setSubmitStatus("success")
+
+    await new Promise<void>((resolve) => {
+      window.setTimeout(resolve, SUBMIT_SUCCESS_HOLD_MS)
+    })
+  }, [])
+
   const switchFlow = React.useCallback(
     (nextFlow: AuthFlow) => {
       setErrors({})
       setPending(false)
+      setSubmitStatus("idle")
       setSuccess({
         visible: false,
         title: null,
@@ -309,6 +325,7 @@ export function AuthFlowProvider({
     }
 
     setPending(true)
+    setSubmitStatus("loading")
     setErrors({})
 
     try {
@@ -324,6 +341,8 @@ export function AuthFlowProvider({
         toast.success(successT("loginTitle"), {
           description: successT("loginDescription"),
         })
+
+        await holdSubmitSuccess()
 
         if (returnTo) {
           router.replace(returnTo)
@@ -345,6 +364,8 @@ export function AuthFlowProvider({
           password: fields.registerPassword,
         })
 
+        await holdSubmitSuccess()
+
         setFields((current) => ({
           ...current,
           verifyEmail: registerEmail,
@@ -362,6 +383,8 @@ export function AuthFlowProvider({
           account: recoveryEmail,
         })
 
+        await holdSubmitSuccess()
+
         setFields((current) => ({
           ...current,
           resetEmail: recoveryEmail,
@@ -377,6 +400,8 @@ export function AuthFlowProvider({
           email: fields.verifyEmail || defaultDemoEmail,
           code: fields.verifyCode.trim(),
         })
+
+        await holdSubmitSuccess()
 
         setSuccess({
           visible: true,
@@ -394,6 +419,8 @@ export function AuthFlowProvider({
           code: fields.resetCode.trim(),
           newPassword: fields.resetPassword,
         })
+
+        await holdSubmitSuccess()
 
         setSuccess({
           visible: true,
@@ -445,6 +472,7 @@ export function AuthFlowProvider({
       })
     } finally {
       setPending(false)
+      setSubmitStatus("idle")
     }
   }, [
     defaultDemoEmail,
@@ -463,6 +491,7 @@ export function AuthFlowProvider({
     fields.verifyCode,
     fields.verifyEmail,
     flow,
+    holdSubmitSuccess,
     returnTo,
     router,
     scheduleFallbackRedirect,
@@ -517,6 +546,7 @@ export function AuthFlowProvider({
         fields,
         errors,
         pending,
+        submitStatus,
         resend: {
           status: remainingSeconds > 0 ? "countdown" : "idle",
           remainingSeconds,
@@ -553,6 +583,7 @@ export function AuthFlowProvider({
       remainingSeconds,
       resend,
       returnTo,
+      submitStatus,
       submit,
       success,
       switchFlow,

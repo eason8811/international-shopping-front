@@ -90,6 +90,10 @@
         "verify": "Verificar",
         "resetPassword": "Restablecer clave secreta"
       },
+      "status": {
+        "loading": "Enviando solicitud",
+        "success": "Solicitud completada"
+      },
       "demoEmail": "leilaleilaleilaleila@gmail.com",
       "resendPrompt": "No recibiste el codigo?",
       "resendAction": "Reenviar",

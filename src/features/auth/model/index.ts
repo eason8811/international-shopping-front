@@ -5,4 +5,5 @@ export type {
   AuthFlowContextValue,
   AuthFooterKind,
   AuthHeroFamily,
+  AuthSubmitStatus,
 } from "./types"

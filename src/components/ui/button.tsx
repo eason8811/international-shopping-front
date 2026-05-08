@@ -1,14 +1,15 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { CheckIcon, LoaderCircleIcon } from "lucide-react"
 import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
   [
-    "inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-colors outline-none",
+    "inline-flex shrink-0 items-center justify-center whitespace-nowrap outline-none",
+    "transition-[color,background-color,border-color,box-shadow,opacity]",
     "disabled:pointer-events-none disabled:opacity-(--state-opacity-disabled)",
-    "data-[pending=true]:pointer-events-none data-[pending=true]:opacity-(--state-opacity-loading)",
     "**:data-[icon=inline-start]:shrink-0 **:data-[icon=inline-end]:shrink-0",
     "**:data-[icon=inline-start]:pointer-events-none **:data-[icon=inline-end]:pointer-events-none cursor-pointer",
   ].join(" "),
@@ -24,11 +25,15 @@ const buttonVariants = cva(
           "rounded-(--button-large-radius) border-(length:--button-primary-border-width) border-solid",
           "border-(--button-primary-border-default) bg-(--button-primary-container-default) text-(--button-primary-text-default)",
           "hover:bg-(--button-primary-container-hover) active:bg-(--button-primary-container-active)",
+          "data-[status=loading]:border-(--button-primary-border-default) data-[status=loading]:bg-(--button-primary-container-loading)",
+          "data-[status=success]:border-(--button-primary-border-default) data-[status=success]:bg-(--button-primary-container-success)",
         ].join(" "),
         secondary: [
           "rounded-(--button-large-radius) border-(length:--button-secondary-border-width) border-solid",
           "border-(--button-secondary-border-default) bg-(--button-secondary-container-default) text-(--button-secondary-text-default)",
           "hover:bg-(--button-secondary-container-hover) active:bg-(--button-secondary-container-active)",
+          "data-[status=loading]:border-(--button-secondary-border-default) data-[status=loading]:bg-(--button-secondary-container-loading)",
+          "data-[status=success]:border-(--button-secondary-border-default) data-[status=success]:bg-(--button-secondary-container-success)",
         ].join(" "),
         outline: [
           "rounded-(--button-large-radius) border-(--button-outline-border-default) border-(length:--button-secondary-border-width) border-solid",
@@ -110,9 +115,23 @@ const buttonVariants = cva(
   }
 )
 
+type ButtonStatus = "idle" | "loading" | "success"
+
+interface ButtonStatusCopy {
+  loading: string
+  success: string
+}
+
+const defaultButtonStatusCopy = {
+  loading: "Loading",
+  success: "Success",
+} satisfies ButtonStatusCopy
+
 type ButtonBaseProps = VariantProps<typeof buttonVariants> & {
   className?: string
   asChild?: boolean
+  status?: ButtonStatus
+  statusCopy?: ButtonStatusCopy
 }
 
 type ButtonAsChildProps = ButtonBaseProps &
@@ -127,11 +146,48 @@ type ButtonNativeProps = ButtonBaseProps &
 
 type ButtonProps = ButtonAsChildProps | ButtonNativeProps
 
+function ButtonStatusContent({
+  status,
+  statusCopy,
+}: {
+  status: Exclude<ButtonStatus, "idle">
+  statusCopy: ButtonStatusCopy
+}) {
+  const label = status === "loading" ? statusCopy.loading : statusCopy.success
+
+  return (
+    <span
+      aria-atomic="true"
+      aria-live="polite"
+      className="flex items-center justify-center"
+      data-slot="button-status-content"
+      role="status"
+    >
+      {status === "loading" ? (
+        <LoaderCircleIcon
+          aria-hidden="true"
+          className="size-5 animate-spin"
+          data-slot="button-status-icon"
+        />
+      ) : (
+        <CheckIcon
+          aria-hidden="true"
+          className="size-5"
+          data-slot="button-status-icon"
+        />
+      )}
+      <span className="sr-only">{label}</span>
+    </span>
+  )
+}
+
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
+  status = "idle",
+  statusCopy = defaultButtonStatusCopy,
   ...props
 }: ButtonProps) {
   if (asChild) {
@@ -141,6 +197,7 @@ function Button({
       <Slot.Root
         data-slot="button"
         data-size={size}
+        data-status={status}
         data-variant={variant}
         className={cn(buttonVariants({ variant, size, className }))}
         {...slotProps}
@@ -149,17 +206,31 @@ function Button({
   }
 
   const buttonProps = props as React.ButtonHTMLAttributes<HTMLButtonElement>
+  const { children, disabled: nativeDisabled, ...nativeProps } = buttonProps
+  const showsStatusIconOnly =
+    status !== "idle" &&
+    size === "large" &&
+    (variant === "primary" || variant === "secondary")
+  const disabled = nativeDisabled || showsStatusIconOnly
 
   return (
     <button
+      {...nativeProps}
       data-slot="button"
+      data-status={status}
       data-variant={variant}
       data-size={size}
+      disabled={disabled}
       type={buttonProps.type ?? "button"}
       className={cn(buttonVariants({ variant, size, className }))}
-      {...buttonProps}
-    />
+    >
+      {showsStatusIconOnly ? (
+        <ButtonStatusContent status={status} statusCopy={statusCopy} />
+      ) : (
+        children
+      )}
+    </button>
   )
 }
 
-export { Button, buttonVariants }
+export { Button, buttonVariants, type ButtonStatus, type ButtonStatusCopy }

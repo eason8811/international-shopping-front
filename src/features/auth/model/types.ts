@@ -11,6 +11,7 @@ export type AuthFlow =
 
 export type AuthHeroFamily = "login" | "register" | "recovery"
 export type AuthFooterKind = "login" | "register" | "recovery"
+export type AuthSubmitStatus = "idle" | "loading" | "success"
 
 export type AuthFieldName =
   | "loginAccount"
@@ -32,6 +33,7 @@ export interface AuthFlowContextValue {
     fields: Record<string, string>
     errors: Record<string, string | null>
     pending: boolean
+    submitStatus: AuthSubmitStatus
     resend: {
       status: "idle" | "countdown" | "success"
       remainingSeconds: number

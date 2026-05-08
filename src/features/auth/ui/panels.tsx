@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowRightIcon, CornerUpRightIcon, Loader2Icon, MailIcon } from "lucide-react"
+import { ArrowRightIcon, CornerUpRightIcon, MailIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 import {
@@ -18,7 +18,7 @@ import {
   type AuthPasswordFieldCopy,
   type AuthSuccessPanelCopy,
 } from "@/components/auth/blocks"
-import { Button } from "@/components/ui/button"
+import { Button, type ButtonStatusCopy } from "@/components/ui/button"
 
 import { useAuthFlow } from "@/features/auth/model"
 
@@ -51,6 +51,15 @@ function useAuthResendCopy(remainingSeconds: number): AuthCodeResendCopy {
       seconds: remainingSeconds,
     }),
     prompt: t("form.resendPrompt"),
+  }
+}
+
+function useAuthSubmitButtonStatusCopy(): ButtonStatusCopy {
+  const t = useTranslations("AuthUi")
+
+  return {
+    loading: t("form.status.loading"),
+    success: t("form.status.success"),
   }
 }
 
@@ -198,10 +207,6 @@ function useResetSuccessPanelCopy(): AuthSuccessPanelCopy {
   }
 }
 
-function PendingIcon() {
-  return <Loader2Icon className="animate-spin" data-icon="inline-end" />
-}
-
 export function LoginPanel() {
   const t = useTranslations("AuthUi")
   const { actions } = useAuthFlow()
@@ -242,6 +247,7 @@ export function LoginEmailPanel() {
   const { actions, state } = useAuthFlow()
   const passwordVisible = usePasswordVisibility("loginPassword")
   const { accountFieldCopy, passwordFieldCopy, submitLabel } = useLoginEmailPanelCopy()
+  const submitStatusCopy = useAuthSubmitButtonStatusCopy()
 
   return (
     <div className="flex w-full flex-col gap-8">
@@ -270,15 +276,16 @@ export function LoginEmailPanel() {
       </div>
       <Button
         className="w-full"
-        data-pending={state.pending ? "true" : undefined}
         disabled={state.pending}
         size="large"
+        status={state.submitStatus}
+        statusCopy={submitStatusCopy}
         type="button"
         variant="primary"
         onClick={() => void actions.submit()}
       >
         {submitLabel}
-        {state.pending ? <PendingIcon /> : <ArrowRightIcon data-icon="inline-end" />}
+        <ArrowRightIcon data-icon="inline-end" />
       </Button>
     </div>
   )
@@ -288,6 +295,7 @@ export function RegisterEmailPanel() {
   const { actions, state } = useAuthFlow()
   const registerPasswordVisible = usePasswordVisibility("registerPassword")
   const confirmPasswordVisible = usePasswordVisibility("registerConfirmPassword")
+  const submitStatusCopy = useAuthSubmitButtonStatusCopy()
   const {
     emailFieldCopy,
     confirmPasswordFieldCopy,
@@ -333,15 +341,16 @@ export function RegisterEmailPanel() {
       </div>
       <Button
         className="w-full"
-        data-pending={state.pending ? "true" : undefined}
         disabled={state.pending}
         size="large"
+        status={state.submitStatus}
+        statusCopy={submitStatusCopy}
         type="button"
         variant="primary"
         onClick={() => void actions.submit()}
       >
         {submitLabel}
-        {state.pending ? <PendingIcon /> : <CornerUpRightIcon data-icon="inline-end" />}
+        <CornerUpRightIcon data-icon="inline-end" />
       </Button>
     </div>
   )
@@ -350,6 +359,7 @@ export function RegisterEmailPanel() {
 export function ForgotPasswordPanel() {
   const { actions, state } = useAuthFlow()
   const { emailFieldCopy, submitLabel } = useForgotPasswordPanelCopy()
+  const submitStatusCopy = useAuthSubmitButtonStatusCopy()
 
   return (
     <div className="flex w-full flex-col gap-8">
@@ -363,15 +373,16 @@ export function ForgotPasswordPanel() {
       />
       <Button
         className="w-full"
-        data-pending={state.pending ? "true" : undefined}
         disabled={state.pending}
         size="large"
+        status={state.submitStatus}
+        statusCopy={submitStatusCopy}
         type="button"
         variant="primary"
         onClick={() => void actions.submit()}
       >
         {submitLabel}
-        {state.pending ? <PendingIcon /> : <ArrowRightIcon data-icon="inline-end" />}
+        <ArrowRightIcon data-icon="inline-end" />
       </Button>
     </div>
   )
@@ -379,6 +390,7 @@ export function ForgotPasswordPanel() {
 
 export function VerifyEmailPanel() {
   const { actions, state } = useAuthFlow()
+  const submitStatusCopy = useAuthSubmitButtonStatusCopy()
   const { fallbackEmail, otpFieldCopy, readonlyEmailCopy, resendCopy, submitLabel } =
     useVerifyEmailPanelCopy(state.resend.remainingSeconds)
 
@@ -403,15 +415,15 @@ export function VerifyEmailPanel() {
       />
       <Button
         className="w-full"
-        data-pending={state.pending ? "true" : undefined}
         disabled={state.pending}
         size="large"
+        status={state.submitStatus}
+        statusCopy={submitStatusCopy}
         type="button"
         variant="primary"
         onClick={() => void actions.submit()}
       >
         {submitLabel}
-        {state.pending ? <PendingIcon /> : null}
       </Button>
     </div>
   )
@@ -421,6 +433,7 @@ export function ResetPasswordPanel() {
   const { actions, state } = useAuthFlow()
   const resetPasswordVisible = usePasswordVisibility("resetPassword")
   const resetConfirmVisible = usePasswordVisibility("resetConfirmPassword")
+  const submitStatusCopy = useAuthSubmitButtonStatusCopy()
   const {
     fallbackEmail,
     confirmPasswordFieldCopy,
@@ -478,15 +491,16 @@ export function ResetPasswordPanel() {
       </div>
       <Button
         className="w-full"
-        data-pending={state.pending ? "true" : undefined}
         disabled={state.pending}
         size="large"
+        status={state.submitStatus}
+        statusCopy={submitStatusCopy}
         type="button"
         variant="primary"
         onClick={() => void actions.submit()}
       >
         {submitLabel}
-        {state.pending ? <PendingIcon /> : <ArrowRightIcon data-icon="inline-end" />}
+        <ArrowRightIcon data-icon="inline-end" />
       </Button>
     </div>
   )
