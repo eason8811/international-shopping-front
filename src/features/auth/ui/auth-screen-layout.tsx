@@ -1,19 +1,20 @@
 import type { ReactNode } from "react"
 
+import { cn } from "@/lib/utils"
+
 const authOrbCool = "#dde4e5"
 const authOrbWarm = "#e4e2e1"
 
 interface AuthScreenLayoutProps {
-  navbar: ReactNode
-  picture: ReactNode
   children: ReactNode
 }
 
-export function AuthScreenLayout({
-  navbar,
-  picture,
-  children,
-}: AuthScreenLayoutProps) {
+interface AuthScreenLayoutSlotProps {
+  children: ReactNode
+  className?: string
+}
+
+function AuthScreenLayoutRoot({ children }: AuthScreenLayoutProps) {
   return (
     <div className="relative min-h-screen bg-(--color-background-page)">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -27,19 +28,54 @@ export function AuthScreenLayout({
         />
       </div>
 
-      <div className="relative z-10">
-        {navbar}
-
-        <main className="flex min-h-[calc(100svh-3.75rem)] xl:min-h-[calc(100svh-4.75rem)]">
-          <section className="flex w-full justify-center px-8 py-12 xl:w-lg xl:px-16">
-            <div className="flex w-full items-center justify-center xl:max-w-sm">
-              {children}
-            </div>
-          </section>
-
-          <aside className="hidden flex-1 xl:flex">{picture}</aside>
-        </main>
-      </div>
+      <div className="relative z-10">{children}</div>
     </div>
   )
 }
+
+function AuthScreenLayoutNavbar({
+  children,
+}: Pick<AuthScreenLayoutSlotProps, "children">) {
+  return <>{children}</>
+}
+
+function AuthScreenLayoutMain({
+  children,
+  className,
+}: AuthScreenLayoutSlotProps) {
+  return (
+    <main
+      className={cn(
+        "flex min-h-[calc(100svh-3.75rem)] xl:min-h-[calc(100svh-4.75rem)]",
+        className
+      )}
+    >
+      {children}
+    </main>
+  )
+}
+
+function AuthScreenLayoutContent({
+  children,
+  className,
+}: AuthScreenLayoutSlotProps) {
+  return (
+    <section className={cn("flex w-full justify-center px-8 py-12 xl:w-lg xl:px-16", className)}>
+      <div className="flex w-full items-center justify-center xl:max-w-sm">{children}</div>
+    </section>
+  )
+}
+
+function AuthScreenLayoutPicture({
+  children,
+  className,
+}: AuthScreenLayoutSlotProps) {
+  return <aside className={cn("hidden flex-1 xl:flex", className)}>{children}</aside>
+}
+
+export const AuthScreenLayout = Object.assign(AuthScreenLayoutRoot, {
+  Navbar: AuthScreenLayoutNavbar,
+  Main: AuthScreenLayoutMain,
+  Content: AuthScreenLayoutContent,
+  Picture: AuthScreenLayoutPicture,
+})

@@ -2,9 +2,12 @@ import { CheckIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-interface AuthSuccessPanelProps {
+export interface AuthSuccessPanelCopy {
   title: string
   description: string
+}
+
+interface AuthSuccessPanelProps extends AuthSuccessPanelCopy {
   className?: string
 }
 

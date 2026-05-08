@@ -8,6 +8,8 @@ import { toast } from "sonner"
 import {
   AuthFooterLink,
   AuthHeroHeader,
+  type AuthFooterLinkCopy,
+  type AuthHeroHeaderCopy,
 } from "@/components/auth/blocks"
 import { Navbar } from "@/components/shared/navbar"
 import { PictureWithCard } from "@/components/shared/picture-with-card"
@@ -69,6 +71,68 @@ function resolveFooterKind(flow: AuthFlow): AuthFooterKind | null {
   return "login"
 }
 
+function resolveFooterTargetFlow(flow: AuthFlow): AuthFlow | null {
+  const footerKind = resolveFooterKind(flow)
+
+  if (footerKind === "login")
+    return "register"
+
+  if (footerKind === "register")
+    return "login"
+
+  if (footerKind === "recovery")
+    return "login-email"
+
+  return null
+}
+
+function useAuthHeroCopy(flow: AuthFlow): AuthHeroHeaderCopy {
+  const t = useTranslations("AuthUi")
+  const heroFamily = resolveHeroFamily(flow)
+
+  if (heroFamily === "register")
+    return {
+      description: t("register.subtitle"),
+      title: t("register.title"),
+    }
+
+  if (heroFamily === "recovery")
+    return {
+      description: t("forgot.subtitle"),
+      title: t("forgot.title"),
+    }
+
+  return {
+    description: t("login.subtitle"),
+    title: t("login.title"),
+  }
+}
+
+function useAuthFooterCopy(flow: AuthFlow): AuthFooterLinkCopy | null {
+  const t = useTranslations("AuthUi")
+  const footerKind = resolveFooterKind(flow)
+
+  if (footerKind === "login")
+    return {
+      actionLabel: t("login.footerAction"),
+      prompt: t("login.footerPrompt"),
+    }
+
+  if (footerKind === "register")
+    return {
+      actionLabel: t("register.footerAction"),
+      prompt: t("register.footerPrompt"),
+    }
+
+  if (footerKind === "recovery")
+    return {
+      actionLabel: t("forgot.footerAction"),
+      prompt: t("forgot.footerPrompt"),
+    }
+
+  return null
+}
+
 function AuthPageScene({
   locale,
   returnTo,
@@ -76,46 +140,10 @@ function AuthPageScene({
   locale: string
   returnTo?: string | null
 }) {
-  const t = useTranslations("AuthUi")
   const { actions, meta } = useAuthFlow()
-
-  const heroFamily = resolveHeroFamily(meta.flow)
-  const footerKind = resolveFooterKind(meta.flow)
-
-  const heroTitle =
-    heroFamily === "register"
-      ? t("register.title")
-      : heroFamily === "recovery"
-        ? t("forgot.title")
-        : t("login.title")
-
-  const heroDescription =
-    heroFamily === "register"
-      ? t("register.subtitle")
-      : heroFamily === "recovery"
-        ? t("forgot.subtitle")
-        : t("login.subtitle")
-
-  const footer =
-    footerKind === "login" ? (
-      <AuthFooterLink
-        actionLabel={t("login.footerAction")}
-        prompt={t("login.footerPrompt")}
-        onAction={() => actions.switchFlow("register")}
-      />
-    ) : footerKind === "register" ? (
-      <AuthFooterLink
-        actionLabel={t("register.footerAction")}
-        prompt={t("register.footerPrompt")}
-        onAction={() => actions.switchFlow("login")}
-      />
-    ) : footerKind === "recovery" ? (
-      <AuthFooterLink
-        actionLabel={t("forgot.footerAction")}
-        prompt={t("forgot.footerPrompt")}
-        onAction={() => actions.switchFlow("login-email")}
-      />
-    ) : undefined
+  const heroCopy = useAuthHeroCopy(meta.flow)
+  const footerCopy = useAuthFooterCopy(meta.flow)
+  const footerTargetFlow = resolveFooterTargetFlow(meta.flow)
 
   let panel: React.ReactNode
   switch (meta.flow) {
@@ -149,47 +177,41 @@ function AuthPageScene({
   }
 
   return (
-    <AuthScreenLayout
-      navbar={
-        <Navbar
-          brandLabel={t("shell.brand")}
-          cartLabel={t("shell.cartLabel")}
-          menuLabel={t("shell.menuLabel")}
-          nav={{
-            collections: t("shell.nav.collections"),
-            newArrivals: t("shell.nav.newArrivals"),
-            support: t("shell.nav.support"),
-          }}
-          profileLabel={t("shell.profileLabel")}
-          searchLabel={t("shell.searchLabel")}
-          searchPlaceholder={t("shell.searchPlaceholder")}
-        />
-      }
-      picture={
-        <PictureWithCard
-          author={t("layout.quoteAuthor")}
-          quote={t("layout.quote")}
-        />
-      }
-    >
-      <AuthContent
-        footer={footer}
-        hero={<AuthHeroHeader description={heroDescription} title={heroTitle} />}
-        section={
-          <AuthProviderSection
-            dividerLabel={t("login.divider").toUpperCase()}
-            locale={locale}
-            providerLabels={{
-              google: t("social.google"),
-              tiktok: t("social.tiktok"),
-              x: t("social.x"),
-            }}
-            returnTo={returnTo}
-          >
-            {panel}
-          </AuthProviderSection>
-        }
-      />
+    <AuthScreenLayout>
+      <AuthScreenLayout.Navbar>
+        <Navbar />
+      </AuthScreenLayout.Navbar>
+
+      <AuthScreenLayout.Main>
+        <AuthScreenLayout.Content>
+          <AuthContent>
+            <AuthContent.Hero>
+              <AuthHeroHeader {...heroCopy} />
+            </AuthContent.Hero>
+
+            <AuthContent.Section>
+              <AuthProviderSection locale={locale} returnTo={returnTo}>
+                <AuthProviderSection.Providers />
+                <AuthProviderSection.Divider />
+                <AuthProviderSection.Form>{panel}</AuthProviderSection.Form>
+              </AuthProviderSection>
+            </AuthContent.Section>
+
+            {footerCopy && footerTargetFlow ? (
+              <AuthContent.Footer>
+                <AuthFooterLink
+                  {...footerCopy}
+                  onAction={() => actions.switchFlow(footerTargetFlow)}
+                />
+              </AuthContent.Footer>
+            ) : null}
+          </AuthContent>
+        </AuthScreenLayout.Content>
+
+        <AuthScreenLayout.Picture>
+          <PictureWithCard />
+        </AuthScreenLayout.Picture>
+      </AuthScreenLayout.Main>
     </AuthScreenLayout>
   )
 }

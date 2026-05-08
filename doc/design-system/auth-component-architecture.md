@@ -236,29 +236,43 @@ pnpm dlx shadcn@latest add button input input-otp separator
 
 ```tsx
 <AuthFlowProvider flow="login-email">
-  <AuthScreenLayout device="desktop">
-    <Navbar />
-    <AuthContent>
-      <AuthHeroHeader family="login" />
-      <AuthProviderSection>
-        <AuthProviderButtons />
-        <AuthDivider />
-        <AuthFormFrame>
-          <LoginEmailPanel />
-        </AuthFormFrame>
-      </AuthProviderSection>
-      <AuthFooterLink kind="login" />
-    </AuthContent>
-    <PictureWithCard />
+  <AuthScreenLayout>
+    <AuthScreenLayout.Navbar>
+      <Navbar />
+    </AuthScreenLayout.Navbar>
+    <AuthScreenLayout.Main>
+      <AuthScreenLayout.Content>
+        <AuthContent>
+          <AuthContent.Hero>
+            <AuthHeroHeader />
+          </AuthContent.Hero>
+          <AuthContent.Section>
+            <AuthProviderSection locale={locale} returnTo={returnTo}>
+              <AuthProviderSection.Providers />
+              <AuthProviderSection.Divider />
+              <AuthProviderSection.Form>
+                <LoginEmailPanel />
+              </AuthProviderSection.Form>
+            </AuthProviderSection>
+          </AuthContent.Section>
+          <AuthContent.Footer>
+            <AuthFooterLink />
+          </AuthContent.Footer>
+        </AuthContent>
+      </AuthScreenLayout.Content>
+      <AuthScreenLayout.Picture>
+        <PictureWithCard />
+      </AuthScreenLayout.Picture>
+    </AuthScreenLayout.Main>
   </AuthScreenLayout>
 </AuthFlowProvider>
 ```
 
 其中：
 
-- `AuthScreenLayout` 负责 desktop/mobile 框架差异
-- `AuthContent` 固定承接 `HeroHeader + AuthProviderSection + optional Footer`
-- `AuthProviderSection` 对应 Figma `Auth Way Button`，自身再拆为 `OAuth Buttons + Divider + Slot`
+- `AuthScreenLayout` 负责 desktop/mobile 框架差异，并以 compound components 显式标记 `Navbar / Main / Content / Picture`
+- `AuthContent` 固定承接 `HeroHeader + AuthProviderSection + optional Footer`，通过显式子组件表达结构位
+- `AuthProviderSection` 对应 Figma `Auth Way Button`，自身再拆为 `OAuth Buttons + Divider + Slot`，并通过共享上下文把 locale / returnTo 注入给子组件
 - `AuthFormFrame` 是 Slot 中的通用容器
 - `LoginEmailPanel`、`RegisterEmailPanel` 等显式面板只组合自己需要的字段和动作
 

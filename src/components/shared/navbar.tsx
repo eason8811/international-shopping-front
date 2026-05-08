@@ -1,5 +1,8 @@
+"use client"
+
 import type { ReactNode } from "react"
 import { MenuIcon, SearchIcon, ShoppingBagIcon, UserIcon } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import { SearchInput } from "@/components/ui/search-input"
@@ -7,20 +10,7 @@ import { cn } from "@/lib/utils"
 
 import { LogoLockup } from "./logo-lockup"
 
-interface NavbarCopy {
-  collections: string
-  newArrivals: string
-  support: string
-}
-
 interface NavbarProps {
-  brandLabel: string
-  nav: NavbarCopy
-  searchPlaceholder: string
-  menuLabel: string
-  searchLabel: string
-  cartLabel: string
-  profileLabel: string
   className?: string
 }
 
@@ -55,15 +45,21 @@ function NavbarShell({
 }
 
 export function Navbar({
-  brandLabel,
-  nav,
-  searchPlaceholder,
-  menuLabel,
-  searchLabel,
-  cartLabel,
-  profileLabel,
   className,
 }: NavbarProps) {
+  const t = useTranslations("AuthUi.shell")
+  const brandLabel = t("brand")
+  const nav = {
+    collections: t("nav.collections"),
+    newArrivals: t("nav.newArrivals"),
+    support: t("nav.support"),
+  }
+  const searchPlaceholder = t("searchPlaceholder")
+  const menuLabel = t("menuLabel")
+  const searchLabel = t("searchLabel")
+  const cartLabel = t("cartLabel")
+  const profileLabel = t("profileLabel")
+
   return (
     <>
       <NavbarShell className={cn("h-15 lg:hidden", className)}>

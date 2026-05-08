@@ -10,6 +10,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { cn } from "@/lib/utils"
+import React from "react";
 
 const labelClassName = [
   "font-sans text-(length:--type-caption-tiny-font-size) font-bold uppercase",
@@ -45,11 +46,14 @@ function UnderlineFieldFrame({
   )
 }
 
-interface AuthAccountFieldProps {
+export interface AuthAccountFieldCopy {
   label: string
+  placeholder: string
+}
+
+interface AuthAccountFieldProps extends AuthAccountFieldCopy {
   value: string
   onValueChange: (value: string) => void
-  placeholder: string
   error?: string | null
   autoComplete?: string
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"]
@@ -91,23 +95,29 @@ export function AuthAccountField({
   )
 }
 
+export interface AuthEmailFieldEditableCopy {
+  label: string
+  placeholder: string
+}
+
+export interface AuthEmailFieldReadonlyCopy {
+  helperLabel: string
+}
+
 type AuthEmailFieldProps =
-  | {
+  | ({
       mode?: "editable"
-      label: string
+      name?: string
+      autoComplete?: string
       value: string
       onValueChange: (value: string) => void
-      placeholder: string
       error?: string | null
-      autoComplete?: string
-      name?: string
-    }
-  | {
+    } & AuthEmailFieldEditableCopy)
+  | ({
       mode: "readonly"
-      helperLabel: string
       value: string
       className?: string
-    }
+    } & AuthEmailFieldReadonlyCopy)
 
 export function AuthEmailField(props: AuthEmailFieldProps) {
   if (props.mode === "readonly") {
@@ -150,19 +160,22 @@ export function AuthEmailField(props: AuthEmailFieldProps) {
   )
 }
 
-interface AuthPasswordFieldProps {
+export interface AuthPasswordFieldCopy {
   label: string
+  placeholder: string
+  revealLabel: string
+  concealLabel: string
+  supportActionLabel?: string
+}
+
+interface AuthPasswordFieldProps extends AuthPasswordFieldCopy {
   value: string
   onValueChange: (value: string) => void
-  placeholder: string
   error?: string | null
   visible: boolean
   onToggleVisibility: () => void
-  revealLabel: string
-  concealLabel: string
   name?: string
   autoComplete?: string
-  supportActionLabel?: string
   onSupportAction?: () => void
 }
 
@@ -221,11 +234,14 @@ export function AuthPasswordField({
   )
 }
 
-interface AuthOtpFieldProps {
+export interface AuthOtpFieldCopy {
+  ariaLabel: string
+}
+
+interface AuthOtpFieldProps extends AuthOtpFieldCopy {
   value: string
   onValueChange: (value: string) => void
   error?: string | null
-  ariaLabel: string
 }
 
 export function AuthOtpField({

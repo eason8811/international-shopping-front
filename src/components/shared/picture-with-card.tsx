@@ -1,19 +1,23 @@
+"use client"
+
+import { useTranslations } from "next-intl"
+
 import { cn } from "@/lib/utils"
 
 const pictureCheckerDark = "#efebe8"
 const pictureCheckerLight = "#f7f4f2"
 
 interface PictureWithCardProps {
-  quote: string
-  author: string
   className?: string
 }
 
 export function PictureWithCard({
-  quote,
-  author,
   className,
 }: PictureWithCardProps) {
+  const t = useTranslations("AuthUi.layout")
+  const quote = t("quote")
+  const author = t("quoteAuthor")
+
   return (
     <div
       className={cn(
@@ -27,28 +31,28 @@ export function PictureWithCard({
     >
       <div
         className={[
-            "flex max-w-full flex-col items-start rounded-2xl border border-white/30 px-9 py-6 backdrop-blur-md",
+          "flex max-w-full flex-col items-start rounded-2xl border border-white/30 px-9 py-6 backdrop-blur-md",
           "bg-(--color-surface-glass) shadow-(--shadow-weak)",
         ].join(" ")}
       >
         <p
           className={[
-              "w-full font-serif text-(length:--type-heading-3-font-size) leading-(--type-heading-3-line-height)",
+            "w-full font-serif text-(length:--type-heading-3-font-size) leading-(--type-heading-3-line-height)",
             "font-medium italic tracking-(--type-heading-3-letter-spacing) text-white",
           ].join(" ")}
         >
           {quote}
         </p>
-          <div className="flex w-full items-center justify-end">
-            <p
-              className={[
-                  "font-sans text-(length:--type-paragraph-regular-font-size)",
-                  "leading-(--type-paragraph-regular-line-height) tracking-(--type-paragraph-regular-letter-spacing) text-white/60",
-              ].join(" ")}
-            >
-              {author}
-            </p>
-          </div>
+        <div className="flex w-full items-center justify-end">
+          <p
+            className={[
+              "font-sans text-(length:--type-paragraph-regular-font-size)",
+              "leading-(--type-paragraph-regular-line-height) tracking-(--type-paragraph-regular-letter-spacing) text-white/60",
+            ].join(" ")}
+          >
+            {author}
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-interface AuthFooterLinkProps {
+export interface AuthFooterLinkCopy {
   prompt: string
   actionLabel: string
+}
+
+interface AuthFooterLinkProps extends AuthFooterLinkCopy {
   onAction: () => void
   className?: string
 }

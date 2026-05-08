@@ -1,8 +1,11 @@
 import { cn } from "@/lib/utils"
 
-interface AuthHeroHeaderProps {
+export interface AuthHeroHeaderCopy {
   title: string
   description: string
+}
+
+interface AuthHeroHeaderProps extends AuthHeroHeaderCopy {
   className?: string
 }
 

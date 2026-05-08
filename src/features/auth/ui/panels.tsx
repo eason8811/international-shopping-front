@@ -10,6 +10,13 @@ import {
   AuthOtpField,
   AuthPasswordField,
   AuthSuccessPanel,
+  type AuthAccountFieldCopy,
+  type AuthCodeResendCopy,
+  type AuthEmailFieldEditableCopy,
+  type AuthEmailFieldReadonlyCopy,
+  type AuthOtpFieldCopy,
+  type AuthPasswordFieldCopy,
+  type AuthSuccessPanelCopy,
 } from "@/components/auth/blocks"
 import { Button } from "@/components/ui/button"
 
@@ -21,6 +28,173 @@ function usePasswordVisibility(field: string) {
   return Boolean(
     (meta.refs.passwordVisibility as Record<string, boolean> | undefined)?.[field]
   )
+}
+
+function useAuthPasswordToggleCopy(): Pick<
+  AuthPasswordFieldCopy,
+  "concealLabel" | "revealLabel"
+> {
+  const t = useTranslations("AuthUi")
+
+  return {
+    concealLabel: t("form.actions.hidePassword"),
+    revealLabel: t("form.actions.showPassword"),
+  }
+}
+
+function useAuthResendCopy(remainingSeconds: number): AuthCodeResendCopy {
+  const t = useTranslations("AuthUi")
+
+  return {
+    actionLabel: t("form.resendAction"),
+    countdownLabel: t("form.sentCountdown", {
+      seconds: remainingSeconds,
+    }),
+    prompt: t("form.resendPrompt"),
+  }
+}
+
+function useLoginEmailPanelCopy(): {
+  accountFieldCopy: AuthAccountFieldCopy
+  passwordFieldCopy: AuthPasswordFieldCopy
+  submitLabel: string
+} {
+  const t = useTranslations("AuthUi")
+  const passwordToggleCopy = useAuthPasswordToggleCopy()
+
+  return {
+    accountFieldCopy: {
+      label: t("form.labels.account"),
+      placeholder: t("form.placeholders.account"),
+    },
+    passwordFieldCopy: {
+      ...passwordToggleCopy,
+      label: t("form.labels.password"),
+      placeholder: t("form.placeholders.password"),
+      supportActionLabel: t("form.actions.forgotPassword"),
+    },
+    submitLabel: t("form.buttons.signIn"),
+  }
+}
+
+function useRegisterEmailPanelCopy(): {
+  accountFieldCopy: AuthAccountFieldCopy
+  passwordFieldCopy: AuthPasswordFieldCopy
+  confirmPasswordFieldCopy: AuthPasswordFieldCopy
+  submitLabel: string
+} {
+  const t = useTranslations("AuthUi")
+  const passwordToggleCopy = useAuthPasswordToggleCopy()
+  const passwordPlaceholder = t("form.placeholders.password")
+
+  return {
+    accountFieldCopy: {
+      label: t("form.labels.account"),
+      placeholder: t("form.placeholders.account"),
+    },
+    confirmPasswordFieldCopy: {
+      ...passwordToggleCopy,
+      label: t("form.labels.confirmPassword"),
+      placeholder: passwordPlaceholder,
+    },
+    passwordFieldCopy: {
+      ...passwordToggleCopy,
+      label: t("form.labels.password"),
+      placeholder: passwordPlaceholder,
+    },
+    submitLabel: t("form.buttons.signUp"),
+  }
+}
+
+function useForgotPasswordPanelCopy(): {
+  emailFieldCopy: AuthEmailFieldEditableCopy
+  submitLabel: string
+} {
+  const t = useTranslations("AuthUi")
+
+  return {
+    emailFieldCopy: {
+      label: t("form.labels.email"),
+      placeholder: t("form.placeholders.email"),
+    },
+    submitLabel: t("form.buttons.sendCode"),
+  }
+}
+
+function useVerifyEmailPanelCopy(remainingSeconds: number): {
+  readonlyEmailCopy: AuthEmailFieldReadonlyCopy
+  otpFieldCopy: AuthOtpFieldCopy
+  resendCopy: AuthCodeResendCopy
+  submitLabel: string
+  fallbackEmail: string
+} {
+  const t = useTranslations("AuthUi")
+
+  return {
+    fallbackEmail: t("form.demoEmail"),
+    otpFieldCopy: {
+      ariaLabel: t("reset.codeLabel"),
+    },
+    readonlyEmailCopy: {
+      helperLabel: t("form.labels.verificationSentTo"),
+    },
+    resendCopy: useAuthResendCopy(remainingSeconds),
+    submitLabel: t("form.buttons.verify"),
+  }
+}
+
+function useResetPasswordPanelCopy(remainingSeconds: number): {
+  readonlyEmailCopy: AuthEmailFieldReadonlyCopy
+  otpFieldCopy: AuthOtpFieldCopy
+  resendCopy: AuthCodeResendCopy
+  passwordFieldCopy: AuthPasswordFieldCopy
+  confirmPasswordFieldCopy: AuthPasswordFieldCopy
+  submitLabel: string
+  fallbackEmail: string
+} {
+  const t = useTranslations("AuthUi")
+  const passwordToggleCopy = useAuthPasswordToggleCopy()
+  const passwordPlaceholder = t("form.placeholders.password")
+
+  return {
+    fallbackEmail: t("form.demoEmail"),
+    confirmPasswordFieldCopy: {
+      ...passwordToggleCopy,
+      label: t("form.labels.confirmNewPassword"),
+      placeholder: passwordPlaceholder,
+    },
+    otpFieldCopy: {
+      ariaLabel: t("reset.codeLabel"),
+    },
+    passwordFieldCopy: {
+      ...passwordToggleCopy,
+      label: t("form.labels.newPassword"),
+      placeholder: passwordPlaceholder,
+    },
+    readonlyEmailCopy: {
+      helperLabel: t("form.labels.verificationSentTo"),
+    },
+    resendCopy: useAuthResendCopy(remainingSeconds),
+    submitLabel: t("form.buttons.resetPassword"),
+  }
+}
+
+function useRegisterSuccessPanelCopy(): AuthSuccessPanelCopy {
+  const t = useTranslations("AuthUi")
+
+  return {
+    description: t("success.verifyDescription"),
+    title: t("success.verifyTitle"),
+  }
+}
+
+function useResetSuccessPanelCopy(): AuthSuccessPanelCopy {
+  const t = useTranslations("AuthUi")
+
+  return {
+    description: t("success.resetDescription"),
+    title: t("success.resetTitle"),
+  }
 }
 
 function PendingIcon() {
@@ -64,31 +238,26 @@ export function RegisterPanel() {
 }
 
 export function LoginEmailPanel() {
-  const t = useTranslations("AuthUi")
   const { actions, state } = useAuthFlow()
   const passwordVisible = usePasswordVisibility("loginPassword")
+  const { accountFieldCopy, passwordFieldCopy, submitLabel } = useLoginEmailPanelCopy()
 
   return (
     <div className="flex w-full flex-col gap-8">
       <div className="flex w-full flex-col gap-6">
         <AuthAccountField
+          {...accountFieldCopy}
           autoComplete="username"
           error={state.errors.loginAccount}
-          label={t("form.labels.account")}
           name="login-account"
-          placeholder={t("form.placeholders.account")}
           value={state.fields.loginAccount}
           onValueChange={(value) => actions.update("loginAccount", value)}
         />
         <AuthPasswordField
+          {...passwordFieldCopy}
           autoComplete="current-password"
-          concealLabel={t("form.actions.hidePassword")}
           error={state.errors.loginPassword}
-          label={t("form.labels.password")}
           name="login-password"
-          placeholder={t("form.placeholders.password")}
-          revealLabel={t("form.actions.showPassword")}
-          supportActionLabel={t("form.actions.forgotPassword")}
           value={state.fields.loginPassword}
           visible={passwordVisible}
           onSupportAction={() => actions.switchFlow("forgot-password")}
@@ -105,7 +274,7 @@ export function LoginEmailPanel() {
         variant="primary"
         onClick={() => void actions.submit()}
       >
-        {t("form.buttons.signIn")}
+        {submitLabel}
         {state.pending ? <PendingIcon /> : <ArrowRightIcon data-icon="inline-end" />}
       </Button>
     </div>
@@ -113,45 +282,43 @@ export function LoginEmailPanel() {
 }
 
 export function RegisterEmailPanel() {
-  const t = useTranslations("AuthUi")
   const { actions, state } = useAuthFlow()
   const registerPasswordVisible = usePasswordVisibility("registerPassword")
   const confirmPasswordVisible = usePasswordVisibility("registerConfirmPassword")
+  const {
+    accountFieldCopy,
+    confirmPasswordFieldCopy,
+    passwordFieldCopy,
+    submitLabel,
+  } = useRegisterEmailPanelCopy()
 
   return (
     <div className="flex w-full flex-col gap-8">
       <div className="flex w-full flex-col gap-6">
         <AuthAccountField
+          {...accountFieldCopy}
           autoComplete="email"
           error={state.errors.registerAccount}
           inputMode="email"
-          label={t("form.labels.account")}
           name="register-account"
-          placeholder={t("form.placeholders.account")}
           value={state.fields.registerAccount}
           onValueChange={(value) => actions.update("registerAccount", value)}
         />
         <AuthPasswordField
+          {...passwordFieldCopy}
           autoComplete="new-password"
-          concealLabel={t("form.actions.hidePassword")}
           error={state.errors.registerPassword}
-          label={t("form.labels.password")}
           name="register-password"
-          placeholder={t("form.placeholders.password")}
-          revealLabel={t("form.actions.showPassword")}
           value={state.fields.registerPassword}
           visible={registerPasswordVisible}
           onToggleVisibility={() => actions.togglePasswordVisibility("registerPassword")}
           onValueChange={(value) => actions.update("registerPassword", value)}
         />
         <AuthPasswordField
+          {...confirmPasswordFieldCopy}
           autoComplete="new-password"
-          concealLabel={t("form.actions.hidePassword")}
           error={state.errors.registerConfirmPassword}
-          label={t("form.labels.confirmPassword")}
           name="register-confirm-password"
-          placeholder={t("form.placeholders.password")}
-          revealLabel={t("form.actions.showPassword")}
           value={state.fields.registerConfirmPassword}
           visible={confirmPasswordVisible}
           onToggleVisibility={() =>
@@ -171,7 +338,7 @@ export function RegisterEmailPanel() {
         variant="primary"
         onClick={() => void actions.submit()}
       >
-        {t("form.buttons.signUp")}
+        {submitLabel}
         {state.pending ? <PendingIcon /> : <CornerUpRightIcon data-icon="inline-end" />}
       </Button>
     </div>
@@ -179,17 +346,16 @@ export function RegisterEmailPanel() {
 }
 
 export function ForgotPasswordPanel() {
-  const t = useTranslations("AuthUi")
   const { actions, state } = useAuthFlow()
+  const { emailFieldCopy, submitLabel } = useForgotPasswordPanelCopy()
 
   return (
     <div className="flex w-full flex-col gap-8">
       <AuthEmailField
+        {...emailFieldCopy}
         autoComplete="email"
         error={state.errors.forgotEmail}
-        label={t("form.labels.email")}
         name="forgot-email"
-        placeholder={t("form.placeholders.email")}
         value={state.fields.forgotEmail}
         onValueChange={(value) => actions.update("forgotEmail", value)}
       />
@@ -202,7 +368,7 @@ export function ForgotPasswordPanel() {
         variant="primary"
         onClick={() => void actions.submit()}
       >
-        {t("form.buttons.sendCode")}
+        {submitLabel}
         {state.pending ? <PendingIcon /> : <ArrowRightIcon data-icon="inline-end" />}
       </Button>
     </div>
@@ -210,29 +376,26 @@ export function ForgotPasswordPanel() {
 }
 
 export function VerifyEmailPanel() {
-  const t = useTranslations("AuthUi")
   const { actions, state } = useAuthFlow()
+  const { fallbackEmail, otpFieldCopy, readonlyEmailCopy, resendCopy, submitLabel } =
+    useVerifyEmailPanelCopy(state.resend.remainingSeconds)
 
   return (
     <div className="flex w-full flex-col gap-8">
       <AuthEmailField
-        helperLabel={t("form.labels.verificationSentTo")}
+        {...readonlyEmailCopy}
         mode="readonly"
-        value={state.fields.verifyEmail || t("form.demoEmail")}
+        value={state.fields.verifyEmail || fallbackEmail}
       />
       <AuthOtpField
-        ariaLabel={t("reset.codeLabel")}
+        {...otpFieldCopy}
         error={state.errors.verifyCode}
         value={state.fields.verifyCode}
         onValueChange={(value) => actions.update("verifyCode", value)}
       />
       <AuthCodeResend
-        actionLabel={t("form.resendAction")}
-        countdownLabel={t("form.sentCountdown", {
-          seconds: state.resend.remainingSeconds,
-        })}
+        {...resendCopy}
         pending={state.pending}
-        prompt={t("form.resendPrompt")}
         remainingSeconds={state.resend.remainingSeconds}
         onResend={() => void actions.resend()}
       />
@@ -245,7 +408,7 @@ export function VerifyEmailPanel() {
         variant="primary"
         onClick={() => void actions.submit()}
       >
-        {t("form.buttons.verify")}
+        {submitLabel}
         {state.pending ? <PendingIcon /> : null}
       </Button>
     </div>
@@ -253,56 +416,54 @@ export function VerifyEmailPanel() {
 }
 
 export function ResetPasswordPanel() {
-  const t = useTranslations("AuthUi")
   const { actions, state } = useAuthFlow()
   const resetPasswordVisible = usePasswordVisibility("resetPassword")
   const resetConfirmVisible = usePasswordVisibility("resetConfirmPassword")
+  const {
+    fallbackEmail,
+    confirmPasswordFieldCopy,
+    otpFieldCopy,
+    passwordFieldCopy,
+    readonlyEmailCopy,
+    resendCopy,
+    submitLabel,
+  } = useResetPasswordPanelCopy(state.resend.remainingSeconds)
 
   return (
     <div className="flex w-full flex-col gap-8">
       <AuthEmailField
-        helperLabel={t("form.labels.verificationSentTo")}
+        {...readonlyEmailCopy}
         mode="readonly"
-        value={state.fields.resetEmail || t("form.demoEmail")}
+        value={state.fields.resetEmail || fallbackEmail}
       />
       <AuthOtpField
-        ariaLabel={t("reset.codeLabel")}
+        {...otpFieldCopy}
         error={state.errors.resetCode}
         value={state.fields.resetCode}
         onValueChange={(value) => actions.update("resetCode", value)}
       />
       <AuthCodeResend
-        actionLabel={t("form.resendAction")}
-        countdownLabel={t("form.sentCountdown", {
-          seconds: state.resend.remainingSeconds,
-        })}
+        {...resendCopy}
         pending={state.pending}
-        prompt={t("form.resendPrompt")}
         remainingSeconds={state.resend.remainingSeconds}
         onResend={() => void actions.resend()}
       />
       <div className="flex w-full flex-col gap-6">
         <AuthPasswordField
+          {...passwordFieldCopy}
           autoComplete="new-password"
-          concealLabel={t("form.actions.hidePassword")}
           error={state.errors.resetPassword}
-          label={t("form.labels.newPassword")}
           name="reset-password"
-          placeholder={t("form.placeholders.password")}
-          revealLabel={t("form.actions.showPassword")}
           value={state.fields.resetPassword}
           visible={resetPasswordVisible}
           onToggleVisibility={() => actions.togglePasswordVisibility("resetPassword")}
           onValueChange={(value) => actions.update("resetPassword", value)}
         />
         <AuthPasswordField
+          {...confirmPasswordFieldCopy}
           autoComplete="new-password"
-          concealLabel={t("form.actions.hidePassword")}
           error={state.errors.resetConfirmPassword}
-          label={t("form.labels.confirmNewPassword")}
           name="reset-confirm-password"
-          placeholder={t("form.placeholders.password")}
-          revealLabel={t("form.actions.showPassword")}
           value={state.fields.resetConfirmPassword}
           visible={resetConfirmVisible}
           onToggleVisibility={() =>
@@ -322,7 +483,7 @@ export function ResetPasswordPanel() {
         variant="primary"
         onClick={() => void actions.submit()}
       >
-        {t("form.buttons.resetPassword")}
+        {submitLabel}
         {state.pending ? <PendingIcon /> : <ArrowRightIcon data-icon="inline-end" />}
       </Button>
     </div>
@@ -330,25 +491,27 @@ export function ResetPasswordPanel() {
 }
 
 export function RegisterSuccessPanel() {
-  const t = useTranslations("AuthUi")
+  const registerSuccessCopy = useRegisterSuccessPanelCopy()
   const { state } = useAuthFlow()
 
   return (
     <AuthSuccessPanel
-      description={state.success.description ?? t("success.verifyDescription")}
-      title={state.success.title ?? t("success.verifyTitle")}
+      {...registerSuccessCopy}
+      description={state.success.description ?? registerSuccessCopy.description}
+      title={state.success.title ?? registerSuccessCopy.title}
     />
   )
 }
 
 export function ResetSuccessPanel() {
-  const t = useTranslations("AuthUi")
+  const resetSuccessCopy = useResetSuccessPanelCopy()
   const { state } = useAuthFlow()
 
   return (
     <AuthSuccessPanel
-      description={state.success.description ?? t("success.resetDescription")}
-      title={state.success.title ?? t("success.resetTitle")}
+      {...resetSuccessCopy}
+      description={state.success.description ?? resetSuccessCopy.description}
+      title={state.success.title ?? resetSuccessCopy.title}
     />
   )
 }

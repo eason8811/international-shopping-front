@@ -3,11 +3,14 @@ import { CheckIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-interface AuthCodeResendProps {
+export interface AuthCodeResendCopy {
   prompt: string
   actionLabel: string
-  remainingSeconds: number
   countdownLabel: string
+}
+
+interface AuthCodeResendProps extends AuthCodeResendCopy {
+  remainingSeconds: number
   pending?: boolean
   onResend: () => void
   className?: string

@@ -20,7 +20,7 @@ export function LogoLockup({ brandLabel, className }: LogoLockupProps) {
         <Ampersand
           aria-hidden="true"
           className="size-6 shrink-0 text-(--button-naked-text-active)"
-          strokeWidth={1.75}
+          strokeWidth={2}
         />
       </span>
       <Button
