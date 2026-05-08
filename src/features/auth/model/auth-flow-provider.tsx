@@ -423,6 +423,20 @@ export function AuthFlowProvider({
         fallbackMessage = errorsT("resetFailed")
       }
 
+      const codeFieldName =
+        flow === "verify-email"
+          ? "verifyCode"
+          : flow === "reset-password"
+            ? "resetCode"
+            : null
+      const fieldErrorMessage = normalizedError.message || fallbackMessage
+
+      if (codeFieldName) {
+        setErrors({
+          [codeFieldName]: fieldErrorMessage,
+        })
+      }
+
       toast.error(fallbackMessage, {
         description:
           normalizedError.message && normalizedError.message !== fallbackMessage

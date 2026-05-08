@@ -307,9 +307,10 @@ export function AuthOtpField({
   ariaLabel,
 }: AuthOtpFieldProps) {
   return (
-    <div className="flex w-full flex-col items-center gap-2">
+    <div className="flex w-full flex-col items-center gap-4">
       <InputOTP
         aria-label={ariaLabel}
+        aria-invalid={Boolean(error)}
         className="w-full"
         containerClassName="w-full justify-center gap-3"
         maxLength={6}
@@ -318,39 +319,15 @@ export function AuthOtpField({
         onChange={onValueChange}
       >
         <InputOTPGroup>
-          <InputOTPSlot
-            aria-invalid={Boolean(error)}
-            className="size-10 xl:size-12"
-            index={0}
-          />
-          <InputOTPSlot
-            aria-invalid={Boolean(error)}
-            className="size-10 xl:size-12"
-            index={1}
-          />
-          <InputOTPSlot
-            aria-invalid={Boolean(error)}
-            className="size-10 xl:size-12"
-            index={2}
-          />
+          <InputOTPSlot className="size-10 xl:size-12" index={0} />
+          <InputOTPSlot className="size-10 xl:size-12" index={1} />
+          <InputOTPSlot className="size-10 xl:size-12" index={2} />
         </InputOTPGroup>
         <InputOTPSeparator />
         <InputOTPGroup>
-          <InputOTPSlot
-            aria-invalid={Boolean(error)}
-            className="size-10 xl:size-12"
-            index={3}
-          />
-          <InputOTPSlot
-            aria-invalid={Boolean(error)}
-            className="size-10 xl:size-12"
-            index={4}
-          />
-          <InputOTPSlot
-            aria-invalid={Boolean(error)}
-            className="size-10 xl:size-12"
-            index={5}
-          />
+          <InputOTPSlot className="size-10 xl:size-12" index={3} />
+          <InputOTPSlot className="size-10 xl:size-12" index={4} />
+          <InputOTPSlot className="size-10 xl:size-12" index={5} />
         </InputOTPGroup>
       </InputOTP>
       {error ? <p className={cn(errorClassName, "text-center")}>{error}</p> : null}

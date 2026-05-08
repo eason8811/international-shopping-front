@@ -5,37 +5,89 @@ import { OTPInput, OTPInputContext } from "input-otp"
 
 import { cn } from "@/lib/utils"
 
+type InvalidStateProps = {
+  invalid?: boolean
+  "aria-invalid"?: React.AriaAttributes["aria-invalid"]
+  "data-invalid"?: boolean | "true" | "false"
+}
+
 const otpSlotTypographyClassName = [
   "text-(length:--type-paragraph-regular-font-size) font-normal",
   "leading-(--type-paragraph-regular-line-height) tracking-(--type-paragraph-regular-letter-spacing)",
 ].join(" ")
 
-function InputOTP({
-  className,
-  containerClassName,
-  ...props
-}: React.ComponentProps<typeof OTPInput> & {
-  containerClassName?: string
-}) {
+const InputOTPInvalidContext = React.createContext(false)
+
+function resolveInvalidState({
+  invalid = false,
+  "aria-invalid": ariaInvalid,
+  "data-invalid": dataInvalid,
+}: InvalidStateProps) {
   return (
-    <OTPInput
-      data-slot="input-otp"
-      containerClassName={cn(
-        "flex items-center has-disabled:opacity-(--state-opacity-disabled)",
-        containerClassName
-      )}
-      spellCheck={false}
-      className={cn("disabled:cursor-not-allowed", className)}
-      {...props}
-    />
+    invalid ||
+    ariaInvalid === true ||
+    ariaInvalid === "true" ||
+    dataInvalid === true ||
+    dataInvalid === "true"
   )
 }
 
-function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
+function InputOTP({
+  className,
+  containerClassName,
+  invalid = false,
+  "aria-invalid": ariaInvalid,
+  "data-invalid": dataInvalid,
+  ...props
+}: React.ComponentProps<typeof OTPInput> &
+  InvalidStateProps & {
+  containerClassName?: string
+}) {
+  const resolvedInvalid = resolveInvalidState({
+    invalid,
+    "aria-invalid": ariaInvalid,
+    "data-invalid": dataInvalid,
+  })
+
+  return (
+    <InputOTPInvalidContext.Provider value={resolvedInvalid}>
+      <OTPInput
+        aria-invalid={resolvedInvalid ? true : ariaInvalid}
+        data-slot="input-otp"
+        data-invalid={resolvedInvalid ? "true" : "false"}
+        containerClassName={cn(
+          "flex items-center has-disabled:opacity-(--state-opacity-disabled)",
+          containerClassName
+        )}
+        spellCheck={false}
+        className={cn("disabled:cursor-not-allowed", className)}
+        {...props}
+      />
+    </InputOTPInvalidContext.Provider>
+  )
+}
+
+function InputOTPGroup({
+  className,
+  invalid = false,
+  "aria-invalid": ariaInvalid,
+  "data-invalid": dataInvalid,
+  ...props
+}: React.ComponentProps<"div"> & InvalidStateProps) {
+  const inheritedInvalid = React.useContext(InputOTPInvalidContext)
+  const resolvedInvalid =
+    resolveInvalidState({
+      invalid,
+      "aria-invalid": ariaInvalid,
+      "data-invalid": dataInvalid,
+    }) || inheritedInvalid
+
   return (
     <div
+      aria-invalid={resolvedInvalid ? true : ariaInvalid}
       data-slot="input-otp-group"
-      className={cn("flex items-center", className)}
+      data-invalid={resolvedInvalid ? "true" : "false"}
+      className={cn("group/input-otp-group flex items-center", className)}
       {...props}
     />
   )
@@ -44,17 +96,26 @@ function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
 function InputOTPSlot({
   index,
   className,
+  invalid = false,
+  "aria-invalid": ariaInvalid,
+  "data-invalid": dataInvalid,
   ...props
-}: React.ComponentProps<"div"> & {
+}: React.ComponentProps<"div"> &
+  InvalidStateProps & {
   index: number
 }) {
   const inputOTPContext = React.useContext(OTPInputContext)
+  const inheritedInvalid = React.useContext(InputOTPInvalidContext)
   const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[index] ?? {}
-  const invalid =
-    props["aria-invalid"] === true || props["aria-invalid"] === "true"
+  const resolvedInvalid =
+    resolveInvalidState({
+      invalid,
+      "aria-invalid": ariaInvalid,
+      "data-invalid": dataInvalid,
+    }) || inheritedInvalid
 
   const stateClassName = isActive
-    ? invalid
+    ? resolvedInvalid
       ? [
           "border-(--input-otp-border-invalid-focus)",
           "shadow-[0_0_0_2px_var(--input-otp-border-invalid-focus-ring-layer-upper),0_0_0_2px_var(--input-otp-border-invalid-focus-ring-layer-lower)]",
@@ -63,14 +124,16 @@ function InputOTPSlot({
           "border-(--input-otp-border-focus)",
           "shadow-[0_0_0_2px_var(--input-otp-border-focus-ring)]",
         ].join(" ")
-    : invalid
+    : resolvedInvalid
       ? "border-[#eccdd0]"
       : "border-(--input-otp-border-default)"
 
   return (
     <div
+      aria-invalid={resolvedInvalid ? true : ariaInvalid}
       data-slot="input-otp-slot"
       data-active={isActive ? "true" : "false"}
+      data-invalid={resolvedInvalid ? "true" : "false"}
       className={cn(
         [
           "relative z-0 flex size-12 items-center justify-center border-y border-r border-solid bg-(--input-otp-bg-default)",

@@ -61,7 +61,7 @@ function AuthScreenLayoutContent({
 }: AuthScreenLayoutSlotProps) {
   return (
     <section className={cn("flex w-full justify-center px-8 py-12 xl:w-2/5 xl:px-16", className)}>
-      <div className="flex w-full items-center justify-center xl:max-w-sm">{children}</div>
+      <div className="flex w-full items-center justify-center xl:max-w-lg">{children}</div>
     </section>
   )
 }
