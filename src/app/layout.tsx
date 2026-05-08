@@ -16,9 +16,19 @@ const manrope = localFont({
 });
 
 const newsreader = localFont({
-    src: "../../public/fonts/newsreader/Newsreader-Variable.ttf",
+    src: [
+        {
+            path: "../../public/fonts/newsreader/Newsreader[opsz,wght].ttf",
+            weight: "300 800",
+            style: "normal",
+        },
+        {
+            path: "../../public/fonts/newsreader/Newsreader-Italic[opsz,wght].ttf",
+            weight: "300 800",
+            style: "italic",
+        },
+    ],
     variable: "--font-family-serif",
-    weight: "300 800",
     display: "swap",
     fallback: ["ui-serif", "Georgia", "serif"],
     preload: true,
