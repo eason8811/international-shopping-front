@@ -335,7 +335,7 @@
     --border: var(--color-border-default);
     --input: var(--color-border-default);
     --radius: var(--radius-lg);
-    --ring: var(--color-border-focus);
+    --ring: var(--color-border-default);
     --sidebar: var(--color-surface-default);
     --sidebar-foreground: var(--color-text-primary);
     --sidebar-primary: var(--button-sidebar-container-active);
@@ -343,7 +343,7 @@
     --sidebar-accent: var(--button-sidebar-container-default);
     --sidebar-accent-foreground: var(--button-sidebar-text-default);
     --sidebar-border: var(--color-border-subtle);
-    --sidebar-ring: var(--color-border-focus);
+    --sidebar-ring: var(--color-border-default);
 }
 
 @theme inline {
@@ -391,6 +391,20 @@
 
     body {
         @apply bg-background text-foreground antialiased;
+    }
+
+    :where(
+        a[href],
+        button,
+        input,
+        select,
+        summary,
+        textarea,
+        [role="button"],
+        [tabindex]:not([tabindex="-1"])
+    ):focus-visible {
+        outline: 2px solid var(--color-ring);
+        outline-offset: 2px;
     }
 
     ::selection {

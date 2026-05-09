@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
   [
-    "inline-flex shrink-0 items-center justify-center whitespace-nowrap outline-none",
+    "inline-flex shrink-0 items-center justify-center whitespace-nowrap",
     "transition-[color,background-color,border-color,box-shadow,opacity]",
     "disabled:pointer-events-none disabled:opacity-(--state-opacity-disabled)",
     "**:data-[icon=inline-start]:shrink-0 **:data-[icon=inline-end]:shrink-0",

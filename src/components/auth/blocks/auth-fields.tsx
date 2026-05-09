@@ -47,25 +47,17 @@ function isPureDigitAccountValue(value: string) {
 }
 
 function useFieldFocusState() {
-  const containerRef = React.useRef<HTMLDivElement | null>(null)
   const [focused, setFocused] = React.useState(false)
 
   function handleFocus() {
     setFocused(true)
   }
 
-  function handleBlur(event: React.FocusEvent<HTMLElement>) {
-    const nextTarget = event.relatedTarget
-
-    if (nextTarget instanceof Node && containerRef.current?.contains(nextTarget)) {
-      return
-    }
-
+  function handleBlur() {
     setFocused(false)
   }
 
   return {
-    containerRef,
     focused,
     handleBlur,
     handleFocus,
@@ -89,6 +81,7 @@ interface AuthAccountFieldProps extends AuthAccountFieldCopy {
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"]
   name?: string
   onCountryCodeChange?: (value: string) => void
+  onBlur?: () => void
 }
 
 export function AuthAccountField({
@@ -105,12 +98,13 @@ export function AuthAccountField({
   inputMode,
   name,
   onCountryCodeChange,
+  onBlur,
 }: AuthAccountFieldProps) {
-  const { containerRef, focused, handleBlur, handleFocus } = useFieldFocusState()
+  const { focused, handleBlur, handleFocus } = useFieldFocusState()
   const phoneMode = allowPhoneMode && isPureDigitAccountValue(value)
 
   return (
-    <div ref={containerRef} className="flex w-full flex-col gap-2">
+    <div className="flex w-full flex-col gap-2">
       <label className={labelClassName} htmlFor={name}>
         {label}
       </label>
@@ -139,7 +133,10 @@ export function AuthAccountField({
           type="text"
           value={value}
           variant="underline"
-          onBlur={handleBlur}
+          onBlur={() => {
+            handleBlur()
+            onBlur?.()
+          }}
           onChange={(event) => onValueChange(event.target.value)}
           onFocus={handleFocus}
         />
@@ -166,6 +163,7 @@ type AuthEmailFieldProps =
       value: string
       onValueChange: (value: string) => void
       error?: string | null
+      onBlur?: () => void
     } & AuthEmailFieldEditableCopy)
   | ({
       mode: "readonly"
@@ -174,7 +172,7 @@ type AuthEmailFieldProps =
     } & AuthEmailFieldReadonlyCopy)
 
 export function AuthEmailField(props: AuthEmailFieldProps) {
-  const { containerRef, focused, handleBlur, handleFocus } = useFieldFocusState()
+  const { focused, handleBlur, handleFocus } = useFieldFocusState()
 
   if (props.mode === "readonly") {
     return (
@@ -186,7 +184,7 @@ export function AuthEmailField(props: AuthEmailFieldProps) {
   }
 
   return (
-    <div ref={containerRef} className="flex w-full flex-col gap-2">
+    <div className="flex w-full flex-col gap-2">
       <label className={labelClassName} htmlFor={props.name}>
         {props.label}
       </label>
@@ -201,7 +199,10 @@ export function AuthEmailField(props: AuthEmailFieldProps) {
           type="email"
           value={props.value}
           variant="underline"
-          onBlur={handleBlur}
+          onBlur={() => {
+            handleBlur()
+            props.onBlur?.()
+          }}
           onChange={(event) => props.onValueChange(event.target.value)}
           onFocus={handleFocus}
         />
@@ -228,6 +229,7 @@ interface AuthPasswordFieldProps extends AuthPasswordFieldCopy {
   name?: string
   autoComplete?: string
   onSupportAction?: () => void
+  onBlur?: () => void
 }
 
 export function AuthPasswordField({
@@ -244,11 +246,12 @@ export function AuthPasswordField({
   autoComplete,
   supportActionLabel,
   onSupportAction,
+  onBlur,
 }: AuthPasswordFieldProps) {
-  const { containerRef, focused, handleBlur, handleFocus } = useFieldFocusState()
+  const { focused, handleBlur, handleFocus } = useFieldFocusState()
 
   return (
-    <div ref={containerRef} className="flex w-full flex-col gap-2">
+    <div className="flex w-full flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
         <label className={labelClassName} htmlFor={name}>
           {label}
@@ -270,7 +273,10 @@ export function AuthPasswordField({
           type={visible ? "text" : "password"}
           value={value}
           variant="underline"
-          onBlur={handleBlur}
+          onBlur={() => {
+            handleBlur()
+            onBlur?.()
+          }}
           onChange={(event) => onValueChange(event.target.value)}
           onFocus={handleFocus}
         />
@@ -298,6 +304,7 @@ interface AuthOtpFieldProps extends AuthOtpFieldCopy {
   value: string
   onValueChange: (value: string) => void
   error?: string | null
+  onBlur?: () => void
 }
 
 export function AuthOtpField({
@@ -305,6 +312,7 @@ export function AuthOtpField({
   onValueChange,
   error,
   ariaLabel,
+  onBlur,
 }: AuthOtpFieldProps) {
   return (
     <div className="flex w-full flex-col items-center gap-4">
@@ -316,6 +324,7 @@ export function AuthOtpField({
         maxLength={6}
         pattern={REGEXP_ONLY_DIGITS}
         value={value}
+        onBlur={() => onBlur?.()}
         onChange={onValueChange}
       >
         <InputOTPGroup>

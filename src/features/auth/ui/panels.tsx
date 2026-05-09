@@ -259,6 +259,7 @@ export function LoginEmailPanel() {
           error={state.errors.loginAccount}
           name="login-account"
           value={state.fields.loginAccount}
+          onBlur={() => actions.blurField("loginAccount")}
           onCountryCodeChange={(value) => actions.update("loginCountryCode", value)}
           onValueChange={(value) => actions.update("loginAccount", value)}
         />
@@ -269,6 +270,7 @@ export function LoginEmailPanel() {
           name="login-password"
           value={state.fields.loginPassword}
           visible={passwordVisible}
+          onBlur={() => actions.blurField("loginPassword")}
           onSupportAction={() => actions.switchFlow("forgot-password")}
           onToggleVisibility={() => actions.togglePasswordVisibility("loginPassword")}
           onValueChange={(value) => actions.update("loginPassword", value)}
@@ -312,6 +314,7 @@ export function RegisterEmailPanel() {
           error={state.errors.registerAccount}
           name="register-account"
           value={state.fields.registerAccount}
+          onBlur={() => actions.blurField("registerAccount")}
           onValueChange={(value) => actions.update("registerAccount", value)}
         />
         <AuthPasswordField
@@ -321,6 +324,7 @@ export function RegisterEmailPanel() {
           name="register-password"
           value={state.fields.registerPassword}
           visible={registerPasswordVisible}
+          onBlur={() => actions.blurField("registerPassword")}
           onToggleVisibility={() => actions.togglePasswordVisibility("registerPassword")}
           onValueChange={(value) => actions.update("registerPassword", value)}
         />
@@ -331,6 +335,7 @@ export function RegisterEmailPanel() {
           name="register-confirm-password"
           value={state.fields.registerConfirmPassword}
           visible={confirmPasswordVisible}
+          onBlur={() => actions.blurField("registerConfirmPassword")}
           onToggleVisibility={() =>
             actions.togglePasswordVisibility("registerConfirmPassword")
           }
@@ -369,6 +374,7 @@ export function ForgotPasswordPanel() {
         error={state.errors.forgotEmail}
         name="forgot-email"
         value={state.fields.forgotEmail}
+        onBlur={() => actions.blurField("forgotEmail")}
         onValueChange={(value) => actions.update("forgotEmail", value)}
       />
       <Button
@@ -405,6 +411,7 @@ export function VerifyEmailPanel() {
         {...otpFieldCopy}
         error={state.errors.verifyCode}
         value={state.fields.verifyCode}
+        onBlur={() => actions.blurField("verifyCode")}
         onValueChange={(value) => actions.update("verifyCode", value)}
       />
       <AuthCodeResend
@@ -455,6 +462,7 @@ export function ResetPasswordPanel() {
         {...otpFieldCopy}
         error={state.errors.resetCode}
         value={state.fields.resetCode}
+        onBlur={() => actions.blurField("resetCode")}
         onValueChange={(value) => actions.update("resetCode", value)}
       />
       <AuthCodeResend
@@ -471,6 +479,7 @@ export function ResetPasswordPanel() {
           name="reset-password"
           value={state.fields.resetPassword}
           visible={resetPasswordVisible}
+          onBlur={() => actions.blurField("resetPassword")}
           onToggleVisibility={() => actions.togglePasswordVisibility("resetPassword")}
           onValueChange={(value) => actions.update("resetPassword", value)}
         />
@@ -481,6 +490,7 @@ export function ResetPasswordPanel() {
           name="reset-confirm-password"
           value={state.fields.resetConfirmPassword}
           visible={resetConfirmVisible}
+          onBlur={() => actions.blurField("resetConfirmPassword")}
           onToggleVisibility={() =>
             actions.togglePasswordVisibility("resetConfirmPassword")
           }

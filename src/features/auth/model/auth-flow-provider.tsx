@@ -46,6 +46,42 @@ const defaultFields: Record<AuthFieldName, string> = {
   resetConfirmPassword: "",
 }
 
+const flowFieldNames: Record<AuthFlow, readonly AuthFieldName[]> = {
+  login: [],
+  "login-email": ["loginAccount", "loginPassword"],
+  "forgot-password": ["forgotEmail"],
+  "reset-password": ["resetCode", "resetPassword", "resetConfirmPassword"],
+  "reset-success": [],
+  register: [],
+  "register-email": [
+    "registerAccount",
+    "registerPassword",
+    "registerConfirmPassword",
+  ],
+  "verify-email": ["verifyCode"],
+  "register-success": [],
+}
+
+const dependentValidationFields: Partial<
+  Record<AuthFieldName, readonly AuthFieldName[]>
+> = {
+  registerPassword: ["registerConfirmPassword"],
+  resetPassword: ["resetConfirmPassword"],
+}
+
+function markFieldsTouched(
+  fieldNames: readonly AuthFieldName[],
+  current: Partial<Record<AuthFieldName, boolean>>
+) {
+  const next = { ...current }
+
+  for (const fieldName of fieldNames) {
+    next[fieldName] = true
+  }
+
+  return next
+}
+
 interface AuthFlowProviderProps {
   initialFlow: AuthFlow
   locale: string
@@ -98,8 +134,9 @@ export function AuthFlowProvider({
   const defaultDemoEmail = t("form.demoEmail")
 
   const [flow, setFlow] = React.useState<AuthFlow>(initialFlow)
-  const [fields, setFields] = React.useState<Record<string, string>>(defaultFields)
-  const [errors, setErrors] = React.useState<Record<string, string | null>>({})
+  const [fields, setFields] = React.useState<Record<AuthFieldName, string>>(defaultFields)
+  const [errors, setErrors] = React.useState<Partial<Record<AuthFieldName, string | null>>>({})
+  const [touchedFields, setTouchedFields] = React.useState<Partial<Record<AuthFieldName, boolean>>>({})
   const [pending, setPending] = React.useState(false)
   const [submitStatus, setSubmitStatus] = React.useState<AuthSubmitStatus>("idle")
   const [remainingSeconds, setRemainingSeconds] = React.useState(0)
@@ -169,16 +206,192 @@ export function AuthFlowProvider({
     }, 1000)
   }, [])
 
-  const update = React.useCallback((name: string, value: string) => {
-    setFields((current) => ({
-      ...current,
-      [name]: value,
-    }))
-    setErrors((current) => ({
-      ...current,
-      [name]: null,
-    }))
-  }, [])
+  const validateField = React.useCallback(
+    (
+      fieldName: AuthFieldName,
+      currentFields: Record<AuthFieldName, string>,
+      currentFlow: AuthFlow
+    ) => {
+      if (fieldName === "loginAccount") {
+        if (currentFlow !== "login-email")
+          return null
+
+        if (!currentFields.loginAccount.trim())
+          return validationT("accountRequired")
+
+        if (!isResolvableLoginAccount(currentFields.loginAccount))
+          return validationT("accountInvalid")
+      }
+
+      if (fieldName === "loginPassword") {
+        if (currentFlow !== "login-email")
+          return null
+
+        if (!currentFields.loginPassword.trim())
+          return validationT("passwordRequired")
+      }
+
+      if (fieldName === "registerAccount") {
+        if (currentFlow !== "register-email")
+          return null
+
+        if (!currentFields.registerAccount.trim())
+          return validationT("emailRequired")
+
+        if (!looksLikeEmail(currentFields.registerAccount))
+          return validationT("emailInvalid")
+      }
+
+      if (fieldName === "registerPassword") {
+        if (currentFlow !== "register-email")
+          return null
+
+        if (!currentFields.registerPassword.trim())
+          return validationT("passwordRequired")
+
+        if (!PASSWORD_RULE.test(currentFields.registerPassword))
+          return validationT("passwordInvalid")
+      }
+
+      if (fieldName === "registerConfirmPassword") {
+        if (currentFlow !== "register-email")
+          return null
+
+        if (!currentFields.registerConfirmPassword.trim())
+          return validationT("confirmPasswordRequired")
+
+        if (currentFields.registerConfirmPassword !== currentFields.registerPassword)
+          return validationT("confirmPasswordMismatch")
+      }
+
+      if (fieldName === "forgotEmail") {
+        if (currentFlow !== "forgot-password")
+          return null
+
+        if (!currentFields.forgotEmail.trim())
+          return validationT("emailRequired")
+
+        if (!looksLikeEmail(currentFields.forgotEmail))
+          return validationT("emailInvalid")
+      }
+
+      if (fieldName === "verifyCode") {
+        if (currentFlow !== "verify-email")
+          return null
+
+        if (!currentFields.verifyCode.trim())
+          return validationT("codeRequired")
+      }
+
+      if (fieldName === "resetCode") {
+        if (currentFlow !== "reset-password")
+          return null
+
+        if (!currentFields.resetCode.trim())
+          return validationT("codeRequired")
+      }
+
+      if (fieldName === "resetPassword") {
+        if (currentFlow !== "reset-password")
+          return null
+
+        if (!currentFields.resetPassword.trim())
+          return validationT("passwordRequired")
+
+        if (!PASSWORD_RULE.test(currentFields.resetPassword))
+          return validationT("passwordInvalid")
+      }
+
+      if (fieldName === "resetConfirmPassword") {
+        if (currentFlow !== "reset-password")
+          return null
+
+        if (!currentFields.resetConfirmPassword.trim())
+          return validationT("confirmPasswordRequired")
+
+        if (currentFields.resetConfirmPassword !== currentFields.resetPassword)
+          return validationT("confirmPasswordMismatch")
+      }
+
+      return null
+    },
+    [validationT]
+  )
+
+  const validateFields = React.useCallback(
+    (
+      fieldNames: readonly AuthFieldName[],
+      currentFields: Record<AuthFieldName, string>,
+      currentFlow: AuthFlow
+    ) => {
+      const nextErrors: Partial<Record<AuthFieldName, string | null>> = {}
+
+      for (const fieldName of fieldNames) {
+        const error = validateField(fieldName, currentFields, currentFlow)
+
+        if (error)
+          nextErrors[fieldName] = error
+      }
+
+      return nextErrors
+    },
+    [validateField]
+  )
+
+  const update = React.useCallback(
+    (name: AuthFieldName, value: string) => {
+      setFields((currentFields) => {
+        const nextFields = {
+          ...currentFields,
+          [name]: value,
+        }
+
+        setErrors((currentErrors) => {
+          const nextErrors = {
+            ...currentErrors,
+            [name]: null,
+          }
+          const fieldsToRevalidate = new Set<AuthFieldName>()
+
+          if (touchedFields[name])
+            fieldsToRevalidate.add(name)
+
+          for (const dependentField of dependentValidationFields[name] ?? [])
+            if (touchedFields[dependentField])
+              fieldsToRevalidate.add(dependentField)
+
+          for (const fieldName of fieldsToRevalidate)
+            nextErrors[fieldName] = validateField(fieldName, nextFields, flow)
+
+          return nextErrors
+        })
+
+        return nextFields
+      })
+    },
+    [flow, touchedFields, validateField]
+  )
+
+  const blurField = React.useCallback(
+    (name: AuthFieldName) => {
+      setTouchedFields((current) => markFieldsTouched([name], current))
+      setErrors((currentErrors) => {
+        const nextErrors = { ...currentErrors }
+        const fieldsToValidate = new Set<AuthFieldName>([name])
+
+        for (const dependentField of dependentValidationFields[name] ?? [])
+          if (touchedFields[dependentField])
+            fieldsToValidate.add(dependentField)
+
+
+        for (const fieldName of fieldsToValidate)
+          nextErrors[fieldName] = validateField(fieldName, fields, flow)
+
+        return nextErrors
+      })
+    },
+    [fields, flow, touchedFields, validateField]
+  )
 
   const togglePasswordVisibility = React.useCallback((field: string) => {
     setPasswordVisibility((current) => ({
@@ -198,6 +411,7 @@ export function AuthFlowProvider({
   const switchFlow = React.useCallback(
     (nextFlow: AuthFlow) => {
       setErrors({})
+      setTouchedFields({})
       setPending(false)
       setSubmitStatus("idle")
       setSuccess({
@@ -253,71 +467,10 @@ export function AuthFlowProvider({
   )
 
   const submit = React.useCallback(async () => {
-    const nextErrors: Record<string, string | null> = {}
+    const activeFieldNames = flowFieldNames[flow]
+    const nextErrors = validateFields(activeFieldNames, fields, flow)
 
-    if (flow === "login-email") {
-      if (!fields.loginAccount.trim()) {
-        nextErrors.loginAccount = validationT("accountRequired")
-      } else if (!isResolvableLoginAccount(fields.loginAccount)) {
-        nextErrors.loginAccount = validationT("accountInvalid")
-      }
-
-      if (!fields.loginPassword.trim()) {
-        nextErrors.loginPassword = validationT("passwordRequired")
-      }
-    }
-
-    if (flow === "register-email") {
-      if (!fields.registerAccount.trim()) {
-        nextErrors.registerAccount = validationT("emailRequired")
-      } else if (!looksLikeEmail(fields.registerAccount)) {
-        nextErrors.registerAccount = validationT("emailInvalid")
-      }
-
-      if (!fields.registerPassword.trim()) {
-        nextErrors.registerPassword = validationT("passwordRequired")
-      } else if (!PASSWORD_RULE.test(fields.registerPassword)) {
-        nextErrors.registerPassword = validationT("passwordInvalid")
-      }
-
-      if (!fields.registerConfirmPassword.trim()) {
-        nextErrors.registerConfirmPassword = validationT("confirmPasswordRequired")
-      } else if (fields.registerConfirmPassword !== fields.registerPassword) {
-        nextErrors.registerConfirmPassword = validationT("confirmPasswordMismatch")
-      }
-    }
-
-    if (flow === "forgot-password") {
-      if (!fields.forgotEmail.trim()) {
-        nextErrors.forgotEmail = validationT("emailRequired")
-      } else if (!looksLikeEmail(fields.forgotEmail)) {
-        nextErrors.forgotEmail = validationT("emailInvalid")
-      }
-    }
-
-    if (flow === "verify-email") {
-      if (!fields.verifyCode.trim()) {
-        nextErrors.verifyCode = validationT("codeRequired")
-      }
-    }
-
-    if (flow === "reset-password") {
-      if (!fields.resetCode.trim()) {
-        nextErrors.resetCode = validationT("codeRequired")
-      }
-
-      if (!fields.resetPassword.trim()) {
-        nextErrors.resetPassword = validationT("passwordRequired")
-      } else if (!PASSWORD_RULE.test(fields.resetPassword)) {
-        nextErrors.resetPassword = validationT("passwordInvalid")
-      }
-
-      if (!fields.resetConfirmPassword.trim()) {
-        nextErrors.resetConfirmPassword = validationT("confirmPasswordRequired")
-      } else if (fields.resetConfirmPassword !== fields.resetPassword) {
-        nextErrors.resetConfirmPassword = validationT("confirmPasswordMismatch")
-      }
-    }
+    setTouchedFields((current) => markFieldsTouched(activeFieldNames, current))
 
     if (Object.values(nextErrors).some(Boolean)) {
       setErrors(nextErrors)
@@ -477,19 +630,7 @@ export function AuthFlowProvider({
   }, [
     defaultDemoEmail,
     errorsT,
-    fields.forgotEmail,
-    fields.loginAccount,
-    fields.loginCountryCode,
-    fields.loginPassword,
-    fields.registerAccount,
-    fields.registerConfirmPassword,
-    fields.registerPassword,
-    fields.resetCode,
-    fields.resetConfirmPassword,
-    fields.resetEmail,
-    fields.resetPassword,
-    fields.verifyCode,
-    fields.verifyEmail,
+    fields,
     flow,
     holdSubmitSuccess,
     returnTo,
@@ -497,7 +638,7 @@ export function AuthFlowProvider({
     scheduleFallbackRedirect,
     startResendCountdown,
     successT,
-    validationT,
+    validateFields,
   ])
 
   const resend = React.useCallback(async () => {
@@ -555,6 +696,7 @@ export function AuthFlowProvider({
       },
       actions: {
         update,
+        blurField,
         submit,
         resend,
         togglePasswordVisibility,
@@ -584,6 +726,7 @@ export function AuthFlowProvider({
       resend,
       returnTo,
       submitStatus,
+      blurField,
       submit,
       success,
       switchFlow,

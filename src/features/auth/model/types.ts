@@ -30,8 +30,8 @@ export type AuthFieldName =
 
 export interface AuthFlowContextValue {
   state: {
-    fields: Record<string, string>
-    errors: Record<string, string | null>
+    fields: Record<AuthFieldName, string>
+    errors: Partial<Record<AuthFieldName, string | null>>
     pending: boolean
     submitStatus: AuthSubmitStatus
     resend: {
@@ -45,7 +45,8 @@ export interface AuthFlowContextValue {
     }
   }
   actions: {
-    update: (name: string, value: string) => void
+    update: (name: AuthFieldName, value: string) => void
+    blurField: (name: AuthFieldName) => void
     submit: () => Promise<void>
     resend: () => Promise<void>
     togglePasswordVisibility: (field: string) => void
