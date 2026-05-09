@@ -51,20 +51,20 @@ const buttonVariants = cva(
           "hover:text-(--button-destructive-text-hover) active:text-(--button-destructive-text-active)",
         ].join(" "),
         link: [
-          "rounded-none border-x-0 border-t-0 border-b-(length:--button-link-border-width) border-dashed",
+          "border-x-0 border-t-0 border-b-(length:--button-link-border-width) border-dashed",
           "border-(--button-link-border-default) bg-transparent text-(--button-link-text-default)",
           "hover:border-(--button-link-border-hover) active:border-(--button-link-border-active)",
         ].join(" "),
         naked: [
-          "rounded-none border border-transparent bg-transparent text-(--button-naked-text-default)",
+          "border border-transparent bg-transparent text-(--button-naked-text-default)",
           "hover:text-(--button-naked-text-hover) active:text-(--button-naked-text-active)",
         ].join(" "),
         "naked-icon": [
-          "size-6 rounded-none border border-transparent bg-transparent text-(--button-naked-icon-default)",
+          "size-6 border border-transparent bg-transparent text-(--button-naked-icon-default)",
           "hover:text-(--button-naked-icon-hover) active:text-(--button-naked-icon-active)",
         ].join(" "),
         "naked-icon-inline": [
-          "size-4 rounded-none border border-transparent bg-transparent text-(--button-naked-icon-inline)",
+          "size-4 border border-transparent bg-transparent text-(--button-naked-icon-inline)",
           "hover:text-(--button-naked-icon-hover) active:text-(--button-naked-icon-active)",
         ].join(" "),
       },
@@ -81,7 +81,13 @@ const buttonVariants = cva(
           "**:data-[icon=inline-start]:size-4 **:data-[icon=inline-end]:size-4",
         ].join(" "),
         small: [
-          "gap-1 px-0 py-0 text-(length:--type-caption-tiny-font-size) font-semibold uppercase",
+          "gap-0 px-(--button-link-padding-inline) py-(--button-link-padding-block)",
+          "text-(length:--type-paragraph-small-wider-font-size) font-semibold",
+          "leading-(--type-paragraph-small-wider-line-height) tracking-(--type-paragraph-small-wider-letter-spacing)",
+          "**:data-[icon=inline-start]:size-4 **:data-[icon=inline-end]:size-4",
+        ].join(" "),
+        tiny: [
+          "gap-0 px-0 py-0 text-(length:--type-caption-tiny-font-size) font-semibold uppercase",
           "leading-(--type-caption-tiny-line-height) tracking-(--type-caption-tiny-letter-spacing)",
           "**:data-[icon=inline-start]:size-4 **:data-[icon=inline-end]:size-4",
         ].join(" "),
@@ -95,17 +101,34 @@ const buttonVariants = cva(
     },
     compoundVariants: [
       {
-        variant: ["naked", "naked-icon", "naked-icon-inline"],
-        size: ["default", "small", "mini"],
-        className: "rounded-none",
+        variant: "link",
+        size: "small",
+        className: "rounded-(--button-small-radius)",
       },
       {
         variant: "link",
-        size: "small",
-        className: [
-          "text-(length:--type-paragraph-small-wider-font-size) font-semibold",
-          "leading-(--type-paragraph-small-wider-line-height) tracking-(--type-paragraph-small-wider-letter-spacing)",
-        ].join(" "),
+        size: "mini",
+        className: "rounded-(--button-mini-radius)",
+      },
+      {
+        variant: "naked",
+        size: "default",
+        className: "rounded-(--button-default-radius)",
+      },
+      {
+        variant: "naked",
+        size: "tiny",
+        className: "rounded-(--button-tiny-radius)",
+      },
+      {
+        variant: "naked-icon",
+        size: "default",
+        className: "rounded-(--button-default-radius)",
+      },
+      {
+        variant: "naked-icon-inline",
+        size: "tiny",
+        className: "rounded-(--button-tiny-radius)",
       },
     ],
     defaultVariants: {

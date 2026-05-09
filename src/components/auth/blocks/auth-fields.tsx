@@ -257,7 +257,7 @@ export function AuthPasswordField({
           {label}
         </label>
         {supportActionLabel && onSupportAction ? (
-          <Button size="small" type="button" variant="naked" onClick={onSupportAction}>
+          <Button size="tiny" type="button" variant="naked" onClick={onSupportAction}>
             {supportActionLabel}
           </Button>
         ) : null}
@@ -282,7 +282,7 @@ export function AuthPasswordField({
         />
         <Button
           aria-label={visible ? concealLabel : revealLabel}
-          size="small"
+          size="tiny"
           type="button"
           variant="naked-icon-inline"
           onClick={onToggleVisibility}
