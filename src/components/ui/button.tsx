@@ -1,8 +1,16 @@
+"use client"
+
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { CheckIcon, LoaderCircleIcon } from "lucide-react"
+import { motion, useReducedMotion } from "motion/react"
 import { Slot } from "radix-ui"
 
+import {
+  interactiveHover,
+  interactivePress,
+} from "@/lib/motion/recipes"
+import { motionTokens } from "@/lib/motion/tokens"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
@@ -139,6 +147,7 @@ const buttonVariants = cva(
 )
 
 type ButtonStatus = "idle" | "loading" | "success"
+type ButtonMotionFamily = "button-action" | "icon-action" | "none" | "text-action"
 
 interface ButtonStatusCopy {
   loading: string
@@ -153,6 +162,7 @@ const defaultButtonStatusCopy = {
 type ButtonBaseProps = VariantProps<typeof buttonVariants> & {
   className?: string
   asChild?: boolean
+  motionDisabled?: boolean
   status?: ButtonStatus
   statusCopy?: ButtonStatusCopy
 }
@@ -168,6 +178,57 @@ type ButtonNativeProps = ButtonBaseProps &
   }
 
 type ButtonProps = ButtonAsChildProps | ButtonNativeProps
+
+const MotionSlotRoot = motion.create(Slot.Root)
+
+function resolveButtonMotionFamily(
+  variant: ButtonBaseProps["variant"],
+  size: ButtonBaseProps["size"]
+): ButtonMotionFamily {
+  if ((variant === "primary" || variant === "secondary") && size === "large")
+    return "button-action"
+
+  if (variant === "link" || variant === "naked")
+    return "text-action"
+
+  if (variant === "naked-icon" || variant === "naked-icon-inline")
+    return "icon-action"
+
+  return "none"
+}
+
+function useButtonMotion(
+  family: ButtonMotionFamily,
+  motionDisabled = false
+) {
+  const reducedMotion = useReducedMotion() ?? false
+
+  if (motionDisabled || family === "none")
+    return {}
+
+  if (family === "icon-action")
+    return {
+      ...interactiveHover({
+        reducedMotion,
+        scale: motionTokens.scale.iconHover,
+      }),
+      ...interactivePress({ reducedMotion }),
+    }
+
+  if (family === "text-action")
+    return {
+      ...interactiveHover({
+        reducedMotion,
+        scale: motionTokens.scale.textHover,
+      }),
+      ...interactivePress({ reducedMotion, scale: 0.995 }),
+    }
+
+  return {
+    ...interactiveHover({ reducedMotion }),
+    ...interactivePress({ reducedMotion }),
+  }
+}
 
 function ButtonStatusContent({
   status,
@@ -209,23 +270,29 @@ function Button({
   variant = "default",
   size = "default",
   asChild = false,
+  motionDisabled = false,
   status = "idle",
   statusCopy = defaultButtonStatusCopy,
   ...props
 }: ButtonProps) {
+  const motionFamily = resolveButtonMotionFamily(variant, size)
+  const motionProps = useButtonMotion(motionFamily, motionDisabled)
+
   if (asChild) {
     const slotProps = props as React.ComponentProps<typeof Slot.Root>
+    const motionSlotProps = {
+      "data-slot": "button",
+      "data-motion-family": motionFamily,
+      "data-motion-disabled": motionDisabled ? "" : undefined,
+      "data-size": size,
+      "data-status": status,
+      "data-variant": variant,
+      className: cn(buttonVariants({ variant, size, className })),
+      ...motionProps,
+      ...slotProps,
+    } as React.ComponentProps<typeof MotionSlotRoot>
 
-    return (
-      <Slot.Root
-        data-slot="button"
-        data-size={size}
-        data-status={status}
-        data-variant={variant}
-        className={cn(buttonVariants({ variant, size, className }))}
-        {...slotProps}
-      />
-    )
+    return <MotionSlotRoot {...motionSlotProps} />
   }
 
   const buttonProps = props as React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -235,25 +302,36 @@ function Button({
     size === "large" &&
     (variant === "primary" || variant === "secondary")
   const disabled = nativeDisabled || showsStatusIconOnly
+  const motionButtonProps = {
+    "data-slot": "button",
+    "data-motion-family": motionFamily,
+    "data-motion-disabled": motionDisabled ? "" : undefined,
+    "data-status": status,
+    "data-variant": variant,
+    "data-size": size,
+    disabled,
+    type: buttonProps.type ?? "button",
+    className: cn(buttonVariants({ variant, size, className })),
+    ...motionProps,
+    ...nativeProps,
+  } as React.ComponentProps<typeof motion.button>
 
   return (
-    <button
-      {...nativeProps}
-      data-slot="button"
-      data-status={status}
-      data-variant={variant}
-      data-size={size}
-      disabled={disabled}
-      type={buttonProps.type ?? "button"}
-      className={cn(buttonVariants({ variant, size, className }))}
-    >
+    <motion.button {...motionButtonProps}>
       {showsStatusIconOnly ? (
         <ButtonStatusContent status={status} statusCopy={statusCopy} />
       ) : (
         children
       )}
-    </button>
+    </motion.button>
   )
 }
 
-export { Button, buttonVariants, type ButtonStatus, type ButtonStatusCopy }
+export {
+  Button,
+  buttonVariants,
+  resolveButtonMotionFamily,
+  type ButtonMotionFamily,
+  type ButtonStatus,
+  type ButtonStatusCopy,
+}
