@@ -15,15 +15,6 @@ interface StaggerUpOptions extends MotionRecipeOptions {
   stagger?: number
 }
 
-interface InteractiveHoverOptions extends MotionRecipeOptions {
-  scale?: number
-  y?: number
-}
-
-interface InteractivePressOptions extends MotionRecipeOptions {
-  scale?: number
-}
-
 function createEnterTransition(
   duration: number,
   reducedMotion = false
@@ -143,32 +134,4 @@ export function successSpring({
       },
     },
   } satisfies Variants
-}
-
-export function interactiveHover({
-  reducedMotion = false,
-  scale = motionTokens.scale.actionHover,
-  y = 0,
-}: InteractiveHoverOptions = {}) {
-  return {
-    transition: {
-      duration: resolveMotionDuration(motionTokens.duration.fast, reducedMotion),
-      ease: motionTokens.easing.standard,
-    } satisfies Transition,
-    whileHover: {
-      scale: resolveMotionScale(scale, reducedMotion),
-      y: resolveMotionDistance(y, reducedMotion),
-    },
-  }
-}
-
-export function interactivePress({
-  reducedMotion = false,
-  scale = motionTokens.scale.actionPress,
-}: InteractivePressOptions = {}) {
-  return {
-    whileTap: {
-      scale: resolveMotionScale(scale, reducedMotion),
-    },
-  }
 }

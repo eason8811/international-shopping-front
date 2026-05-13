@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl"
 
+import { getAuthPageEnterItemProps } from "@/features/auth/ui/auth-stagger"
 import { cn } from "@/lib/utils"
 
 const pictureCheckerDark = "#efebe8"
@@ -34,6 +35,7 @@ export function PictureWithCard({
           "flex max-w-full flex-col items-start rounded-2xl border border-white/30 px-9 py-6 backdrop-blur-md",
           "bg-(--color-surface-glass) shadow-(--shadow-weak)",
         ].join(" ")}
+        {...getAuthPageEnterItemProps()}
       >
         <p
           className={[

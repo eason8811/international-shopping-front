@@ -1,8 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { motionTokens } from "@/lib/motion/tokens";
-import { motion, useReducedMotion } from "motion/react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
@@ -36,7 +34,10 @@ import {
   ResetSuccessPanel,
   VerifyEmailPanel,
 } from "@/features/auth/ui/panels"
-import { staggerUp } from "@/lib/motion/recipes"
+import {
+  AUTH_PAGE_STAGGER_STATE_ATTR,
+  useAuthPageEnterStagger,
+} from "@/features/auth/ui/auth-stagger"
 
 interface AuthPageClientProps {
   initialFlow: AuthFlow
@@ -144,12 +145,11 @@ function AuthPageScene({
   returnTo?: string | null
 }) {
   const { actions, meta } = useAuthFlow()
-  const reducedMotion = useReducedMotion() ?? false
-  const frame5Motion = staggerUp({
-    reducedMotion,
-    distance: motionTokens.distance.md,
-    stagger: motionTokens.stagger.regular,
-  })
+  const {
+    pageReady: isPageEnterReady,
+    scope: pageEnterScope,
+    stage: pageEnterStage,
+  } = useAuthPageEnterStagger()
   const heroCopy = useAuthHeroCopy(meta.flow)
   const footerCopy = useAuthFooterCopy(meta.flow)
   const footerTargetFlow = resolveFooterTargetFlow(meta.flow)
@@ -191,50 +191,42 @@ function AuthPageScene({
         <Navbar />
       </AuthScreenLayout.Navbar>
 
-      <AuthScreenLayout.Main>
-        <motion.div
-          animate="visible"
-          className="contents"
-          initial="hidden"
-          variants={frame5Motion.container}
-        >
-          <AuthScreenLayout.Content>
-            <AuthContent>
-              <AuthContent.Hero>
-                <motion.div variants={frame5Motion.item}>
-                  <AuthHeroHeader {...heroCopy} />
-                </motion.div>
-              </AuthContent.Hero>
+      <AuthScreenLayout.Main
+        ref={pageEnterScope}
+        {...{ [AUTH_PAGE_STAGGER_STATE_ATTR]: pageEnterStage }}
+      >
+        <AuthScreenLayout.Content>
+          <AuthContent>
+            <AuthContent.Hero>
+              <AuthHeroHeader {...heroCopy} />
+            </AuthContent.Hero>
 
-              <AuthContent.Section>
-                <motion.div variants={frame5Motion.item}>
-                  <AuthProviderSection locale={locale} returnTo={returnTo}>
-                    <AuthProviderSection.Providers />
-                    <AuthProviderSection.Divider />
-                    <AuthProviderSection.Form>{panel}</AuthProviderSection.Form>
-                  </AuthProviderSection>
-                </motion.div>
-              </AuthContent.Section>
+            <AuthContent.Section>
+              <AuthProviderSection
+                locale={locale}
+                pageEnterReady={isPageEnterReady}
+                returnTo={returnTo}
+              >
+                <AuthProviderSection.Providers />
+                <AuthProviderSection.Divider />
+                <AuthProviderSection.Form>{panel}</AuthProviderSection.Form>
+              </AuthProviderSection>
+            </AuthContent.Section>
 
-              {footerCopy && footerTargetFlow ? (
-                <AuthContent.Footer>
-                  <motion.div variants={frame5Motion.item}>
-                    <AuthFooterLink
-                      {...footerCopy}
-                      onAction={() => actions.switchFlow(footerTargetFlow)}
-                    />
-                  </motion.div>
-                </AuthContent.Footer>
-              ) : null}
-            </AuthContent>
-          </AuthScreenLayout.Content>
+            {footerCopy && footerTargetFlow ? (
+              <AuthContent.Footer>
+                <AuthFooterLink
+                  {...footerCopy}
+                  onAction={() => actions.switchFlow(footerTargetFlow)}
+                />
+              </AuthContent.Footer>
+            ) : null}
+          </AuthContent>
+        </AuthScreenLayout.Content>
 
-          <AuthScreenLayout.Picture>
-            <motion.div className="h-full w-full" variants={frame5Motion.item}>
-              <PictureWithCard />
-            </motion.div>
-          </AuthScreenLayout.Picture>
-        </motion.div>
+        <AuthScreenLayout.Picture>
+          <PictureWithCard />
+        </AuthScreenLayout.Picture>
       </AuthScreenLayout.Main>
     </AuthScreenLayout>
   )

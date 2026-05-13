@@ -3,6 +3,7 @@
 import * as React from "react"
 import { OTPInput, OTPInputContext } from "input-otp"
 
+import { toneTransitionClassName } from "@/lib/motion/classes"
 import { cn } from "@/lib/utils"
 
 type InvalidStateProps = {
@@ -125,7 +126,7 @@ function InputOTPSlot({
           "shadow-[0_0_0_2px_var(--input-otp-border-focus-ring)]",
         ].join(" ")
     : resolvedInvalid
-      ? "border-[#eccdd0]"
+      ? "border-(--input-otp-border-invalid)"
       : "border-(--input-otp-border-default)"
 
   return (
@@ -138,7 +139,8 @@ function InputOTPSlot({
         [
           "relative z-0 flex size-12 items-center justify-center border-y border-r border-solid bg-(--input-otp-bg-default)",
           "text-(--input-otp-text-default) outline-none first:rounded-l-(--input-otp-radius) first:border-l last:rounded-r-(--input-otp-radius)",
-          "transition-[border-color,box-shadow] data-[active=true]:z-10",
+          toneTransitionClassName,
+          "data-[active=true]:z-10",
           otpSlotTypographyClassName,
         ].join(" "),
         stateClassName,
@@ -149,7 +151,12 @@ function InputOTPSlot({
       {char}
       {hasFakeCaret ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-6 w-px animate-caret-blink bg-(--input-otp-text-default) duration-1000" />
+          <div
+            className={[
+              "h-6 w-px animate-caret-blink bg-(--input-otp-text-default)",
+              "animation-duration-(--motion-caret-blink-duration)",
+            ].join(" ")}
+          />
         </div>
       ) : null}
     </div>

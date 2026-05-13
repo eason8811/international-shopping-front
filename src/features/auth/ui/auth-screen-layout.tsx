@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type { ComponentPropsWithRef, ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -12,6 +12,10 @@ interface AuthScreenLayoutProps {
 interface AuthScreenLayoutSlotProps {
   children: ReactNode
   className?: string
+}
+
+type AuthScreenLayoutMainProps = ComponentPropsWithRef<"main"> & {
+  children: ReactNode
 }
 
 function AuthScreenLayoutRoot({ children }: AuthScreenLayoutProps) {
@@ -42,13 +46,17 @@ function AuthScreenLayoutNavbar({
 function AuthScreenLayoutMain({
   children,
   className,
-}: AuthScreenLayoutSlotProps) {
+  ref,
+  ...props
+}: AuthScreenLayoutMainProps) {
   return (
     <main
+      ref={ref}
       className={cn(
         "flex min-h-[calc(100svh-3.75rem)] xl:min-h-[calc(100svh-4.75rem)]",
         className
       )}
+      {...props}
     >
       {children}
     </main>

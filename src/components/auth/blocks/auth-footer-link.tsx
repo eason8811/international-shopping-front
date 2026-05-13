@@ -1,11 +1,13 @@
 "use client"
 
+import * as React from "react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 
-import { motionTokens } from "@/lib/motion/tokens";
 import { Button } from "@/components/ui/button"
 import { fadeSwap } from "@/lib/motion/recipes"
+import { motionTokens } from "@/lib/motion/tokens"
 import { cn } from "@/lib/utils"
+import { getAuthPageEnterItemProps } from "@/features/auth/ui/auth-stagger"
 
 export interface AuthFooterLinkCopy {
   prompt: string
@@ -24,11 +26,16 @@ export function AuthFooterLink({
   className,
 }: AuthFooterLinkProps) {
   const reducedMotion = useReducedMotion() ?? false
+  const [canAnimateSwap, setCanAnimateSwap] = React.useState(false)
   const footerSwap = fadeSwap({
     reducedMotion,
     distance: motionTokens.distance.sm,
   })
   const motionKey = `${prompt}::${actionLabel}`
+
+  React.useEffect(() => {
+    setCanAnimateSwap(true)
+  }, [])
 
   return (
     <div className={cn(className)}>
@@ -38,8 +45,9 @@ export function AuthFooterLink({
           animate="visible"
           className="flex items-start justify-center gap-1 text-center"
           exit="exit"
-          initial="hidden"
+          initial={canAnimateSwap ? "hidden" : false}
           variants={footerSwap}
+          {...getAuthPageEnterItemProps()}
         >
           <span
             className={[

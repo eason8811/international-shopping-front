@@ -1,6 +1,7 @@
 import * as React from "react"
 import { SearchIcon } from "lucide-react"
 
+import { toneTransitionClassName } from "@/lib/motion/classes"
 import { cn } from "@/lib/utils"
 
 type SearchInputProps = Omit<
@@ -23,7 +24,8 @@ function SearchInput({
         [
           "flex h-11 max-w-full items-center gap-2 rounded-full",
           "border-(length:--input-search-border-width) border-solid border-(--input-search-border-default)",
-          "bg-(--input-search-bg-default) px-4 py-1 transition-colors",
+          "bg-(--input-search-bg-default) px-4 py-1",
+          toneTransitionClassName,
           "focus-within:border-(--input-search-border-focus)",
           "has-disabled:border-(--input-search-border-disabled) has-disabled:opacity-(--state-opacity-disabled)",
         ].join(" "),

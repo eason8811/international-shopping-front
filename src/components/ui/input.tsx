@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { toneTransitionClassName } from "@/lib/motion/classes"
 import { cn } from "@/lib/utils"
 
 const paragraphRegularClassName = [
@@ -17,7 +18,8 @@ const paragraphRegularClassName = [
 
 const inputVariants = cva(
   [
-    "w-full min-w-0 bg-transparent outline-none transition-colors",
+    "w-full min-w-0 bg-transparent outline-none",
+    toneTransitionClassName,
     "disabled:pointer-events-none disabled:opacity-(--state-opacity-disabled)",
     "read-only:pointer-events-none",
   ].join(" "),
@@ -80,7 +82,7 @@ function InputUnderlineFrame({
       ? "border-(--input-underline-border-invalid-focus)"
       : "border-(--input-underline-border-focus)"
     : invalid
-      ? "border-[#eccdd0]"
+      ? "border-(--input-underline-border-invalid)"
       : "border-(--input-underline-border-default)"
 
   return (
@@ -92,6 +94,7 @@ function InputUnderlineFrame({
         [
           "flex w-full items-center border-b-(length:--input-underline-border-width) border-solid",
           "gap-(--input-underline-content-gap) px-(--input-underline-content-padding-inline) py-(--input-underline-content-padding-block)",
+          toneTransitionClassName,
         ].join(" "),
         borderClassName,
         className

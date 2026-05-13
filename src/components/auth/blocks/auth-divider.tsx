@@ -1,14 +1,19 @@
+import type { HTMLAttributes } from "react"
+
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 
-interface AuthDividerProps {
+interface AuthDividerProps extends HTMLAttributes<HTMLDivElement> {
   label: string
-  className?: string
 }
 
-export function AuthDivider({ label, className }: AuthDividerProps) {
+export function AuthDivider({
+  label,
+  className,
+  ...props
+}: AuthDividerProps) {
   return (
-    <div className={cn("flex w-full items-center py-8", className)}>
+    <div className={cn("flex w-full items-center py-8", className)} {...props}>
       <Separator className="flex-1 bg-(--separator-default)" />
       <span
         className={[

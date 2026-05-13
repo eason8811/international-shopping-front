@@ -16,9 +16,10 @@ export const motionTokens = {
   },
   scale: {
     actionHover: 1,
-    actionPress: 0.9,
+    actionPress: 0.95,
     iconHover: 1,
     textHover: 1,
+    textPress: 0.995,
   },
   spring: {
     damping: 24,

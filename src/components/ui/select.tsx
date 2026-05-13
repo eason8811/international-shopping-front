@@ -4,6 +4,7 @@ import * as React from "react"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 import { Select as SelectPrimitive } from "radix-ui"
 
+import { toneTransitionClassName } from "@/lib/motion/classes"
 import { cn } from "@/lib/utils"
 
 function Select(
@@ -35,7 +36,8 @@ function SelectTrigger({
       className={cn(
         [
           "inline-flex w-full items-center justify-between gap-2 rounded-(--radius) border border-(--color-border-default)",
-          "bg-(--color-surface-default) px-3 py-2 text-left outline-none transition-colors",
+          "bg-(--color-surface-default) px-3 py-2 text-left outline-none",
+          toneTransitionClassName,
           "text-(length:--type-paragraph-regular-font-size) font-normal leading-(--type-paragraph-regular-line-height)",
           "tracking-(--type-paragraph-regular-letter-spacing) text-(--color-text-primary)",
           "focus-visible:border-(--color-border-focus)",

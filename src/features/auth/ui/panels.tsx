@@ -1,6 +1,5 @@
 "use client"
 
-import { motionTokens } from "@/lib/motion/tokens";
 import * as React from "react"
 import { ArrowRightIcon, CornerUpRightIcon, MailIcon } from "lucide-react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
@@ -22,12 +21,18 @@ import {
   type AuthSuccessPanelCopy,
 } from "@/components/auth/blocks"
 import { Button, type ButtonStatusCopy } from "@/components/ui/button"
-import { copySlideSwap, staggerUp } from "@/lib/motion/recipes"
+import { copySlideSwap } from "@/lib/motion/recipes"
+import { motionTokens } from "@/lib/motion/tokens"
+import { cn } from "@/lib/utils"
 
 import { useAuthFlow } from "@/features/auth/model"
 
-import { resolveAuthFormMotion } from "./auth-motion"
 import { useAuthProviderSectionMotion } from "./auth-provider-section"
+import {
+  AUTH_FORM_STAGGER_STATE_ATTR,
+  getAuthSharedEnterItemProps,
+  useAuthFormEnterStagger,
+} from "./auth-stagger"
 
 function usePasswordVisibility(field: string) {
   const { meta } = useAuthFlow()
@@ -214,53 +219,50 @@ function useResetSuccessPanelCopy(): AuthSuccessPanelCopy {
   }
 }
 
-function useFormStaggerMotion() {
-  const reducedMotion = useReducedMotion() ?? false
-
-  return staggerUp({
-    reducedMotion,
-    distance: motionTokens.distance.sm,
-    stagger: motionTokens.stagger.regular,
-  })
-}
-
-function StaggerPanel({
+function FormEnterScope({
   children,
   className,
   ...props
 }: React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>>) {
-  const panelMotion = useFormStaggerMotion()
-  const motionDivProps = {
-    animate: "visible",
-    className,
-    initial: "hidden",
-    variants: panelMotion.container,
-    ...props,
-  } as React.ComponentProps<typeof motion.div>
+  const { pageEnterReady } = useAuthProviderSectionMotion()
+  const {
+    scope: formEnterScope,
+    stage: formEnterStage,
+  } = useAuthFormEnterStagger(pageEnterReady)
 
   return (
-    <motion.div {...motionDivProps}>
+    <div
+      ref={formEnterScope}
+      className={cn(className)}
+      {...{ [AUTH_FORM_STAGGER_STATE_ATTR]: formEnterStage }}
+      {...props}
+    >
       {children}
-    </motion.div>
+    </div>
   )
 }
 
-function StaggerItem({
+function FormStack({
   children,
   className,
   ...props
 }: React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>>) {
-  const panelMotion = useFormStaggerMotion()
-  const motionDivProps = {
-    className,
-    variants: panelMotion.item,
-    ...props,
-  } as React.ComponentProps<typeof motion.div>
-
   return (
-    <motion.div {...motionDivProps}>
+    <div className={cn(className)} {...props}>
       {children}
-    </motion.div>
+    </div>
+  )
+}
+
+function FormItem({
+  children,
+  className,
+  ...props
+}: React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>>) {
+  return (
+    <div className={cn(className)} {...getAuthSharedEnterItemProps()} {...props}>
+      {children}
+    </div>
   )
 }
 
@@ -297,48 +299,44 @@ function AnimatedSubmitLabel({ label }: { label: string }) {
 export function LoginPanel() {
   const t = useTranslations("AuthUi")
   const { actions } = useAuthFlow()
-  const panelMotionConfig = resolveAuthFormMotion("login")
 
   return (
-    <StaggerItem
-      className="w-full"
-      data-auth-enter-pattern={panelMotionConfig.enterPattern}
-    >
-      <Button
-        className="w-full"
-        size="large"
-        type="button"
-        variant="secondary"
-        onClick={() => actions.switchFlow("login-email")}
-      >
-        <MailIcon data-icon="inline-start" />
-        {t("login.continueWithEmail")}
-      </Button>
-    </StaggerItem>
+    <FormEnterScope className="w-full" data-auth-flow="login">
+      <FormItem className="w-full">
+        <Button
+          className="w-full"
+          size="large"
+          type="button"
+          variant="secondary"
+          onClick={() => actions.switchFlow("login-email")}
+        >
+          <MailIcon data-icon="inline-start" />
+          {t("login.continueWithEmail")}
+        </Button>
+      </FormItem>
+    </FormEnterScope>
   )
 }
 
 export function RegisterPanel() {
   const t = useTranslations("AuthUi")
   const { actions } = useAuthFlow()
-  const panelMotionConfig = resolveAuthFormMotion("register")
 
   return (
-    <StaggerItem
-      className="w-full"
-      data-auth-enter-pattern={panelMotionConfig.enterPattern}
-    >
-      <Button
-        className="w-full"
-        size="large"
-        type="button"
-        variant="secondary"
-        onClick={() => actions.switchFlow("register-email")}
-      >
-        <MailIcon data-icon="inline-start" />
-        {t("register.continueWithEmail")}
-      </Button>
-    </StaggerItem>
+    <FormEnterScope className="w-full" data-auth-flow="register">
+      <FormItem className="w-full">
+        <Button
+          className="w-full"
+          size="large"
+          type="button"
+          variant="secondary"
+          onClick={() => actions.switchFlow("register-email")}
+        >
+          <MailIcon data-icon="inline-start" />
+          {t("register.continueWithEmail")}
+        </Button>
+      </FormItem>
+    </FormEnterScope>
   )
 }
 
@@ -347,15 +345,11 @@ export function LoginEmailPanel() {
   const passwordVisible = usePasswordVisibility("loginPassword")
   const { accountFieldCopy, passwordFieldCopy, submitLabel } = useLoginEmailPanelCopy()
   const submitStatusCopy = useAuthSubmitButtonStatusCopy()
-  const panelMotionConfig = resolveAuthFormMotion("login-email")
 
   return (
-    <StaggerPanel
-      className="flex w-full flex-col gap-8"
-      data-auth-enter-pattern={panelMotionConfig.enterPattern}
-    >
-      <StaggerPanel className="flex w-full flex-col gap-6">
-        <StaggerItem>
+    <FormEnterScope className="flex w-full flex-col gap-8" data-auth-flow="login-email">
+      <FormStack className="flex w-full flex-col gap-6">
+        <FormItem>
           <AuthAccountField
             {...accountFieldCopy}
             autoComplete="username"
@@ -367,8 +361,8 @@ export function LoginEmailPanel() {
             onCountryCodeChange={(value) => actions.update("loginCountryCode", value)}
             onValueChange={(value) => actions.update("loginAccount", value)}
           />
-        </StaggerItem>
-        <StaggerItem>
+        </FormItem>
+        <FormItem>
           <AuthPasswordField
             {...passwordFieldCopy}
             autoComplete="current-password"
@@ -381,9 +375,9 @@ export function LoginEmailPanel() {
             onToggleVisibility={() => actions.togglePasswordVisibility("loginPassword")}
             onValueChange={(value) => actions.update("loginPassword", value)}
           />
-        </StaggerItem>
-      </StaggerPanel>
-      <StaggerItem>
+        </FormItem>
+      </FormStack>
+      <FormItem>
         <Button
           className="w-full"
           disabled={state.pending}
@@ -397,8 +391,8 @@ export function LoginEmailPanel() {
           <AnimatedSubmitLabel label={submitLabel} />
           <ArrowRightIcon data-icon="inline-end" />
         </Button>
-      </StaggerItem>
-    </StaggerPanel>
+      </FormItem>
+    </FormEnterScope>
   )
 }
 
@@ -413,15 +407,14 @@ export function RegisterEmailPanel() {
     passwordFieldCopy,
     submitLabel,
   } = useRegisterEmailPanelCopy()
-  const panelMotionConfig = resolveAuthFormMotion("register-email")
 
   return (
-    <StaggerPanel
+    <FormEnterScope
       className="flex w-full flex-col gap-8"
-      data-auth-enter-pattern={panelMotionConfig.enterPattern}
+      data-auth-flow="register-email"
     >
-      <StaggerPanel className="flex w-full flex-col gap-6">
-        <StaggerItem>
+      <FormStack className="flex w-full flex-col gap-6">
+        <FormItem>
           <AuthEmailField
             {...emailFieldCopy}
             autoComplete="email"
@@ -431,8 +424,8 @@ export function RegisterEmailPanel() {
             onBlur={() => actions.blurField("registerAccount")}
             onValueChange={(value) => actions.update("registerAccount", value)}
           />
-        </StaggerItem>
-        <StaggerItem>
+        </FormItem>
+        <FormItem>
           <AuthPasswordField
             {...passwordFieldCopy}
             autoComplete="new-password"
@@ -444,8 +437,8 @@ export function RegisterEmailPanel() {
             onToggleVisibility={() => actions.togglePasswordVisibility("registerPassword")}
             onValueChange={(value) => actions.update("registerPassword", value)}
           />
-        </StaggerItem>
-        <StaggerItem>
+        </FormItem>
+        <FormItem>
           <AuthPasswordField
             {...confirmPasswordFieldCopy}
             autoComplete="new-password"
@@ -461,9 +454,9 @@ export function RegisterEmailPanel() {
               actions.update("registerConfirmPassword", value)
             }
           />
-        </StaggerItem>
-      </StaggerPanel>
-      <StaggerItem>
+        </FormItem>
+      </FormStack>
+      <FormItem>
         <Button
           className="w-full"
           disabled={state.pending}
@@ -477,8 +470,8 @@ export function RegisterEmailPanel() {
           {submitLabel}
           <CornerUpRightIcon data-icon="inline-end" />
         </Button>
-      </StaggerItem>
-    </StaggerPanel>
+      </FormItem>
+    </FormEnterScope>
   )
 }
 
@@ -486,14 +479,13 @@ export function ForgotPasswordPanel() {
   const { actions, state } = useAuthFlow()
   const { emailFieldCopy, submitLabel } = useForgotPasswordPanelCopy()
   const submitStatusCopy = useAuthSubmitButtonStatusCopy()
-  const panelMotionConfig = resolveAuthFormMotion("forgot-password")
 
   return (
-    <StaggerPanel
+    <FormEnterScope
       className="flex w-full flex-col gap-8"
-      data-auth-enter-pattern={panelMotionConfig.enterPattern}
+      data-auth-flow="forgot-password"
     >
-      <StaggerItem>
+      <FormItem>
         <AuthEmailField
           {...emailFieldCopy}
           autoComplete="email"
@@ -503,8 +495,8 @@ export function ForgotPasswordPanel() {
           onBlur={() => actions.blurField("forgotEmail")}
           onValueChange={(value) => actions.update("forgotEmail", value)}
         />
-      </StaggerItem>
-      <StaggerItem>
+      </FormItem>
+      <FormItem>
         <Button
           className="w-full"
           disabled={state.pending}
@@ -518,8 +510,8 @@ export function ForgotPasswordPanel() {
           <AnimatedSubmitLabel label={submitLabel} />
           <ArrowRightIcon data-icon="inline-end" />
         </Button>
-      </StaggerItem>
-    </StaggerPanel>
+      </FormItem>
+    </FormEnterScope>
   )
 }
 
@@ -528,21 +520,17 @@ export function VerifyEmailPanel() {
   const submitStatusCopy = useAuthSubmitButtonStatusCopy()
   const { fallbackEmail, otpFieldCopy, readonlyEmailCopy, resendCopy, submitLabel } =
     useVerifyEmailPanelCopy(state.resend.remainingSeconds)
-  const panelMotionConfig = resolveAuthFormMotion("verify-email")
 
   return (
-    <StaggerPanel
-      className="flex w-full flex-col gap-8"
-      data-auth-enter-pattern={panelMotionConfig.enterPattern}
-    >
-      <StaggerItem>
+    <FormEnterScope className="flex w-full flex-col gap-8" data-auth-flow="verify-email">
+      <FormItem>
         <AuthEmailField
           {...readonlyEmailCopy}
           mode="readonly"
           value={state.fields.verifyEmail || fallbackEmail}
         />
-      </StaggerItem>
-      <StaggerItem>
+      </FormItem>
+      <FormItem>
         <AuthOtpField
           {...otpFieldCopy}
           error={state.errors.verifyCode}
@@ -550,16 +538,16 @@ export function VerifyEmailPanel() {
           onBlur={() => actions.blurField("verifyCode")}
           onValueChange={(value) => actions.update("verifyCode", value)}
         />
-      </StaggerItem>
-      <StaggerItem>
+      </FormItem>
+      <FormItem>
         <AuthCodeResend
           {...resendCopy}
           pending={state.pending}
           remainingSeconds={state.resend.remainingSeconds}
           onResend={() => void actions.resend()}
         />
-      </StaggerItem>
-      <StaggerItem>
+      </FormItem>
+      <FormItem>
         <Button
           className="w-full"
           disabled={state.pending}
@@ -572,8 +560,8 @@ export function VerifyEmailPanel() {
         >
           {submitLabel}
         </Button>
-      </StaggerItem>
-    </StaggerPanel>
+      </FormItem>
+    </FormEnterScope>
   )
 }
 
@@ -591,21 +579,20 @@ export function ResetPasswordPanel() {
     resendCopy,
     submitLabel,
   } = useResetPasswordPanelCopy(state.resend.remainingSeconds)
-  const panelMotionConfig = resolveAuthFormMotion("reset-password")
 
   return (
-    <StaggerPanel
+    <FormEnterScope
       className="flex w-full flex-col gap-8"
-      data-auth-enter-pattern={panelMotionConfig.enterPattern}
+      data-auth-flow="reset-password"
     >
-      <StaggerItem>
+      <FormItem>
         <AuthEmailField
           {...readonlyEmailCopy}
           mode="readonly"
           value={state.fields.resetEmail || fallbackEmail}
         />
-      </StaggerItem>
-      <StaggerItem>
+      </FormItem>
+      <FormItem>
         <AuthOtpField
           {...otpFieldCopy}
           error={state.errors.resetCode}
@@ -613,18 +600,18 @@ export function ResetPasswordPanel() {
           onBlur={() => actions.blurField("resetCode")}
           onValueChange={(value) => actions.update("resetCode", value)}
         />
-      </StaggerItem>
-      <StaggerItem>
+      </FormItem>
+      <FormItem>
         <AuthCodeResend
           {...resendCopy}
           pending={state.pending}
           remainingSeconds={state.resend.remainingSeconds}
           onResend={() => void actions.resend()}
         />
-      </StaggerItem>
+      </FormItem>
       <div className="flex w-full flex-col gap-6">
-        <StaggerPanel className="flex w-full flex-col gap-6">
-          <StaggerItem>
+        <FormStack className="flex w-full flex-col gap-6">
+          <FormItem>
             <AuthPasswordField
               {...passwordFieldCopy}
               autoComplete="new-password"
@@ -638,8 +625,8 @@ export function ResetPasswordPanel() {
               }
               onValueChange={(value) => actions.update("resetPassword", value)}
             />
-          </StaggerItem>
-          <StaggerItem>
+          </FormItem>
+          <FormItem>
             <AuthPasswordField
               {...confirmPasswordFieldCopy}
               autoComplete="new-password"
@@ -655,10 +642,10 @@ export function ResetPasswordPanel() {
                 actions.update("resetConfirmPassword", value)
               }
             />
-          </StaggerItem>
-        </StaggerPanel>
+          </FormItem>
+        </FormStack>
       </div>
-      <StaggerItem>
+      <FormItem>
         <Button
           className="w-full"
           disabled={state.pending}
@@ -672,8 +659,8 @@ export function ResetPasswordPanel() {
           {submitLabel}
           <ArrowRightIcon data-icon="inline-end" />
         </Button>
-      </StaggerItem>
-    </StaggerPanel>
+      </FormItem>
+    </FormEnterScope>
   )
 }
 

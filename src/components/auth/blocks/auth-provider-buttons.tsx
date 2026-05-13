@@ -3,6 +3,7 @@ import { FcGoogle } from "react-icons/fc"
 import { RiTwitterXFill } from "react-icons/ri"
 
 import { Button } from "@/components/ui/button"
+import { getAuthPageEnterItemProps } from "@/features/auth/ui/auth-stagger"
 import { cn } from "@/lib/utils"
 
 interface AuthProviderButtonsProps {
@@ -37,24 +38,45 @@ export function AuthProviderButtons({
 }: AuthProviderButtonsProps) {
   return (
     <div className={cn("flex w-full flex-col gap-3", className)}>
-      <Button asChild className="w-full" size="large" variant="primary">
-        <a href={buildProviderHref("google", locale, returnTo)}>
-          <FcGoogle data-icon="inline-start" />
-          {labels.google}
-        </a>
-      </Button>
-      <Button asChild className="w-full" size="large" variant="primary">
-        <a href={buildProviderHref("tiktok", locale, returnTo)}>
-          <FaTiktok data-icon="inline-start" />
-          {labels.tiktok}
-        </a>
-      </Button>
-      <Button asChild className="w-full" size="large" variant="primary">
-        <a href={buildProviderHref("x", locale, returnTo)}>
-          <RiTwitterXFill data-icon="inline-start" />
-          {labels.x}
-        </a>
-      </Button>
+      <div className="w-full" {...getAuthPageEnterItemProps()}>
+        <Button
+          asChild
+          className="w-full"
+          size="large"
+          variant="primary"
+        >
+          <a href={buildProviderHref("google", locale, returnTo)}>
+            <FcGoogle data-icon="inline-start" />
+            {labels.google}
+          </a>
+        </Button>
+      </div>
+      <div className="w-full" {...getAuthPageEnterItemProps()}>
+        <Button
+          asChild
+          className="w-full"
+          size="large"
+          variant="primary"
+        >
+          <a href={buildProviderHref("tiktok", locale, returnTo)}>
+            <FaTiktok data-icon="inline-start" />
+            {labels.tiktok}
+          </a>
+        </Button>
+      </div>
+      <div className="w-full" {...getAuthPageEnterItemProps()}>
+        <Button
+          asChild
+          className="w-full"
+          size="large"
+          variant="primary"
+        >
+          <a href={buildProviderHref("x", locale, returnTo)}>
+            <RiTwitterXFill data-icon="inline-start" />
+            {labels.x}
+          </a>
+        </Button>
+      </div>
     </div>
   )
 }

@@ -3,7 +3,6 @@
 import * as React from "react"
 import type { ReactNode } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
-import { motionTokens } from "@/lib/motion/tokens";
 import { useTranslations } from "next-intl"
 
 import {
@@ -11,15 +10,18 @@ import {
   AuthFormFrame,
   AuthProviderButtons,
 } from "@/components/auth/blocks"
-import { fadeSwap, staggerUp } from "@/lib/motion/recipes"
+import { fadeSwap } from "@/lib/motion/recipes"
+import { motionTokens } from "@/lib/motion/tokens"
 import { cn } from "@/lib/utils"
 
 import { useAuthFlow, type AuthFlow } from "@/features/auth/model"
 
 import { resolveAuthSubmitCopyTransition } from "./auth-motion"
+import { getAuthPageEnterItemProps } from "./auth-stagger"
 
 interface AuthProviderSectionProps {
   locale: string
+  pageEnterReady: boolean
   returnTo?: string | null
   children: ReactNode
   className?: string
@@ -29,6 +31,7 @@ interface AuthProviderSectionContextValue {
   locale: string
   returnTo?: string | null
   flow: AuthFlow
+  pageEnterReady: boolean
   submitCopySwapEnabled: boolean
 }
 
@@ -76,28 +79,25 @@ function useAuthProviderSectionContext() {
 }
 
 export function useAuthProviderSectionMotion() {
-  const { flow, submitCopySwapEnabled } = useAuthProviderSectionContext()
+  const { flow, pageEnterReady, submitCopySwapEnabled } =
+    useAuthProviderSectionContext()
 
   return {
     flow,
+    pageEnterReady,
     submitCopySwapEnabled,
   }
 }
 
 function AuthProviderSectionRoot({
   locale,
+  pageEnterReady,
   returnTo,
   children,
   className,
 }: AuthProviderSectionProps) {
-  const reducedMotion = useReducedMotion() ?? false
   const { meta } = useAuthFlow()
   const previousFlow = usePreviousFlow(meta.flow)
-  const directChildMotion = staggerUp({
-    reducedMotion,
-    distance: motionTokens.distance.sm,
-    stagger: motionTokens.stagger.regular,
-  })
   const submitCopySwapEnabled =
     resolveAuthSubmitCopyTransition(previousFlow, meta.flow) === "copySlideSwap"
 
@@ -107,17 +107,13 @@ function AuthProviderSectionRoot({
         locale,
         returnTo,
         flow: meta.flow,
+        pageEnterReady,
         submitCopySwapEnabled,
       }}
     >
-      <motion.section
-        animate="visible"
-        className={cn("flex w-full flex-col items-center gap-4", className)}
-        initial="hidden"
-        variants={directChildMotion.container}
-      >
+      <section className={cn("flex w-full flex-col items-center gap-4", className)}>
         {children}
-      </motion.section>
+      </section>
     </AuthProviderSectionContext.Provider>
   )
 }
@@ -127,15 +123,9 @@ function AuthProviderSectionProviders({
 }: Pick<AuthProviderSectionSlotProps, "className">) {
   const { locale, returnTo } = useAuthProviderSectionContext()
   const t = useTranslations("AuthUi")
-  const reducedMotion = useReducedMotion() ?? false
-  const directChildMotion = staggerUp({
-    reducedMotion,
-    distance: motionTokens.distance.sm,
-    stagger: motionTokens.stagger.regular,
-  })
 
   return (
-    <motion.div className={cn("w-full", className)} variants={directChildMotion.item}>
+    <div className={cn("w-full", className)}>
       <AuthProviderButtons
         labels={{
           google: t("social.google"),
@@ -145,7 +135,7 @@ function AuthProviderSectionProviders({
         locale={locale}
         returnTo={returnTo}
       />
-    </motion.div>
+    </div>
   )
 }
 
@@ -153,17 +143,13 @@ function AuthProviderSectionDivider({
   className,
 }: Pick<AuthProviderSectionSlotProps, "className">) {
   const t = useTranslations("AuthUi")
-  const reducedMotion = useReducedMotion() ?? false
-  const directChildMotion = staggerUp({
-    reducedMotion,
-    distance: motionTokens.distance.sm,
-    stagger: motionTokens.stagger.regular,
-  })
 
   return (
-    <motion.div className={cn("w-full", className)} variants={directChildMotion.item}>
-      <AuthDivider label={t("login.divider").toUpperCase()} />
-    </motion.div>
+    <AuthDivider
+      className={cn("w-full", className)}
+      label={t("login.divider").toUpperCase()}
+      {...getAuthPageEnterItemProps()}
+    />
   )
 }
 
@@ -173,18 +159,13 @@ function AuthProviderSectionForm({
 }: AuthProviderSectionSlotProps) {
   const { flow, submitCopySwapEnabled } = useAuthProviderSectionMotion()
   const reducedMotion = useReducedMotion() ?? false
-  const directChildMotion = staggerUp({
-    reducedMotion,
-    distance: motionTokens.distance.sm,
-    stagger: motionTokens.stagger.regular,
-  })
   const swapMotion = fadeSwap({
     reducedMotion,
-    distance: 8,
+    distance: motionTokens.distance.sm,
   })
 
   return (
-    <motion.div className={cn("w-full", className)} variants={directChildMotion.item}>
+    <div className={cn("w-full", className)}>
       <AuthFormFrame>
         {submitCopySwapEnabled ? (
           <AnimatePresence initial={false} mode="wait">
@@ -203,7 +184,7 @@ function AuthProviderSectionForm({
           children
         )}
       </AuthFormFrame>
-    </motion.div>
+    </div>
   )
 }
 

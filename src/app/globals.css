@@ -46,6 +46,11 @@
     --color-border-invalid-focus: var(--color-red-800);
     --color-border-invalid-layer-lower: var(--color-red-800);
     --color-border-invalid-layer-upper: rgb(255 255 255 / 0.8);
+    --color-border-invalid: color-mix(
+            in oklch,
+            var(--color-border-invalid-layer-upper),
+            var(--color-border-invalid-layer-lower)
+    );
     --color-border-inverse: var(--color-neutral-700);
     --color-border-strong: var(--color-stone-900);
     --color-border-subtle: var(--color-neutral-100);
@@ -77,6 +82,20 @@
 
     --state-opacity-disabled: 0.5;
     --state-opacity-loading: 0.5;
+
+    /* Motion tokens */
+    --motion-duration-fast: 280ms;
+    --motion-duration-medium: 500ms;
+    --motion-duration-slow: 720ms;
+    --motion-easing-enter: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --motion-easing-exit: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+    --motion-easing-standard: cubic-bezier(0.65, 0.05, 0.36, 1);
+    --motion-scale-action-hover: 1;
+    --motion-scale-action-press: 0.95;
+    --motion-scale-icon-hover: 1;
+    --motion-scale-text-hover: 1;
+    --motion-scale-text-press: 0.995;
+    --motion-caret-blink-duration: 1000ms;
 
     /* Component tokens: button */
     --button-large-radius: var(--radius-xl);
@@ -197,8 +216,7 @@
     --input-search-border-focus: var(--color-border-default);
     --input-search-border-disabled: var(--color-border-disabled);
     --input-search-border-invalid-focus: var(--color-border-invalid-focus);
-    --input-search-border-invalid-layer-lower: var(--color-border-invalid-layer-lower);
-    --input-search-border-invalid-layer-upper: var(--color-border-invalid-layer-upper);
+    --input-search-border-invalid: var(--color-border-invalid);
     --input-search-border-readonly: transparent;
     --input-search-placeholder-default: var(--color-text-placeholder);
     --input-search-text-default: var(--color-text-primary);
@@ -219,8 +237,7 @@
     --input-otp-border-focus-ring: var(--color-border-default);
     --input-otp-border-disabled: var(--color-border-disabled);
     --input-otp-border-invalid-focus: var(--color-border-invalid-focus);
-    --input-otp-border-invalid-layer-lower: var(--color-border-invalid-layer-lower);
-    --input-otp-border-invalid-layer-upper: var(--color-border-invalid-layer-upper);
+    --input-otp-border-invalid: var(--color-border-invalid);
     --input-otp-border-invalid-focus-ring-layer-lower: var(--color-border-invalid-layer-lower);
     --input-otp-border-invalid-focus-ring-layer-upper: var(--color-border-invalid-layer-upper);
     --input-otp-border-readonly: transparent;
@@ -245,8 +262,7 @@
     --input-underline-border-focus: var(--color-border-focus);
     --input-underline-border-disabled: var(--color-border-disabled);
     --input-underline-border-invalid-focus: var(--color-border-invalid-focus);
-    --input-underline-border-invalid-layer-lower: var(--color-border-invalid-layer-lower);
-    --input-underline-border-invalid-layer-upper: var(--color-border-invalid-layer-upper);
+    --input-underline-border-invalid: var(--color-border-invalid);
     --input-underline-border-readonly: transparent;
     --input-underline-placeholder-default: var(--color-text-placeholder);
     --input-underline-text-default: var(--color-text-primary);
