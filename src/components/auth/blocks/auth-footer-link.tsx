@@ -38,7 +38,7 @@ export function AuthFooterLink({
   }, [])
 
   return (
-    <div className={cn(className)}>
+    <div className={cn(className)} {...getAuthPageEnterItemProps()}>
       <AnimatePresence initial={false} mode="wait">
         <motion.div
           key={motionKey}
