@@ -21,6 +21,7 @@ import {
   type AuthHeroFamily,
 } from "@/features/auth/model"
 import { AuthContent } from "@/features/auth/ui/auth-content"
+import { resolveAuthSceneTransition } from "@/features/auth/ui/auth-motion"
 import { AuthProviderSection } from "@/features/auth/ui/auth-provider-section"
 import { AuthScreenLayout } from "@/features/auth/ui/auth-screen-layout"
 import {
@@ -145,14 +146,36 @@ function AuthPageScene({
   returnTo?: string | null
 }) {
   const { actions, meta } = useAuthFlow()
+  const previousFlowRef = React.useRef<AuthFlow | null>(null)
+  const lastReplayedFlowRef = React.useRef<AuthFlow | null>(null)
+  const previousFlow = previousFlowRef.current
+  const transition = resolveAuthSceneTransition(previousFlow, meta.flow)
+  const [pageStaggerReplayNonce, setPageStaggerReplayNonce] = React.useState(0)
   const {
     pageReady: isPageEnterReady,
     scope: pageEnterScope,
     stage: pageEnterStage,
-  } = useAuthPageEnterStagger()
+  } = useAuthPageEnterStagger(pageStaggerReplayNonce)
   const heroCopy = useAuthHeroCopy(meta.flow)
   const footerCopy = useAuthFooterCopy(meta.flow)
   const footerTargetFlow = resolveFooterTargetFlow(meta.flow)
+
+  React.useLayoutEffect(() => {
+    if (!transition.replayPageStagger) {
+      return
+    }
+
+    if (lastReplayedFlowRef.current === meta.flow) {
+      return
+    }
+
+    lastReplayedFlowRef.current = meta.flow
+    setPageStaggerReplayNonce((current) => current + 1)
+  }, [meta.flow, transition.replayPageStagger])
+
+  React.useEffect(() => {
+    previousFlowRef.current = meta.flow
+  }, [meta.flow])
 
   let panel: React.ReactNode
   switch (meta.flow) {
@@ -198,13 +221,14 @@ function AuthPageScene({
         <AuthScreenLayout.Content>
           <AuthContent>
             <AuthContent.Hero>
-              <AuthHeroHeader {...heroCopy} />
+              <AuthHeroHeader {...heroCopy} swapEnabled={transition.swapHeroFooter} />
             </AuthContent.Hero>
 
             <AuthContent.Section>
               <AuthProviderSection
                 locale={locale}
                 pageEnterReady={isPageEnterReady}
+                suppressFormEnterStagger={transition.suppressFormEnterStagger}
                 returnTo={returnTo}
               >
                 <AuthProviderSection.Providers />
@@ -218,6 +242,7 @@ function AuthPageScene({
                 <AuthFooterLink
                   {...footerCopy}
                   onAction={() => actions.switchFlow(footerTargetFlow)}
+                  swapEnabled={transition.swapHeroFooter}
                 />
               </AuthContent.Footer>
             ) : null}

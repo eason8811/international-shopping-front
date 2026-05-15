@@ -137,17 +137,29 @@ export function getAuthSharedEnterItemProps() {
   return authSharedEnterItemProps
 }
 
-export function useAuthPageEnterStagger() {
+export function useAuthPageEnterStagger(replayKey = 0) {
   const [scope, animate] = useAnimate<HTMLDivElement>()
   const reducedMotion = useReducedMotion() ?? false
-  const [stage, setStage] = React.useState<AuthStaggerState>(
-    reducedMotion ? "ready" : "pending"
-  )
+  const [pageReady, setPageReady] = React.useState(reducedMotion)
+  const [stage, setStage] = React.useState<AuthStaggerState>(reducedMotion ? "ready" : "pending")
+  const hasCompletedInitialRun = React.useRef(reducedMotion)
+  const lastReplayKey = React.useRef(replayKey)
 
   React.useLayoutEffect(() => {
+    const isInitialRun = !hasCompletedInitialRun.current
+    const shouldReplay = !isInitialRun && replayKey !== lastReplayKey.current
+
+    if (!isInitialRun && !shouldReplay) {
+      return
+    }
+
+    lastReplayKey.current = replayKey
+
     const targets = collectTargets(scope.current, authPageEnterItemSelector)
 
     if (reducedMotion || targets.length === 0) {
+      hasCompletedInitialRun.current = true
+      setPageReady(true)
       setStage("ready")
       return
     }
@@ -167,6 +179,8 @@ export function useAuthPageEnterStagger() {
       }
 
       restore()
+      hasCompletedInitialRun.current = true
+      setPageReady(true)
       setStage("ready")
     })
 
@@ -175,19 +189,22 @@ export function useAuthPageEnterStagger() {
       controls.stop()
       restore()
     }
-  }, [animate, reducedMotion, scope])
+  }, [animate, reducedMotion, replayKey, scope])
 
   return {
-    pageReady: stage === "ready",
+    pageReady,
     scope,
     stage,
   }
 }
 
-export function useAuthFormEnterStagger(pageReady: boolean) {
+export function useAuthFormEnterStagger(
+  pageReady: boolean,
+  suppressOnMount = false
+) {
   const [scope, animate] = useAnimate<HTMLDivElement>()
   const reducedMotion = useReducedMotion() ?? false
-  const shouldAnimateOnMount = React.useRef(pageReady)
+  const shouldAnimateOnMount = React.useRef(pageReady && !suppressOnMount)
   const [stage, setStage] = React.useState<AuthStaggerState>(() => {
     if (!pageReady) {
       return "idle"

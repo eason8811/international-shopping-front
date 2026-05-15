@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import type { ReactNode } from "react"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { useTranslations } from "next-intl"
 
 import {
@@ -10,18 +9,13 @@ import {
   AuthFormFrame,
   AuthProviderButtons,
 } from "@/components/auth/blocks"
-import { fadeSwap } from "@/lib/motion/recipes"
-import { motionTokens } from "@/lib/motion/tokens"
 import { cn } from "@/lib/utils"
-
-import { useAuthFlow, type AuthFlow } from "@/features/auth/model"
-
-import { resolveAuthSubmitCopyTransition } from "./auth-motion"
 import { getAuthPageEnterItemProps } from "./auth-stagger"
 
 interface AuthProviderSectionProps {
   locale: string
   pageEnterReady: boolean
+  suppressFormEnterStagger?: boolean
   returnTo?: string | null
   children: ReactNode
   className?: string
@@ -30,9 +24,8 @@ interface AuthProviderSectionProps {
 interface AuthProviderSectionContextValue {
   locale: string
   returnTo?: string | null
-  flow: AuthFlow
   pageEnterReady: boolean
-  submitCopySwapEnabled: boolean
+  suppressFormEnterStagger: boolean
 }
 
 interface AuthProviderSectionSlotProps {
@@ -42,29 +35,6 @@ interface AuthProviderSectionSlotProps {
 
 const AuthProviderSectionContext =
   React.createContext<AuthProviderSectionContextValue | null>(null)
-
-function usePreviousFlow(flow: AuthFlow) {
-  const [history, setHistory] = React.useState<{
-    current: AuthFlow
-    previous: AuthFlow | null
-  }>({
-    current: flow,
-    previous: null,
-  })
-
-  React.useEffect(() => {
-    setHistory((currentHistory) =>
-      currentHistory.current === flow
-        ? currentHistory
-        : {
-            current: flow,
-            previous: currentHistory.current,
-          }
-    )
-  }, [flow])
-
-  return history.current === flow ? history.previous : history.current
-}
 
 function useAuthProviderSectionContext() {
   const context = React.useContext(AuthProviderSectionContext)
@@ -79,36 +49,29 @@ function useAuthProviderSectionContext() {
 }
 
 export function useAuthProviderSectionMotion() {
-  const { flow, pageEnterReady, submitCopySwapEnabled } =
-    useAuthProviderSectionContext()
+  const { pageEnterReady, suppressFormEnterStagger } = useAuthProviderSectionContext()
 
   return {
-    flow,
     pageEnterReady,
-    submitCopySwapEnabled,
+    suppressFormEnterStagger,
   }
 }
 
 function AuthProviderSectionRoot({
   locale,
   pageEnterReady,
+  suppressFormEnterStagger = false,
   returnTo,
   children,
   className,
 }: AuthProviderSectionProps) {
-  const { meta } = useAuthFlow()
-  const previousFlow = usePreviousFlow(meta.flow)
-  const submitCopySwapEnabled =
-    resolveAuthSubmitCopyTransition(previousFlow, meta.flow) === "copySlideSwap"
-
   return (
     <AuthProviderSectionContext.Provider
       value={{
         locale,
         returnTo,
-        flow: meta.flow,
         pageEnterReady,
-        submitCopySwapEnabled,
+        suppressFormEnterStagger,
       }}
     >
       <section className={cn("flex w-full flex-col items-center gap-4", className)}>
@@ -157,33 +120,9 @@ function AuthProviderSectionForm({
   children,
   className,
 }: AuthProviderSectionSlotProps) {
-  const { flow, submitCopySwapEnabled } = useAuthProviderSectionMotion()
-  const reducedMotion = useReducedMotion() ?? false
-  const swapMotion = fadeSwap({
-    reducedMotion,
-    distance: motionTokens.distance.sm,
-  })
-
   return (
     <div className={cn("w-full", className)}>
-      <AuthFormFrame>
-        {submitCopySwapEnabled ? (
-          <AnimatePresence initial={false} mode="wait">
-            <motion.div
-              key={flow}
-              animate="visible"
-              className="contents"
-              exit="exit"
-              initial="hidden"
-              variants={swapMotion}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
-        ) : (
-          children
-        )}
-      </AuthFormFrame>
+      <AuthFormFrame>{children}</AuthFormFrame>
     </div>
   )
 }

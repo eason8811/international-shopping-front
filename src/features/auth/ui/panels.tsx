@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { ArrowRightIcon, CornerUpRightIcon, MailIcon } from "lucide-react"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { useTranslations } from "next-intl"
 
 import {
@@ -21,8 +20,6 @@ import {
   type AuthSuccessPanelCopy,
 } from "@/components/auth/blocks"
 import { Button, type ButtonStatusCopy } from "@/components/ui/button"
-import { copySlideSwap } from "@/lib/motion/recipes"
-import { motionTokens } from "@/lib/motion/tokens"
 import { cn } from "@/lib/utils"
 
 import { useAuthFlow } from "@/features/auth/model"
@@ -224,11 +221,11 @@ function FormEnterScope({
   className,
   ...props
 }: React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>>) {
-  const { pageEnterReady } = useAuthProviderSectionMotion()
+  const { pageEnterReady, suppressFormEnterStagger } = useAuthProviderSectionMotion()
   const {
     scope: formEnterScope,
     stage: formEnterStage,
-  } = useAuthFormEnterStagger(pageEnterReady)
+  } = useAuthFormEnterStagger(pageEnterReady, suppressFormEnterStagger)
 
   return (
     <div
@@ -263,36 +260,6 @@ function FormItem({
     <div className={cn(className)} {...getAuthSharedEnterItemProps()} {...props}>
       {children}
     </div>
-  )
-}
-
-function AnimatedSubmitLabel({ label }: { label: string }) {
-  const { submitCopySwapEnabled } = useAuthProviderSectionMotion()
-  const reducedMotion = useReducedMotion() ?? false
-  const submitCopyMotion = copySlideSwap({
-    reducedMotion,
-    distance: motionTokens.distance.xs,
-  })
-
-  if (!submitCopySwapEnabled) {
-    return label
-  }
-
-  return (
-    <span className="inline-grid overflow-hidden align-middle">
-      <AnimatePresence initial={false} mode="wait">
-        <motion.span
-          key={label}
-          animate="visible"
-          className="col-start-1 row-start-1"
-          exit="exit"
-          initial="hidden"
-          variants={submitCopyMotion}
-        >
-          {label}
-        </motion.span>
-      </AnimatePresence>
-    </span>
   )
 }
 
@@ -388,7 +355,7 @@ export function LoginEmailPanel() {
           variant="primary"
           onClick={() => void actions.submit()}
         >
-          <AnimatedSubmitLabel label={submitLabel} />
+          {submitLabel}
           <ArrowRightIcon data-icon="inline-end" />
         </Button>
       </FormItem>
@@ -507,7 +474,7 @@ export function ForgotPasswordPanel() {
           variant="primary"
           onClick={() => void actions.submit()}
         >
-          <AnimatedSubmitLabel label={submitLabel} />
+          {submitLabel}
           <ArrowRightIcon data-icon="inline-end" />
         </Button>
       </FormItem>

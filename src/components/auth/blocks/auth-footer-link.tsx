@@ -17,6 +17,7 @@ export interface AuthFooterLinkCopy {
 interface AuthFooterLinkProps extends AuthFooterLinkCopy {
   onAction: () => void
   className?: string
+  swapEnabled?: boolean
 }
 
 export function AuthFooterLink({
@@ -24,6 +25,7 @@ export function AuthFooterLink({
   actionLabel,
   onAction,
   className,
+  swapEnabled = false,
 }: AuthFooterLinkProps) {
   const reducedMotion = useReducedMotion() ?? false
   const [canAnimateSwap, setCanAnimateSwap] = React.useState(false)
@@ -36,6 +38,29 @@ export function AuthFooterLink({
   React.useEffect(() => {
     setCanAnimateSwap(true)
   }, [])
+
+  if (!swapEnabled) {
+    return (
+      <div className={cn(className)} {...getAuthPageEnterItemProps()}>
+        <div
+          className="flex items-start justify-center gap-1 text-center"
+          {...getAuthPageEnterItemProps()}
+        >
+          <span
+            className={[
+              "font-sans text-(length:--type-paragraph-mini-font-size)",
+              "leading-(--type-paragraph-mini-line-height) tracking-(--type-paragraph-mini-letter-spacing) text-(--color-text-secondary)",
+            ].join(" ")}
+          >
+            {prompt}
+          </span>
+          <Button size="mini" type="button" variant="link" onClick={onAction}>
+            {actionLabel}
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={cn(className)} {...getAuthPageEnterItemProps()}>
