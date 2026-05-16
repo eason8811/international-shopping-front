@@ -146,6 +146,7 @@ function AuthPageScene({
 }) {
   const { actions, meta } = useAuthFlow()
   const transition = meta.sceneTransition
+  const replayScopeKey = `auth-replay-${meta.pageStaggerReplayNonce}`
   const {
     pageReady: isPageEnterReady,
     scope: pageEnterScope,
@@ -197,7 +198,7 @@ function AuthPageScene({
         {...{ [AUTH_PAGE_STAGGER_STATE_ATTR]: pageEnterStage }}
       >
         <AuthScreenLayout.Content>
-          <AuthContent>
+          <AuthContent key={replayScopeKey}>
             <AuthContent.Hero>
               <AuthHeroHeader {...heroCopy} swapEnabled={transition.swapHeroFooter} />
             </AuthContent.Hero>
@@ -228,7 +229,7 @@ function AuthPageScene({
         </AuthScreenLayout.Content>
 
         <AuthScreenLayout.Picture>
-          <PictureWithCard />
+          <PictureWithCard key={replayScopeKey} />
         </AuthScreenLayout.Picture>
       </AuthScreenLayout.Main>
     </AuthScreenLayout>
