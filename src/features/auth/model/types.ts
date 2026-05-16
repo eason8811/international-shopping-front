@@ -13,6 +13,12 @@ export type AuthHeroFamily = "login" | "register" | "recovery"
 export type AuthFooterKind = "login" | "register" | "recovery"
 export type AuthSubmitStatus = "idle" | "loading" | "success"
 
+export interface AuthSceneTransition {
+  replayPageStagger: boolean
+  suppressFormEnterStagger: boolean
+  swapHeroFooter: boolean
+}
+
 export type AuthFieldName =
   | "loginAccount"
   | "loginCountryCode"
@@ -54,6 +60,8 @@ export interface AuthFlowContextValue {
   }
   meta: {
     flow: AuthFlow
+    pageStaggerReplayNonce: number
+    sceneTransition: AuthSceneTransition
     device: "desktop" | "mobile"
     refs: Record<string, unknown>
   }

@@ -1,15 +1,9 @@
-import type { AuthFlow } from "@/features/auth/model"
-
-export interface AuthSceneTransition {
-  replayPageStagger: boolean
-  suppressFormEnterStagger: boolean
-  swapHeroFooter: boolean
-}
+import type { AuthFlow, AuthSceneTransition } from "./types"
 
 export function resolveAuthSceneTransition(
   previousFlow: AuthFlow | null | undefined,
   nextFlow: AuthFlow
-) : AuthSceneTransition {
+): AuthSceneTransition {
   const isTopLevelLoginRegisterPair =
     (previousFlow === "login" && nextFlow === "register") ||
     (previousFlow === "register" && nextFlow === "login")

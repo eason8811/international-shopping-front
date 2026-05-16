@@ -16,6 +16,7 @@ import {
 import { normalizeClientError } from "@/lib/api/normalize-client-error"
 import { normalizeOptionalPhoneCountryCodeInput } from "@/lib/format/phone"
 
+import { resolveAuthSceneTransition } from "./auth-scene-transition"
 import type {
   AuthFieldName,
   AuthFlow,
@@ -133,7 +134,11 @@ export function AuthFlowProvider({
   const successT = useTranslations("AuthUi.success")
   const defaultDemoEmail = t("form.demoEmail")
 
-  const [flow, setFlow] = React.useState<AuthFlow>(initialFlow)
+  const [scene, setScene] = React.useState(() => ({
+    flow: initialFlow,
+    pageStaggerReplayNonce: 0,
+    sceneTransition: resolveAuthSceneTransition(null, initialFlow),
+  }))
   const [fields, setFields] = React.useState<Record<AuthFieldName, string>>(defaultFields)
   const [errors, setErrors] = React.useState<Partial<Record<AuthFieldName, string | null>>>({})
   const [touchedFields, setTouchedFields] = React.useState<Partial<Record<AuthFieldName, boolean>>>({})
@@ -151,6 +156,7 @@ export function AuthFlowProvider({
   })
   const [passwordVisibility, setPasswordVisibility] = React.useState<Record<string, boolean>>({})
   const [device, setDevice] = React.useState<"desktop" | "mobile">("mobile")
+  const { flow, pageStaggerReplayNonce, sceneTransition } = scene
 
   const resendTimerRef = React.useRef<number | null>(null)
   const successTimerRef = React.useRef<number | null>(null)
@@ -408,6 +414,23 @@ export function AuthFlowProvider({
     })
   }, [])
 
+  const commitFlowChange = React.useCallback((nextFlow: AuthFlow) => {
+    setScene((currentScene) => {
+      if (currentScene.flow === nextFlow) {
+        return currentScene
+      }
+
+      const nextTransition = resolveAuthSceneTransition(currentScene.flow, nextFlow)
+
+      return {
+        flow: nextFlow,
+        pageStaggerReplayNonce:
+          currentScene.pageStaggerReplayNonce + (nextTransition.replayPageStagger ? 1 : 0),
+        sceneTransition: nextTransition,
+      }
+    })
+  }, [])
+
   const switchFlow = React.useCallback(
     (nextFlow: AuthFlow) => {
       setErrors({})
@@ -425,9 +448,13 @@ export function AuthFlowProvider({
         successTimerRef.current = null
       }
 
-      setFlow(nextFlow)
+      commitFlowChange(nextFlow)
 
-      if (nextFlow === "forgot-password" && !fields.forgotEmail && looksLikeEmail(fields.loginAccount)) {
+      if (
+        nextFlow === "forgot-password" &&
+        !fields.forgotEmail &&
+        looksLikeEmail(fields.loginAccount)
+      ) {
         setFields((current) => ({
           ...current,
           forgotEmail: current.loginAccount.trim(),
@@ -445,7 +472,7 @@ export function AuthFlowProvider({
         }))
       }
     },
-    [fields.forgotEmail, fields.loginAccount]
+    [commitFlowChange, fields.forgotEmail, fields.loginAccount]
   )
 
   const scheduleFallbackRedirect = React.useCallback(
@@ -525,7 +552,7 @@ export function AuthFlowProvider({
           verifyCode: "",
         }))
         startResendCountdown()
-        setFlow("verify-email")
+        commitFlowChange("verify-email")
         return
       }
 
@@ -544,7 +571,7 @@ export function AuthFlowProvider({
           resetCode: "",
         }))
         startResendCountdown()
-        setFlow("reset-password")
+        commitFlowChange("reset-password")
         return
       }
 
@@ -561,7 +588,7 @@ export function AuthFlowProvider({
           title: successT("verifyTitle"),
           description: successT("verifyDescription"),
         })
-        setFlow("register-success")
+        commitFlowChange("register-success")
         scheduleFallbackRedirect("login")
         return
       }
@@ -580,7 +607,7 @@ export function AuthFlowProvider({
           title: successT("resetTitle"),
           description: successT("resetDescription"),
         })
-        setFlow("reset-success")
+        commitFlowChange("reset-success")
         scheduleFallbackRedirect("login-email")
       }
     } catch (error) {
@@ -633,6 +660,7 @@ export function AuthFlowProvider({
     fields,
     flow,
     holdSubmitSuccess,
+    commitFlowChange,
     returnTo,
     router,
     scheduleFallbackRedirect,
@@ -704,6 +732,8 @@ export function AuthFlowProvider({
       },
       meta: {
         flow,
+        pageStaggerReplayNonce,
+        sceneTransition,
         device,
         refs: {
           passwordVisibility,
@@ -720,11 +750,13 @@ export function AuthFlowProvider({
       fields,
       flow,
       locale,
+      pageStaggerReplayNonce,
       passwordVisibility,
       pending,
       remainingSeconds,
       resend,
       returnTo,
+      sceneTransition,
       submitStatus,
       blurField,
       submit,
