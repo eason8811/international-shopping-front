@@ -3,6 +3,7 @@
 import * as React from "react"
 import { REGEXP_ONLY_DIGITS } from "input-otp"
 import { EyeClosedIcon, EyeIcon } from "lucide-react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -18,6 +19,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
+import { inlineMessagePresence } from "@/lib/motion/recipes"
 import { cn } from "@/lib/utils"
 
 const labelClassName = [
@@ -64,6 +66,69 @@ function useFieldFocusState() {
   }
 }
 
+interface AuthFieldErrorMessageProps {
+  error?: string | null
+  className?: string
+}
+
+function AuthFieldErrorMessage({
+  error,
+  className,
+}: AuthFieldErrorMessageProps) {
+  const reducedMotion = useReducedMotion() ?? false
+  const measureRef = React.useRef<HTMLParagraphElement | null>(null)
+
+  const [height, setHeight] = React.useState(0)
+
+  const errorMessageMotion = inlineMessagePresence({ reducedMotion })
+  const hasError = Boolean(error)
+
+  React.useLayoutEffect(() => {
+    if (!hasError || !measureRef.current) {
+      setHeight(0)
+      return
+    }
+
+    setHeight(measureRef.current.scrollHeight)
+  }, [error, hasError])
+
+  return (
+    <motion.div
+      animate={{ height }}
+      className="relative overflow-visable"
+      initial={false}
+      transition={errorMessageMotion.layout}
+    >
+      <p
+        ref={measureRef}
+        aria-hidden="true"
+        className={cn(
+          errorClassName,
+          className,
+          "pointer-events-none invisible absolute inset-x-0 top-0"
+        )}
+      >
+        {error}
+      </p>
+
+      <AnimatePresence initial={false} mode="wait">
+        {hasError ? (
+          <motion.p
+            key={error}
+            animate="visible"
+            className={cn(errorClassName, className)}
+            exit="exit"
+            initial="hidden"
+            variants={errorMessageMotion.content}
+          >
+            {error}
+          </motion.p>
+        ) : null}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
 export interface AuthAccountFieldCopy {
   label: string
   placeholder: string
@@ -104,44 +169,46 @@ export function AuthAccountField({
   const phoneMode = allowPhoneMode && isPureDigitAccountValue(value)
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <label className={labelClassName} htmlFor={name}>
-        {label}
-      </label>
-      <InputUnderlineFrame focused={focused} invalid={Boolean(error)}>
-        {phoneMode ? (
-          <>
-            <InputCountryCodeSelect
-              ariaLabel={countryCodeLabel ?? label}
-              options={countryCodeOptions}
-              value={countryCode}
-              onBlur={handleBlur}
-              onFocus={handleFocus}
-              onValueChange={onCountryCodeChange}
-            />
-            <InputUnderlineDivider />
-          </>
-        ) : null}
-        <Input
-          aria-invalid={Boolean(error)}
-          autoComplete={autoComplete}
-          className="flex-1"
-          id={name}
-          inputMode={phoneMode ? "numeric" : inputMode}
-          name={name}
-          placeholder={placeholder}
-          type="text"
-          value={value}
-          variant="underline"
-          onBlur={() => {
-            handleBlur()
-            onBlur?.()
-          }}
-          onChange={(event) => onValueChange(event.target.value)}
-          onFocus={handleFocus}
-        />
-      </InputUnderlineFrame>
-      {error ? <p className={errorClassName}>{error}</p> : null}
+    <div className="flex w-full flex-col">
+      <div className="flex w-full flex-col gap-2">
+        <label className={labelClassName} htmlFor={name}>
+          {label}
+        </label>
+        <InputUnderlineFrame focused={focused} invalid={Boolean(error)}>
+          {phoneMode ? (
+            <>
+              <InputCountryCodeSelect
+                ariaLabel={countryCodeLabel ?? label}
+                options={countryCodeOptions}
+                value={countryCode}
+                onBlur={handleBlur}
+                onFocus={handleFocus}
+                onValueChange={onCountryCodeChange}
+              />
+              <InputUnderlineDivider />
+            </>
+          ) : null}
+          <Input
+            aria-invalid={Boolean(error)}
+            autoComplete={autoComplete}
+            className="flex-1"
+            id={name}
+            inputMode={phoneMode ? "numeric" : inputMode}
+            name={name}
+            placeholder={placeholder}
+            type="text"
+            value={value}
+            variant="underline"
+            onBlur={() => {
+              handleBlur()
+              onBlur?.()
+            }}
+            onChange={(event) => onValueChange(event.target.value)}
+            onFocus={handleFocus}
+          />
+        </InputUnderlineFrame>
+      </div>
+      <AuthFieldErrorMessage className="pt-2" error={error} />
     </div>
   )
 }
@@ -184,30 +251,32 @@ export function AuthEmailField(props: AuthEmailFieldProps) {
   }
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <label className={labelClassName} htmlFor={props.name}>
-        {props.label}
-      </label>
-      <InputUnderlineFrame focused={focused} invalid={Boolean(props.error)}>
-        <Input
-          aria-invalid={Boolean(props.error)}
-          autoComplete={props.autoComplete}
-          className="flex-1"
-          id={props.name}
-          name={props.name}
-          placeholder={props.placeholder}
-          type="email"
-          value={props.value}
-          variant="underline"
-          onBlur={() => {
-            handleBlur()
-            props.onBlur?.()
-          }}
-          onChange={(event) => props.onValueChange(event.target.value)}
-          onFocus={handleFocus}
-        />
-      </InputUnderlineFrame>
-      {props.error ? <p className={errorClassName}>{props.error}</p> : null}
+    <div className="flex w-full flex-col">
+      <div className="flex w-full flex-col gap-2">
+        <label className={labelClassName} htmlFor={props.name}>
+          {props.label}
+        </label>
+        <InputUnderlineFrame focused={focused} invalid={Boolean(props.error)}>
+          <Input
+            aria-invalid={Boolean(props.error)}
+            autoComplete={props.autoComplete}
+            className="flex-1"
+            id={props.name}
+            name={props.name}
+            placeholder={props.placeholder}
+            type="email"
+            value={props.value}
+            variant="underline"
+            onBlur={() => {
+              handleBlur()
+              props.onBlur?.()
+            }}
+            onChange={(event) => props.onValueChange(event.target.value)}
+            onFocus={handleFocus}
+          />
+        </InputUnderlineFrame>
+      </div>
+      <AuthFieldErrorMessage className="pt-2" error={props.error} />
     </div>
   )
 }
@@ -251,47 +320,49 @@ export function AuthPasswordField({
   const { focused, handleBlur, handleFocus } = useFieldFocusState()
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <div className="flex items-center justify-between gap-3">
-        <label className={labelClassName} htmlFor={name}>
-          {label}
-        </label>
-        {supportActionLabel && onSupportAction ? (
-          <Button size="tiny" type="button" variant="naked" onClick={onSupportAction}>
-            {supportActionLabel}
+    <div className="flex w-full flex-col">
+      <div className="flex w-full flex-col gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <label className={labelClassName} htmlFor={name}>
+            {label}
+          </label>
+          {supportActionLabel && onSupportAction ? (
+            <Button size="tiny" type="button" variant="naked" onClick={onSupportAction}>
+              {supportActionLabel}
+            </Button>
+          ) : null}
+        </div>
+        <InputUnderlineFrame focused={focused} invalid={Boolean(error)}>
+          <Input
+            aria-invalid={Boolean(error)}
+            autoComplete={autoComplete}
+            className="flex-1"
+            id={name}
+            name={name}
+            placeholder={placeholder}
+            type={visible ? "text" : "password"}
+            value={value}
+            variant="underline"
+            onBlur={() => {
+              handleBlur()
+              onBlur?.()
+            }}
+            onChange={(event) => onValueChange(event.target.value)}
+            onFocus={handleFocus}
+          />
+          <Button
+            aria-label={visible ? concealLabel : revealLabel}
+            size="tiny"
+            type="button"
+            variant="naked-icon-inline"
+            onClick={onToggleVisibility}
+            onMouseDown={(event) => event.preventDefault()}
+          >
+            {visible ? <EyeIcon /> : <EyeClosedIcon />}
           </Button>
-        ) : null}
+        </InputUnderlineFrame>
       </div>
-      <InputUnderlineFrame focused={focused} invalid={Boolean(error)}>
-        <Input
-          aria-invalid={Boolean(error)}
-          autoComplete={autoComplete}
-          className="flex-1"
-          id={name}
-          name={name}
-          placeholder={placeholder}
-          type={visible ? "text" : "password"}
-          value={value}
-          variant="underline"
-          onBlur={() => {
-            handleBlur()
-            onBlur?.()
-          }}
-          onChange={(event) => onValueChange(event.target.value)}
-          onFocus={handleFocus}
-        />
-        <Button
-          aria-label={visible ? concealLabel : revealLabel}
-          size="tiny"
-          type="button"
-          variant="naked-icon-inline"
-          onClick={onToggleVisibility}
-          onMouseDown={(event) => event.preventDefault()}
-        >
-          {visible ? <EyeIcon /> : <EyeClosedIcon />}
-        </Button>
-      </InputUnderlineFrame>
-      {error ? <p className={errorClassName}>{error}</p> : null}
+      <AuthFieldErrorMessage className="pt-2" error={error} />
     </div>
   )
 }
@@ -315,7 +386,7 @@ export function AuthOtpField({
   onBlur,
 }: AuthOtpFieldProps) {
   return (
-    <div className="flex w-full flex-col items-center gap-4">
+    <div className="flex w-full flex-col items-center">
       <InputOTP
         aria-label={ariaLabel}
         aria-invalid={Boolean(error)}
@@ -339,7 +410,7 @@ export function AuthOtpField({
           <InputOTPSlot className="size-10 xl:size-12" index={5} />
         </InputOTPGroup>
       </InputOTP>
-      {error ? <p className={cn(errorClassName, "text-center")}>{error}</p> : null}
+      <AuthFieldErrorMessage className="w-full pt-4 text-center" error={error} />
     </div>
   )
 }

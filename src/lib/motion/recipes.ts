@@ -15,6 +15,11 @@ interface StaggerUpOptions extends MotionRecipeOptions {
   stagger?: number
 }
 
+interface InlineMessagePresenceOptions extends MotionRecipeOptions {
+  distance?: number
+  duration?: number
+}
+
 function createEnterTransition(
   duration: number,
   reducedMotion = false
@@ -22,6 +27,16 @@ function createEnterTransition(
   return {
     duration: resolveMotionDuration(duration, reducedMotion),
     ease: motionTokens.easing.enter,
+  }
+}
+
+function createExitTransition(
+  duration: number,
+  reducedMotion = false
+): Transition {
+  return {
+    duration: resolveMotionDuration(duration, reducedMotion),
+    ease: motionTokens.easing.exit,
   }
 }
 
@@ -74,10 +89,7 @@ export function fadeSwap({
     exit: {
       opacity: 0,
       y: resolveMotionDistance(-distance, reducedMotion),
-      transition: {
-        duration: resolveMotionDuration(duration, reducedMotion),
-        ease: motionTokens.easing.exit,
-      },
+      transition: createExitTransition(duration, reducedMotion),
     },
   } satisfies Variants
 }
@@ -100,12 +112,44 @@ export function copySlideSwap({
     exit: {
       opacity: 0,
       y: resolveMotionDistance(-distance, reducedMotion),
-      transition: {
-        duration: resolveMotionDuration(duration, reducedMotion),
-        ease: motionTokens.easing.exit,
-      },
+      transition: createExitTransition(duration, reducedMotion),
     },
   } satisfies Variants
+}
+
+export function inlineMessagePresence({
+  reducedMotion = false,
+  distance = motionTokens.distance.xs,
+  duration = motionTokens.duration.fast,
+}: InlineMessagePresenceOptions = {}) {
+  return {
+    layout: createEnterTransition(duration, reducedMotion),
+    wrapper: {
+      hidden: {
+        height: 0,
+      },
+      visible: {
+        height: "auto",
+        transition: createEnterTransition(duration, reducedMotion),
+      },
+    } satisfies Variants,
+    content: {
+      hidden: {
+        opacity: 0,
+        y: resolveMotionDistance(distance, reducedMotion),
+      },
+      visible: {
+        opacity: 1,
+        y: 0,
+        transition: createEnterTransition(duration, reducedMotion),
+      },
+      exit: {
+        opacity: 0,
+        y: resolveMotionDistance(-distance, reducedMotion),
+        transition: createExitTransition(duration, reducedMotion),
+      },
+    } satisfies Variants,
+  }
 }
 
 export function successSpring({
@@ -128,10 +172,7 @@ export function successSpring({
     exit: {
       opacity: 0,
       scale: resolveMotionScale(0.96, reducedMotion),
-      transition: {
-        duration: resolveMotionDuration(motionTokens.duration.fast, reducedMotion),
-        ease: motionTokens.easing.exit,
-      },
+      transition: createExitTransition(motionTokens.duration.fast, reducedMotion),
     },
   } satisfies Variants
 }
