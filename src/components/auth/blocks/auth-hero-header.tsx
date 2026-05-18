@@ -31,46 +31,21 @@ export function AuthHeroHeader({
     distance: motionTokens.distance.sm,
   })
   const motionKey = `${title}::${description}`
+  const presenceKey = swapEnabled ? motionKey : "static"
+  const shouldAnimateSwap = swapEnabled && canAnimateSwap
 
   React.useEffect(() => {
     setCanAnimateSwap(true)
   }, [])
 
-  if (!swapEnabled) {
-    return (
-      <header className={cn("flex w-full flex-col items-center gap-3 text-center", className)}>
-        <div className="flex w-full flex-col items-center gap-3 text-center">
-          <h1
-            className={[
-              "font-serif text-(length:--type-heading-1-font-size) leading-(--type-heading-1-line-height)",
-              "font-normal italic tracking-(--type-heading-1-letter-spacing) text-(--color-text-primary)",
-            ].join(" ")}
-            {...getAuthPageEnterItemProps()}
-          >
-            {title}
-          </h1>
-          <p
-            className={[
-              "max-w-104 font-sans text-(length:--type-paragraph-regular-font-size)",
-              "leading-(--type-paragraph-regular-line-height) tracking-(--type-paragraph-regular-letter-spacing) text-(--color-text-secondary)",
-            ].join(" ")}
-            {...getAuthPageEnterItemProps()}
-          >
-            {description}
-          </p>
-        </div>
-      </header>
-    )
-  }
-
   return (
     <header className={cn("flex w-full flex-col items-center gap-3 text-center", className)}>
       <AnimatePresence initial={false} mode="wait">
         <motion.div
-          key={motionKey}
+          key={presenceKey}
           animate="visible"
           exit="exit"
-          initial={canAnimateSwap ? "hidden" : false}
+          initial={shouldAnimateSwap ? "hidden" : false}
           variants={headerSwap}
         >
           <div className="flex w-full flex-col items-center gap-3 text-center">

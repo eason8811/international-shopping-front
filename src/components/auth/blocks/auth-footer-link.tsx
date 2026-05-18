@@ -34,43 +34,22 @@ export function AuthFooterLink({
     distance: motionTokens.distance.sm,
   })
   const motionKey = `${prompt}::${actionLabel}`
+  const presenceKey = swapEnabled ? motionKey : "static"
+  const shouldAnimateSwap = swapEnabled && canAnimateSwap
 
   React.useEffect(() => {
     setCanAnimateSwap(true)
   }, [])
 
-  if (!swapEnabled) {
-    return (
-      <div className={cn(className)} {...getAuthPageEnterItemProps()}>
-        <div
-          className="flex items-start justify-center gap-1 text-center"
-          {...getAuthPageEnterItemProps()}
-        >
-          <span
-            className={[
-              "font-sans text-(length:--type-paragraph-mini-font-size)",
-              "leading-(--type-paragraph-mini-line-height) tracking-(--type-paragraph-mini-letter-spacing) text-(--color-text-secondary)",
-            ].join(" ")}
-          >
-            {prompt}
-          </span>
-          <Button size="mini" type="button" variant="link" onClick={onAction}>
-            {actionLabel}
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className={cn(className)} {...getAuthPageEnterItemProps()}>
       <AnimatePresence initial={false} mode="wait">
         <motion.div
-          key={motionKey}
+          key={presenceKey}
           animate="visible"
           className="flex items-start justify-center gap-1 text-center"
           exit="exit"
-          initial={canAnimateSwap ? "hidden" : false}
+          initial={shouldAnimateSwap ? "hidden" : false}
           variants={footerSwap}
           {...getAuthPageEnterItemProps()}
         >
