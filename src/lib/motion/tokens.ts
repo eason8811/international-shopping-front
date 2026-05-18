@@ -22,9 +22,10 @@ export const motionTokens = {
     textPress: 0.995,
   },
   spring: {
-    damping: 24,
+    damping: 15,
     mass: 0.9,
-    stiffness: 340,
+    stiffness: 200,
+    delay: 0.1,
     type: "spring" as const,
   },
   stagger: {

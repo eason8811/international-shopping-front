@@ -1,7 +1,7 @@
 /**
  * 本地开发时后端默认地址
  */
-const DEFAULT_BACKEND_ORIGIN = "http://127.0.0.1:8080";
+const DEFAULT_BACKEND_ORIGIN = "http://127.0.0.1:28080";
 /**
  * 后端 API 前缀默认值
  */
