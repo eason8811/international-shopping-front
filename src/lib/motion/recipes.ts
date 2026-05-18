@@ -20,6 +20,10 @@ interface InlineMessagePresenceOptions extends MotionRecipeOptions {
   duration?: number
 }
 
+interface AutoHeightTransitionOptions extends MotionRecipeOptions {
+  duration?: number
+}
+
 function createEnterTransition(
   duration: number,
   reducedMotion = false
@@ -38,6 +42,13 @@ function createExitTransition(
     duration: resolveMotionDuration(duration, reducedMotion),
     ease: motionTokens.easing.exit,
   }
+}
+
+export function autoHeightTransition({
+  reducedMotion = false,
+  duration = motionTokens.duration.fast,
+}: AutoHeightTransitionOptions = {}) {
+  return createEnterTransition(duration, reducedMotion)
 }
 
 export function staggerUp({
@@ -123,7 +134,7 @@ export function inlineMessagePresence({
   duration = motionTokens.duration.fast,
 }: InlineMessagePresenceOptions = {}) {
   return {
-    layout: createEnterTransition(duration, reducedMotion),
+    layout: autoHeightTransition({ duration, reducedMotion }),
     wrapper: {
       hidden: {
         height: 0,

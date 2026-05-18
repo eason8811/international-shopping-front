@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import type { ReactNode } from "react"
+import { motion, useReducedMotion } from "motion/react"
 import { useTranslations } from "next-intl"
 
 import {
@@ -9,6 +10,7 @@ import {
   AuthFormFrame,
   AuthProviderButtons,
 } from "@/components/auth/blocks"
+import { autoHeightTransition } from "@/lib/motion/recipes"
 import { cn } from "@/lib/utils"
 import { getAuthPageEnterItemProps } from "./auth-stagger"
 
@@ -120,10 +122,59 @@ function AuthProviderSectionForm({
   children,
   className,
 }: AuthProviderSectionSlotProps) {
+  const reducedMotion = useReducedMotion() ?? false
+  const contentRef = React.useRef<HTMLDivElement | null>(null)
+  const [height, setHeight] = React.useState<number | null>(null)
+  const heightTransition = autoHeightTransition({ reducedMotion })
+
+  React.useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
+    const content = contentRef.current
+
+    if (!content)
+      return
+
+    const updateHeight = () =>
+      setHeight(content.scrollHeight)
+
+    updateHeight()
+
+    if (typeof ResizeObserver === "undefined")
+      return
+
+    const observer = new ResizeObserver(() => {
+      updateHeight()
+    })
+
+    observer.observe(content)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [children, reducedMotion])
+
+  if (reducedMotion) {
+    return (
+      <div className={cn("w-full", className)}>
+        <AuthFormFrame>{children}</AuthFormFrame>
+      </div>
+    )
+  }
+
   return (
-    <div className={cn("w-full", className)}>
-      <AuthFormFrame>{children}</AuthFormFrame>
-    </div>
+    <motion.div
+      animate={height === null ? undefined : { height }}
+      className={cn("w-full overflow-visible overflow-hidden", className)}
+      initial={false}
+      transition={heightTransition}
+    >
+      <div ref={contentRef}>
+        <AuthFormFrame>{children}</AuthFormFrame>
+      </div>
+    </motion.div>
   )
 }
 
