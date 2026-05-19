@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import type { ReactNode } from "react"
-import { motion, useReducedMotion } from "motion/react"
+import { motion, useReducedMotion, useAnimationControls } from "motion/react"
 import { useTranslations } from "next-intl"
 
 import {
@@ -123,22 +123,56 @@ function AuthProviderSectionForm({
   className,
 }: AuthProviderSectionSlotProps) {
   const reducedMotion = useReducedMotion() ?? false
+  const controls = useAnimationControls()
+  const outerRef = React.useRef<HTMLDivElement | null>(null)
   const contentRef = React.useRef<HTMLDivElement | null>(null)
-  const [height, setHeight] = React.useState<number | null>(null)
+  const hasLockedHeightRef = React.useRef(false)
+  const lastHeightRef = React.useRef<number | null>(null)
   const heightTransition = autoHeightTransition({ reducedMotion })
 
+  const updateHeight = React.useCallback(
+    () => {
+      const content = contentRef.current
+
+      if (!content)
+        return
+
+      const nextHeight = Math.ceil(content.offsetHeight)
+
+      if (lastHeightRef.current === nextHeight)
+        return
+
+      /**
+       * 关键:
+       * 第一次不要 start, 而是 set
+       * 目的不是播放动画, 而是把 DOM 真实锁在初始高度
+       */
+      if (!hasLockedHeightRef.current) {
+        hasLockedHeightRef.current = true
+        lastHeightRef.current = nextHeight
+
+        controls.set({ height: nextHeight })
+        return
+      }
+
+      lastHeightRef.current = nextHeight
+
+      controls.start({
+        height: nextHeight,
+        transition: heightTransition,
+      }).then(() => {})
+    },
+    [controls, heightTransition]
+  )
+
   React.useLayoutEffect(() => {
-    if (reducedMotion) {
+    if (reducedMotion)
       return
-    }
 
     const content = contentRef.current
 
     if (!content)
       return
-
-    const updateHeight = () =>
-      setHeight(content.scrollHeight)
 
     updateHeight()
 
@@ -154,7 +188,19 @@ function AuthProviderSectionForm({
     return () => {
       observer.disconnect()
     }
-  }, [children, reducedMotion])
+  }, [reducedMotion, updateHeight])
+
+  React.useLayoutEffect(() => {
+    if (reducedMotion) {
+      return
+    }
+
+    /**
+     * children 变化时主动测一次。
+     * 注意：不要在这里重置 hasLockedHeightRef。
+     */
+    updateHeight()
+  }, [children, reducedMotion, updateHeight])
 
   if (reducedMotion) {
     return (
@@ -166,10 +212,10 @@ function AuthProviderSectionForm({
 
   return (
     <motion.div
-      animate={height === null ? undefined : { height }}
-      className={cn("w-full overflow-visible overflow-hidden", className)}
+      ref={outerRef}
+      animate={controls}
+      className={cn("w-full overflow-visual", className)}
       initial={false}
-      transition={heightTransition}
     >
       <div ref={contentRef}>
         <AuthFormFrame>{children}</AuthFormFrame>
