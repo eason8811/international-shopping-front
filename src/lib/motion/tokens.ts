@@ -25,13 +25,17 @@ export const motionTokens = {
     damping: 15,
     mass: 0.9,
     stiffness: 200,
-    delay: 0.1,
     type: "spring" as const,
   },
   stagger: {
     tight: 0.04,
     regular: 0.08,
   },
+  delay: {
+    fast: 0.3,
+    medium: 0.5,
+    slow: 0.7,
+  }
 } as const
 
 export interface MotionRecipeOptions {
@@ -64,4 +68,8 @@ export function resolveMotionStagger(
   reducedMotion = false
 ) {
   return reducedMotion ? 0 : value
+}
+
+export function resolveMotionDelay(delay: number, reducedMotion: boolean) {
+  return reducedMotion ? 0 : delay
 }

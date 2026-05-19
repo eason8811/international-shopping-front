@@ -6,6 +6,7 @@ import {
   resolveMotionDuration,
   resolveMotionScale,
   resolveMotionStagger,
+  resolveMotionDelay,
   type MotionRecipeOptions,
 } from "./tokens"
 
@@ -15,6 +16,10 @@ interface StaggerUpOptions extends MotionRecipeOptions {
   stagger?: number
 }
 
+interface DelayStaggerUpOptions extends StaggerUpOptions {
+  delay?: number
+}
+
 interface InlineMessagePresenceOptions extends MotionRecipeOptions {
   distance?: number
   duration?: number
@@ -22,6 +27,10 @@ interface InlineMessagePresenceOptions extends MotionRecipeOptions {
 
 interface AutoHeightTransitionOptions extends MotionRecipeOptions {
   duration?: number
+}
+
+interface SuccessSpringOptions extends MotionRecipeOptions {
+  delay?: number
 }
 
 function createEnterTransition(
@@ -79,6 +88,36 @@ export function staggerUp({
         transition: createEnterTransition(duration, reducedMotion),
       },
     } satisfies Variants,
+  }
+}
+
+export function delayStaggerUp({
+  reducedMotion = false,
+  distance = motionTokens.distance.md,
+  duration = motionTokens.duration.medium,
+  stagger = motionTokens.stagger.regular,
+  delay = motionTokens.delay.medium,
+}: DelayStaggerUpOptions = {}) {
+  const recipe = staggerUp({
+    reducedMotion,
+    distance,
+    duration,
+    stagger,
+  })
+
+  return {
+    container: {
+      ...recipe.container,
+      visible: {
+        ...recipe.container.visible,
+        transition: {
+          ...recipe.container.visible.transition,
+          delayChildren: resolveMotionDelay(delay, reducedMotion),
+        },
+      },
+    } satisfies Variants,
+
+    item: recipe.item,
   }
 }
 
@@ -165,7 +204,8 @@ export function inlineMessagePresence({
 
 export function successSpring({
   reducedMotion = false,
-}: MotionRecipeOptions = {}) {
+  delay = motionTokens.delay.medium,
+}: SuccessSpringOptions = {}) {
   return {
     hidden: {
       opacity: 0,
@@ -176,9 +216,12 @@ export function successSpring({
       opacity: 1,
       scale: 1,
       y: 0,
-      transition: reducedMotion
-        ? createEnterTransition(motionTokens.duration.fast, true)
-        : motionTokens.spring,
+      transition: {
+        ...(reducedMotion
+          ? createEnterTransition(motionTokens.duration.fast, true)
+          : motionTokens.spring),
+        delay: resolveMotionDelay(delay, reducedMotion),
+      },
     },
     exit: {
       opacity: 0,

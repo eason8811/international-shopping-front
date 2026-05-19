@@ -3,8 +3,7 @@
 import { CheckIcon } from "lucide-react"
 import { motion, useReducedMotion } from "motion/react"
 
-import { motionTokens } from "@/lib/motion/tokens";
-import { staggerUp, successSpring } from "@/lib/motion/recipes"
+import {delayStaggerUp, successSpring} from "@/lib/motion/recipes"
 import { cn } from "@/lib/utils"
 
 export interface AuthSuccessPanelCopy {
@@ -22,11 +21,7 @@ export function AuthSuccessPanel({
   className,
 }: AuthSuccessPanelProps) {
   const reducedMotion = useReducedMotion() ?? false
-  const copyMotion = staggerUp({
-    reducedMotion,
-    distance: motionTokens.distance.sm,
-    stagger: motionTokens.stagger.regular,
-  })
+  const copyMotion = delayStaggerUp({ reducedMotion })
   const iconMotion = successSpring({ reducedMotion })
 
   return (
